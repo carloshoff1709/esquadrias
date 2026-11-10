@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esquadrias — Chaparia, Montagem e Pintura</title>
+<meta name="theme-color" content="#1A2540">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3','Segoe UI',Arial,sans-serif;background:#F4F6F9;color:#1A2540;min-height:100vh;}
+.top{background:#1A2540;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20;}
+.top h1{font-size:17px;font-weight:700;flex:1;min-width:180px;}
+.top .sub{font-size:11px;color:#AEB8CC;font-weight:400;display:block;}
+.nav-voltar,.tbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;text-decoration:none;font-family:inherit;}
+.nav-voltar:hover,.tbtn:hover{background:rgba(255,255,255,.2);}
+#user-lbl{font-size:12px;color:#C9D2E3;}
+.wrap{padding:14px 18px 90px;max-width:1500px;margin:0 auto;}
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
+.kpi{background:#fff;border:1px solid #E3E8EF;border-radius:12px;padding:10px 14px;cursor:pointer;}
+.kpi .v{font-size:26px;font-weight:800;line-height:1.1;}
+.kpi .l{font-size:11px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.kpi.on{outline:2px solid #185FA5;}
+.k-atr .v{color:#C62828;} .k-ate .v{color:#B26A00;} .k-dia .v{color:#1D7A55;} .k-ok .v{color:#185FA5;}
+/* abas e filtros */
+.abas{display:flex;gap:6px;margin-bottom:10px;}
+.aba{padding:8px 16px;border:1px solid #D8DCE3;background:#EEF0F4;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;color:#374151;font-family:inherit;}
+.aba.on{background:#1A2540;color:#fff;border-color:#1A2540;}
+.filtros{background:#fff;border:1px solid #E3E8EF;border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.filtros input[type=text],.filtros input[type=date],.filtros select{border:1px solid #D8DCE3;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;background:#fff;}
+.filtros label{font-size:12px;color:#6B7280;display:inline-flex;align-items:center;gap:5px;}
+.legenda{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#6B7280;margin-left:auto;align-items:center;}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:3px;}
+#status{font-size:12px;color:#6B7280;margin-bottom:8px;}
+/* módulos */
+.mod{background:#fff;border:1px solid #E3E8EF;border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.mod-head{background:#F5F7FA;border-bottom:1px solid #E3E8EF;padding:9px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;}
+.mod-head .nome{font-size:15px;font-weight:800;}
+.mod-head .meta{font-size:11px;color:#6B7280;}
+.mod-head .barra{flex:1;min-width:120px;max-width:260px;height:7px;background:#E5E9F0;border-radius:4px;overflow:hidden;}
+.mod-head .barra i{display:block;height:100%;background:#1D9E75;}
+.sit{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.s-atr{background:#FDE2E2;color:#B71C1C;} .s-ate{background:#FFF1D6;color:#8A5200;} .s-dia{background:#DDF3E8;color:#14634A;} .s-ok{background:#E2ECF8;color:#185FA5;}
+.linha{display:grid;grid-template-columns:28px minmax(120px,1.2fr) 82px repeat(5,minmax(92px,1fr)) minmax(150px,1.3fr);gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #F0F2F5;font-size:13px;}
+.linha:last-child{border-bottom:none;}
+.linha.cab{font-size:10px;font-weight:800;color:#6B7280;text-transform:uppercase;letter-spacing:.3px;background:#FAFBFC;}
+.linha .cod{font-weight:800;}
+.linha .cod small{font-weight:400;color:#9CA3AF;margin-left:4px;}
+.et{border:1px solid #D8DCE3;background:#F7F8FA;border-radius:8px;padding:4px 6px;font-size:11px;line-height:1.2;cursor:pointer;text-align:center;font-family:inherit;color:#374151;width:100%;}
+.et b{display:block;font-size:12px;}
+.et.feito{background:#DDF3E8;border-color:#9ED8BD;color:#14634A;}
+.et.atr{background:#FDE2E2;border-color:#F3A6A6;color:#B71C1C;}
+.et.ate{background:#FFF1D6;border-color:#F2C978;color:#8A5200;}
+.et:disabled{cursor:default;}
+.prox{font-size:12px;line-height:1.25;}
+.prox .p2{color:#6B7280;font-size:11px;}
+input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;}
+@media (max-width:900px){
+  .linha.cab{display:none;}
+  .linha{grid-template-columns:24px 1fr 1fr;grid-auto-rows:auto;}
+  .linha .cod{grid-column:2/3;} .linha .d1{grid-column:3/4;text-align:right;}
+  .linha .et-wrap{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+  .linha .prox{grid-column:1/-1;}
+}
+@media (min-width:901px){ .linha .et-wrap{display:contents;} }
+.et-rot{display:none;font-size:9px;font-weight:800;text-transform:uppercase;color:#6B7280;}
+@media (max-width:900px){ .et-rot{display:block;} }
+/* barra de ação em lote */
+.barra-acao{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E3E8EF;padding:10px 18px;display:none;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 -4px 16px rgba(0,0,0,.08);z-index:30;}
+.barra-acao.show{display:flex;}
+.barra-acao select,.barra-acao input{border:1px solid #D8DCE3;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;}
+.btn{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:#185FA5;color:#fff;}
+.btn.sec{background:#EEF0F4;color:#374151;border:1px solid #D8DCE3;}
+.btn.del{background:#C62828;}
+/* carga semanal */
+.carga{background:#fff;border:1px solid #E3E8EF;border-radius:12px;padding:12px;overflow-x:auto;}
+.carga table{border-collapse:collapse;font-size:12px;min-width:100%;}
+.carga th,.carga td{border-bottom:1px solid #F0F2F5;padding:6px 8px;text-align:center;white-space:nowrap;}
+.carga th{font-size:10px;color:#6B7280;text-transform:uppercase;font-weight:800;}
+.carga td.rot{text-align:left;font-weight:700;position:sticky;left:0;background:#fff;}
+.cel{position:relative;min-width:54px;}
+.cel .bar{position:absolute;left:4px;right:4px;bottom:3px;background:#C9DBF0;border-radius:3px;z-index:0;}
+.cel span{position:relative;z-index:1;font-weight:800;}
+.cel.over .bar{background:#F3A6A6;} .cel.over span{color:#B71C1C;}
+.cel.atr span{color:#B71C1C;}
+.cel.zero span{color:#C4CAD3;font-weight:400;}
+.cap{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:12px;color:#374151;}
+.cap input{width:70px;border:1px solid #D8DCE3;border-radius:6px;padding:5px 7px;font-size:13px;}
+.nota{font-size:11px;color:#6B7280;margin-top:8px;line-height:1.45;}
+.avisos{background:#FFF8E6;border:1px solid #F2DDA4;border-radius:10px;padding:8px 12px;font-size:12px;color:#7A5300;margin-bottom:10px;display:none;}
+/* modais */
+.overlay{position:fixed;inset:0;background:rgba(15,22,38,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:14px;padding:20px;max-width:380px;width:100%;}
+.modal h2{font-size:16px;margin-bottom:4px;} .modal p{font-size:13px;color:#4B5563;margin-bottom:12px;line-height:1.4;}
+.modal label{font-size:12px;color:#6B7280;display:block;margin:8px 0 3px;}
+.modal input,.modal textarea{width:100%;border:1px solid #D8DCE3;border-radius:8px;padding:8px 10px;font-size:14px;font-family:inherit;}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
+.erro{color:#C62828;font-size:12px;margin-top:6px;min-height:14px;}
+.vazio{padding:30px;text-align:center;color:#9CA3AF;}
+.modal.larga{max-width:760px;max-height:88vh;overflow:auto;}
+.tab-oc{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;}
+.tab-oc th{font-size:10px;text-transform:uppercase;color:#6B7280;text-align:left;border-bottom:1px solid #E3E8EF;padding:5px 6px;}
+.tab-oc td{border-bottom:1px solid #F0F2F5;padding:5px 6px;vertical-align:top;}
+.tab-oc .num{text-align:right;font-weight:700;}
+.alerta{background:#FDE2E2;color:#8B1A1A;border-radius:8px;padding:7px 10px;font-size:12px;margin:6px 0;}
+.btn-proj{border:1px solid #C9DBF0;background:#EEF4FB;color:#185FA5;border-radius:6px;font-size:11px;font-weight:700;padding:1px 6px;margin-left:6px;cursor:pointer;font-family:inherit;vertical-align:middle;}
+.btn-proj:hover{background:#DCEBFA;}
+.proj-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0;font-size:12px;}
+.proj-area{overflow:auto;max-height:68vh;border:1px solid #E3E8EF;border-radius:8px;background:#F7F8FA;text-align:center;}
+.proj-area canvas{display:block;margin:0 auto;background:#fff;}
+.alerta-pedido{border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;display:none;}
+.alerta-pedido.verm{background:#FDE2E2;border:1px solid #F3A6A6;color:#8B1A1A;}
+.alerta-pedido.amar{background:#FFF1D6;border:1px solid #F2C978;color:#7A4A00;}
+.alerta-pedido b.t{font-size:14px;}
+.alerta-pedido .cods{margin-top:4px;font-size:12px;line-height:1.5;}
+.alerta-pedido button{margin-left:8px;}
+.okbox{background:#DDF3E8;color:#14634A;border-radius:8px;padding:7px 10px;font-size:12px;margin:6px 0;}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Esquadrias — Chaparia, Montagem e Pintura<span class="sub" id="sub">Prazos em dias úteis contados para trás a partir da Data 1</span></h1>
+  <button class="tbtn" id="btn-oc" style="display:none" onclick="document.getElementById('in-oc').click()">📄 Importar OC</button>
+  <input type="file" id="in-oc" accept="application/pdf,.pdf" style="display:none" onchange="importarOC(this.files[0]);this.value=''">
+  <span id="user-lbl"></span>
+  <button class="tbtn" onclick="carregar()">⟳ Atualizar</button>
+</div>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+  <div class="abas">
+    <button class="aba on" data-aba="lista" onclick="trocarAba('lista')">Apontamento</button>
+    <button class="aba" data-aba="carga" onclick="trocarAba('carga')">Carga semanal (gargalo)</button>
+  </div>
+  <div class="alerta-pedido" id="alerta-pedido"></div>
+  <div class="avisos" id="avisos"></div>
+
+  <div id="pg-lista">
+    <div class="filtros">
+      <input type="text" id="f-busca" placeholder="Buscar módulo ou esquadria" oninput="render()" style="min-width:200px;">
+      <select id="f-etapa" onchange="render()">
+        <option value="">Qualquer próxima etapa</option>
+        <option value="solicitada">Falta pedir chaparia</option>
+        <option value="recebida">Falta receber chaparia</option>
+        <option value="montada">Falta montar</option>
+        <option value="env_pintura">Falta enviar p/ pintura</option>
+        <option value="pintada">Na pintura</option>
+      </select>
+      <label>Data 1 de <input type="date" id="f-de" onchange="render()"></label>
+      <label>até <input type="date" id="f-ate" onchange="render()"></label>
+      <label><input type="checkbox" id="f-concl" onchange="render()"> mostrar concluídas</label>
+      <div class="legenda">
+        <span><i class="dot" style="background:#9ED8BD"></i>feito</span>
+        <span><i class="dot" style="background:#F2C978"></i>vence em até 2 du (pedido: 3 du)</span>
+        <span><i class="dot" style="background:#F3A6A6"></i>prazo vencido</span>
+        <span><i class="dot" style="background:#D8DCE3"></i>no prazo</span>
+      </div>
+    </div>
+    <div id="status">Carregando...</div>
+    <div id="lista"></div>
+  </div>
+
+  <div id="pg-carga" style="display:none;">
+    <div class="carga">
+      <div class="cap">
+        <strong>Capacidade por semana</strong>
+        <label>Montagem <input type="number" min="0" id="cap-mont" oninput="salvarCap();renderCarga()" placeholder="—"></label>
+        <label>Pintura <input type="number" min="0" id="cap-pint" oninput="salvarCap();renderCarga()" placeholder="—"></label>
+        <label>Recebimento de chaparia <input type="number" min="0" id="cap-rec" oninput="salvarCap();renderCarga()" placeholder="—"></label>
+        <label><input type="checkbox" id="c-concl" onchange="renderCarga()"> incluir o que já foi feito</label>
+      </div>
+      <div id="carga"></div>
+      <div class="nota">
+        Cada esquadria cai na semana do prazo da etapa: chaparia recebida até <b>D1 − 14 du</b>, montagem pronta até <b>D1 − 7 du</b>, pintura pronta até a <b>Data 1</b>.
+        A coluna <b>Atrasado</b> soma o que já passou do prazo e ainda não foi feito; isso entra na semana atual como carga extra.
+        Com a capacidade preenchida, semanas acima dela ficam em vermelho: é o gargalo.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="barra-acao" id="barra">
+  <strong id="b-n">0 selecionadas</strong>
+  <select id="b-etapa">
+    <option value="solicitada">Chaparia solicitada</option>
+    <option value="recebida">Chaparia recebida</option>
+    <option value="montada">Montagem feita</option>
+    <option value="env_pintura">Enviada p/ pintura</option>
+    <option value="pintada">Pintura concluída</option>
+  </select>
+  <input type="date" id="b-data">
+  <button class="btn" onclick="aplicarLote(false)">Apontar</button>
+  <button class="btn del" onclick="aplicarLote(true)">Desfazer etapa</button>
+  <button class="btn sec" onclick="limparSel()">Limpar seleção</button>
+</div>
+
+<script>
+// >>> Cole aqui a URL do App da Web (termina em /exec) gerada no Apps Script da planilha <<<
+const API_URL='https://script.google.com/macros/s/AKfycbxM4vH_vm1CqHqko25L6ilXwBJKHPGQMTZlWuTj_mekzJYEtZbKkkzcTAOB2BLQ-z2s5w/exec';
+
+/* ===== Regras de prazo (dias úteis antes da Data 1) ===== */
+const LEAD={chaparia:10, montagem:7, pintura:7};
+const ETAPAS=[
+  {k:'solicitada', nome:'Chaparia solicitada', curto:'Pedido',   antes:LEAD.chaparia+LEAD.montagem+LEAD.pintura},
+  {k:'recebida',   nome:'Chaparia recebida',   curto:'Recebida', antes:LEAD.montagem+LEAD.pintura},
+  {k:'montada',    nome:'Montagem feita',      curto:'Montada',  antes:LEAD.pintura},
+  {k:'env_pintura',nome:'Enviada p/ pintura',  curto:'Envio pint.',antes:LEAD.pintura},
+  {k:'pintada',    nome:'Pintura concluída',   curto:'Pintada',  antes:0}
+];
+const ATENCAO_DU=2;
+const ALERTA_PEDIDO_DU=3;   // chaparia não solicitada: alerta a partir de 3 dias úteis antes do prazo do pedido
+const limiteAtencao=k=>k==='solicitada'?ALERTA_PEDIDO_DU:ATENCAO_DU;
+
+/* Feriados nacionais + RS (20/09). Os da aba "Feriados" da planilha somam a estes. */
+let FERIADOS=new Set([
+ '2026-01-01','2026-02-16','2026-02-17','2026-04-03','2026-04-21','2026-05-01','2026-06-04','2026-09-07','2026-09-20','2026-10-12','2026-11-02','2026-11-15','2026-11-20','2026-12-25',
+ '2027-01-01','2027-02-08','2027-02-09','2027-03-26','2027-04-21','2027-05-01','2027-05-27','2027-09-07','2027-09-20','2027-10-12','2027-11-02','2027-11-15','2027-11-20','2027-12-25'
+]);
+
+/* ===== datas (string yyyy-mm-dd, meio-dia local para não escorregar de fuso) ===== */
+const D=s=>{ const a=s.split('-'); return new Date(+a[0],+a[1]-1,+a[2],12); };
+const S=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const BR=s=>s?s.slice(8,10)+'/'+s.slice(5,7):'—';
+const BRc=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'—';
+const HOJE=S(new Date());
+function util(s){ const d=D(s).getDay(); return d!==0&&d!==6&&!FERIADOS.has(s); }
+function addUteis(s,n){ let d=D(s); const passo=n<0?-1:1; let falta=Math.abs(n);
+  while(falta>0){ d.setDate(d.getDate()+passo); if(util(S(d))) falta--; } return S(d); }
+function difUteis(a,b){ // dias úteis de a até b (positivo se b depois de a)
+  if(a===b) return 0; const sinal=a<b?1:-1; let x=a<b?a:b, y=a<b?b:a, n=0, d=D(x);
+  while(S(d)<y){ d.setDate(d.getDate()+1); if(util(S(d))) n++; } return n*sinal; }
+const maxS=(a,b)=>a>b?a:b;
+function segunda(s){ const d=D(s); const w=d.getDay(); d.setDate(d.getDate()-((w+6)%7)); return S(d); }
+
+/* ===== API (mesmo padrão das outras telas) ===== */
+let _cb=0;
+function jsonp(params){ return new Promise((res,rej)=>{ const cb='__cb'+(_cb++); const s=document.createElement('script');
+  const to=setTimeout(()=>{cleanup();rej(new Error('timeout'));},25000);
+  function cleanup(){clearTimeout(to);delete window[cb];s.remove();}
+  window[cb]=d=>{cleanup();res(d);}; s.onerror=()=>{cleanup();rej(new Error('erro'));};
+  s.src=API_URL+'?'+params+'&callback='+cb+'&t='+Date.now(); document.body.appendChild(s); }); }
+async function api(params){ try{ return await jsonp(params); }catch(_){}
+  try{ const r=await fetch(API_URL+'?'+params+'&t='+Date.now(),{cache:'no-store'}); if(r.ok) return JSON.parse(await r.text()); }catch(_){} return null; }
+async function apiPost(params){ try{ const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:params}); if(r.ok) return JSON.parse(await r.text()); }catch(_){} return await api(params); }
+
+/* ===== estado ===== */
+let ITENS=[]; let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
+
+/* ===== cálculo por esquadria ===== */
+function calcular(it){
+  const st=it.status||{}; const d1=it.d1;
+  const prazos={}; ETAPAS.forEach(e=>prazos[e.k]=d1?addUteis(d1,-e.antes):'');
+  const prox=ETAPAS.find(e=>!st[e.k]);
+  let fim;
+  if(!prox) fim=st.pintada;
+  else if(st.env_pintura) fim=maxS(addUteis(st.env_pintura,LEAD.pintura),HOJE);
+  else if(st.montada)     fim=addUteis(maxS(st.montada,HOJE),LEAD.pintura);
+  else if(st.recebida)    fim=addUteis(maxS(st.recebida,HOJE),LEAD.montagem+LEAD.pintura);
+  else if(st.solicitada)  fim=addUteis(maxS(st.entrega_prev||addUteis(st.solicitada,LEAD.chaparia),HOJE),LEAD.montagem+LEAD.pintura);
+  else                    fim=addUteis(HOJE,LEAD.chaparia+LEAD.montagem+LEAD.pintura);
+  const atrasoFim=d1?difUteis(d1,fim):0;           // >0 = termina depois da Data 1
+  let sit='dia', folga=null;
+  if(!prox) sit='ok';
+  else if(d1){
+    folga=difUteis(HOJE,prazos[prox.k]);            // du até o prazo da próxima etapa
+    if(folga<0||atrasoFim>0) sit='atr'; else if(folga<=limiteAtencao(prox.k)) sit='ate';
+  }
+  return {prazos,prox,fim,atrasoFim,sit,folga};
+}
+function estadoEtapa(it,c,e){
+  const st=it.status||{};
+  if(st[e.k]) return 'feito';
+  if(!c.prazos[e.k]) return '';
+  const f=difUteis(HOJE,c.prazos[e.k]);
+  return f<0?'atr':(f<=limiteAtencao(e.k)?'ate':'');
+}
+
+/* ===== carregar ===== */
+async function carregar(){
+  if(API_URL.indexOf('COLE_AQUI')===0){ document.getElementById('status').innerHTML='Configure a URL do Apps Script no index.html (const API_URL). Veja o README.'; return; }
+  document.getElementById('status').textContent='Carregando programação de esquadrias...';
+  const r=await api('action=esq_listar');
+  if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
+  (r.feriados||[]).forEach(f=>FERIADOS.add(f));
+  ITENS=r.itens.map(it=>({...it}));
+  ITENS.forEach(it=>it.c=calcular(it));
+  const av=document.getElementById('avisos');
+  if(r.avisos&&r.avisos.length){ av.style.display='block'; av.innerHTML='<b>Avisos da planilha ('+r.avisos.length+'):</b> '+r.avisos.slice(0,8).join(' · ')+(r.avisos.length>8?' …':''); }
+  else av.style.display='none';
+  document.getElementById('sub').textContent='Aba "'+r.aba+'" · lida em '+r.lido_em+' · prazos em dias úteis antes da Data 1 (chaparia '+LEAD.chaparia+' + montagem '+LEAD.montagem+' + pintura '+LEAD.pintura+')';
+  render(); renderCarga();
+}
+
+/* ===== KPIs ===== */
+function renderKpis(){
+  const n={total:ITENS.length,atr:0,ate:0,dia:0,ok:0,proj:0};
+  ITENS.forEach(it=>{ n[it.c.sit]++; if(it.c.sit!=='ok'&&it.c.atrasoFim>0) n.proj++; });
+  const k=(cls,v,l,f)=>`<div class="kpi ${cls} ${FILTRO_SIT===f?'on':''}" onclick="filtrarSit('${f}')"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  document.getElementById('kpis').innerHTML=
+    k('',n.total,'Esquadrias','')+k('k-atr',n.atr,'Atrasadas','atr')+k('k-ate',n.ate,'Atenção','ate')+
+    k('k-dia',n.dia,'Em dia','dia')+k('k-ok',n.ok,'Pintadas','ok')+k('k-atr',n.proj,'Vão terminar depois da Data 1','proj');
+}
+function filtrarSit(f){ FILTRO_SIT=(FILTRO_SIT===f?'':f); if(f==='ok') document.getElementById('f-concl').checked=true; render(); }
+
+/* ===== lista por módulo ===== */
+function passaFiltro(it){
+  const b=document.getElementById('f-busca').value.trim().toLowerCase();
+  if(b && !(it.modulo+' '+it.codigo).toLowerCase().includes(b)) return false;
+  const et=document.getElementById('f-etapa').value; if(et && (!it.c.prox||it.c.prox.k!==et)) return false;
+  const de=document.getElementById('f-de').value, ate=document.getElementById('f-ate').value;
+  if(de && (!it.d1||it.d1<de)) return false; if(ate && (!it.d1||it.d1>ate)) return false;
+  if(FILTRO_SIT==='proj'){ if(it.c.sit==='ok'||it.c.atrasoFim<=0) return false; }
+  else if(FILTRO_SIT && it.c.sit!==FILTRO_SIT) return false;
+  if(!document.getElementById('f-concl').checked && it.c.sit==='ok' && FILTRO_SIT!=='ok') return false;
+  return true;
+}
+const ROT_SIT={atr:'Atrasado',ate:'Atenção',dia:'Em dia',ok:'Concluído'};
+const ORDEM_SIT={atr:0,ate:1,dia:2,ok:3};
+function render(){
+  renderKpis(); renderAlertaPedido();
+  const vis=ITENS.filter(passaFiltro);
+  const grupos={};
+  vis.forEach(it=>{ const g=it.modulo+'§'+(it.d1||''); (grupos[g]=grupos[g]||{mod:it.modulo,d1:it.d1,itens:[]}).itens.push(it); });
+  const lista=Object.values(grupos).sort((a,b)=>(a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:a.mod.localeCompare(b.mod));
+  document.getElementById('status').textContent=vis.length+' esquadria(s) em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
+  if(!lista.length){ document.getElementById('lista').innerHTML='<div class="vazio">Nada para este filtro.</div>'; atualizarBarra(); return; }
+  const pode=podeApontar();
+  document.getElementById('lista').innerHTML=lista.map(g=>{
+    const id=g.mod+'§'+(g.d1||'');
+    const pior=g.itens.reduce((p,it)=>ORDEM_SIT[it.c.sit]<ORDEM_SIT[p]?it.c.sit:p,'ok');
+    const feitas=g.itens.reduce((s,it)=>s+ETAPAS.filter(e=>(it.status||{})[e.k]).length,0);
+    const pct=Math.round(100*feitas/(g.itens.length*ETAPAS.length));
+    const padrao=pior==='atr'||pior==='ate'||!!document.getElementById('f-busca').value;
+    const aberto=(id in ABRIR)?ABRIR[id]:padrao; ESTADO_ABERTO[id]=aberto;
+    const chaves=g.itens.map(it=>it.chave);
+    const todas=chaves.every(c=>SEL.has(c));
+    const cab=`<div class="mod-head" onclick="abrir('${esc(id)}')">
+      ${pode?`<input type="checkbox" ${todas?'checked':''} onclick="event.stopPropagation();selGrupo(${esc(JSON.stringify(chaves))},this.checked)">`:''}
+      <span class="nome">${g.mod}</span>
+      <span class="meta">Data 1: <b>${BRc(g.d1)}</b> · ${g.itens.length} esquadria(s) · pedir chaparia até ${BR(g.d1?addUteis(g.d1,-ETAPAS[0].antes):'')}</span>
+      <span class="barra" title="${pct}% das etapas apontadas"><i style="width:${pct}%"></i></span>
+      <span class="sit s-${pior}">${ROT_SIT[pior]}</span>
+      <span class="meta">${aberto?'▼':'▶'}</span></div>`;
+    if(!aberto) return `<div class="mod">${cab}</div>`;
+    const linhas=g.itens.map(it=>{
+      const c=it.c;
+      const ets=ETAPAS.map(e=>{
+        const st=(it.status||{})[e.k]; const est=estadoEtapa(it,c,e);
+        const txt=st?`<b>✓ ${BR(st)}</b>`:`<b>até ${BR(c.prazos[e.k])}</b>`;
+        return `<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&(it.status||{}).oc?' · OC '+it.status.oc:''}"><span class="et-rot">${e.curto}</span>${txt}</button>`;
+      }).join('');
+      let prox;
+      if(c.sit==='ok') prox=`<span style="color:#185FA5;font-weight:700;">Concluída</span>`;
+      else{
+        const f=c.folga;
+        const quando=f===null?'sem Data 1':(f<0?`<b style="color:#B71C1C">${-f} du atrasado</b>`:(f===0?'<b>vence hoje</b>':`faltam ${f} du`));
+        const st0=it.status||{}; const ocTxt=st0.oc?` · OC ${st0.oc}${st0.entrega_prev?' (entrega prev. '+BR(st0.entrega_prev)+')':''}`:'';
+        prox=`${c.prox.nome} até ${BR(c.prazos[c.prox.k])} · ${quando}<div class="p2">Previsão de término: ${BRc(c.fim)}${ocTxt}${c.atrasoFim>0?` <b style="color:#B71C1C">(+${c.atrasoFim} du após a Data 1)</b>`:''}</div>`;
+      }
+      return `<div class="linha">
+        <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
+        <span class="cod">${it.codigo}${it.un>1?`<small>#${it.un}</small>`:''}${botaoProjeto(it.codigo)}</span>
+        <span class="d1">${BRc(it.d1)}</span>
+        <span class="et-wrap">${ets}</span>
+        <span class="prox">${prox}</span></div>`;
+    }).join('');
+    return `<div class="mod">${cab}<div class="linha cab"><span></span><span>Esquadria</span><span>Data 1</span>${ETAPAS.map(e=>`<span>${e.nome}</span>`).join('')}<span>Próximo passo</span></div>${linhas}</div>`;
+  }).join('');
+  atualizarBarra();
+}
+function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+const ESTADO_ABERTO={};
+function abrir(id){ ABRIR[id]=!ESTADO_ABERTO[id]; render(); }
+
+/* ===== carga semanal ===== */
+function renderCarga(){
+  const incl=document.getElementById('c-concl').checked;
+  const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'}];
+  const semAtual=segunda(HOJE); const sems=new Set([semAtual]); const dados={};
+  linhas.forEach(l=>dados[l.k]={atr:0});
+  ITENS.forEach(it=>{ if(!it.d1) return;
+    linhas.forEach(l=>{
+      const feito=(it.status||{})[l.k]; if(feito&&!incl) return;
+      const p=it.c.prazos[l.k];
+      if(!feito && p<HOJE){ dados[l.k].atr++; return; }
+      const s=segunda(p); if(s<semAtual) return; sems.add(s); dados[l.k][s]=(dados[l.k][s]||0)+1;
+    });
+  });
+  const lista=[...sems].sort().slice(0,16);
+  const maxV=Math.max(1,...linhas.flatMap(l=>lista.map(s=>(dados[l.k][s]||0)+(s===semAtual?dados[l.k].atr:0))));
+  let h='<table><tr><th style="text-align:left">Semana (segunda)</th><th>Atrasado</th>'+lista.map(s=>`<th>${BR(s)}${s===semAtual?'<br>(atual)':''}</th>`).join('')+'</tr>';
+  linhas.forEach(l=>{
+    const cap=+document.getElementById(l.cap).value||0;
+    h+=`<tr><td class="rot">${l.nome}</td><td class="cel ${dados[l.k].atr?'atr':'zero'}"><span>${dados[l.k].atr||'·'}</span></td>`;
+    lista.forEach(s=>{
+      const v=(dados[l.k][s]||0); const tot=v+(s===semAtual?dados[l.k].atr:0);
+      const over=cap>0&&tot>cap;
+      h+=`<td class="cel ${over?'over':''} ${tot?'':'zero'}" title="${v} no prazo${s===semAtual&&dados[l.k].atr?' + '+dados[l.k].atr+' atrasadas':''}${cap?' · capacidade '+cap:''}"><i class="bar" style="height:${Math.round(22*tot/maxV)}px"></i><span>${tot||'·'}</span></td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</table>';
+  document.getElementById('carga').innerHTML=h;
+}
+function salvarCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>localStorage.setItem('esq_'+id,document.getElementById(id).value)); }catch(_){} }
+function lerCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>{ const v=localStorage.getItem('esq_'+id); if(v) document.getElementById(id).value=v; }); }catch(_){} }
+function trocarAba(a){ ABA=a; document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
+  document.getElementById('pg-lista').style.display=a==='lista'?'block':'none'; document.getElementById('pg-carga').style.display=a==='carga'?'block':'none';
+  if(a==='carga') renderCarga(); atualizarBarra(); }
+
+/* ===== seleção e apontamento ===== */
+function sel(ch,on){ on?SEL.add(ch):SEL.delete(ch); atualizarBarra(); }
+function selGrupo(chs,on){ chs.forEach(c=>on?SEL.add(c):SEL.delete(c)); render(); }
+function limparSel(){ SEL.clear(); render(); }
+function atualizarBarra(){ document.getElementById('b-n').textContent=SEL.size+' selecionada(s)';
+  document.getElementById('barra').classList.toggle('show',SEL.size>0&&ABA==='lista'); }
+
+function abrirEtapa(chave,k){
+  if(!podeApontar()){ abrirLogin(()=>abrirEtapa(chave,k)); return; }
+  const it=ITENS.find(x=>x.chave===chave); const e=ETAPAS.find(x=>x.k===k); const feito=(it.status||{})[k];
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-et';
+  ov.innerHTML=`<div class="modal"><h2>${e.nome}</h2>
+    <p><b>${it.modulo}</b> · ${it.codigo}${it.un>1?' #'+it.un:''}<br>Data 1: ${BRc(it.d1)} · prazo desta etapa: ${BRc(it.c.prazos[k])}${feito?'<br>Apontado em '+BRc(feito):''}</p>
+    <label>Data do apontamento</label><input type="date" id="et-data" value="${feito||HOJE}">
+    <label><input type="checkbox" id="et-mod" style="width:auto;margin-right:6px;">aplicar a todas as esquadrias deste módulo com a mesma Data 1</label>
+    <div class="mbtns">
+      ${feito?`<button class="btn del" onclick="confirmarEtapa('${esc(chave)}','${k}',true)">Desfazer</button>`:''}
+      <button class="btn sec" onclick="fecharOv('ov-et')">Cancelar</button>
+      <button class="btn" onclick="confirmarEtapa('${esc(chave)}','${k}',false)">Apontar</button>
+    </div><div class="erro" id="et-erro"></div></div>`;
+  document.body.appendChild(ov);
+}
+async function confirmarEtapa(chave,k,desfazer){
+  const it=ITENS.find(x=>x.chave===chave);
+  const data=desfazer?'':document.getElementById('et-data').value;
+  if(!desfazer&&!data){ document.getElementById('et-erro').textContent='Escolha a data.'; return; }
+  const chaves=document.getElementById('et-mod').checked?ITENS.filter(x=>x.modulo===it.modulo&&x.d1===it.d1).map(x=>x.chave):[chave];
+  document.getElementById('et-erro').textContent='Salvando...';
+  const ok=await gravar(chaves,k,data);
+  if(ok) fecharOv('ov-et'); else document.getElementById('et-erro').textContent='Falha ao salvar. Tente de novo.';
+}
+async function aplicarLote(desfazer){
+  if(!podeApontar()){ abrirLogin(()=>aplicarLote(desfazer)); return; }
+  const k=document.getElementById('b-etapa').value; const data=desfazer?'':(document.getElementById('b-data').value||HOJE);
+  const e=ETAPAS.find(x=>x.k===k);
+  if(desfazer && !confirm('Desfazer "'+e.nome+'" (e as etapas seguintes) em '+SEL.size+' esquadria(s)?')) return;
+  const ok=await gravar([...SEL],k,data);
+  if(ok){ SEL.clear(); render(); } else alert('Falha ao salvar. Tente de novo.');
+}
+async function gravar(chaves,k,data){
+  const info={}; chaves.forEach(c=>{ const it=ITENS.find(x=>x.chave===c); if(it) info[c]={modulo:it.modulo,codigo:it.codigo}; });
+  const u=sessionStorage.getItem('esq_nome')||sessionStorage.getItem('esq_user')||'';
+  const u2=sessionStorage.getItem('esq_user')||'', sn=sessionStorage.getItem('esq_senha')||'';
+  const r=await apiPost('action=esq_apontar&etapa='+k+'&data='+data+'&usuario='+encodeURIComponent(u2)+'&senha='+encodeURIComponent(sn)+
+    '&chaves='+encodeURIComponent(JSON.stringify(chaves))+'&itens='+encodeURIComponent(JSON.stringify(info)));
+  if(r&&!r.ok&&/permiss/i.test(r.erro||'')){ ['esq_user','esq_nome','esq_perfil','esq_senha'].forEach(k=>sessionStorage.removeItem(k)); mostrarUser(); alert(r.erro); return false; }
+  if(!r||!r.ok) return false;
+  // atualiza a tela sem recarregar tudo (mesma regra do servidor)
+  const i=ETAPAS.findIndex(x=>x.k===k);
+  chaves.forEach(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return; it.status=it.status||{};
+    if(data){ it.status[k]=data; for(let j=0;j<i;j++) if(!it.status[ETAPAS[j].k]) it.status[ETAPAS[j].k]=data; }
+    else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0){ delete it.status.oc; delete it.status.entrega_prev; } }
+    it.c=calcular(it); });
+  render(); renderCarga(); return true;
+}
+
+
+const PROJETOS={"PC151D":[11,"PORTA DE CORRER EM CHAPA DE AÇO - LADO DIREITO"],"PC151E":[11,"PORTA DE CORRER EM CHAPA DE AÇO - LADO ESQUERDO"],"PC161D":[12,"PORTA DE CORRER EM CHAPA DE AÇO - LADO DIREITO"],"PC161E":[12,"PORTA DE CORRER EM CHAPA DE AÇO - LADO ESQUERDO"],"PC162D":[12,"PORTA DE CORRER EM CHAPA DE AÇO - LADO DIREITO"],"PC162E":[12,"PORTA DE CORRER EM CHAPA DE AÇO - LADO ESQUERDO"],"PC163D":[10,"PORTA DE CORRER EM CHAPA DE AÇO - LADO DIREITO"],"PC163E":[10,"PORTA DE CORRER EM CHAPA DE AÇO - LADO ESQUERDO"],"PC166D":[12,"PORTA DE CORRER EM CHAPA DE AÇO CONTROLE"],"PC165D":[12,"PORTA DE CORRER EM CHAPA DE AÇO CONTROLE"],"PF172E":[2,"PORTA METÁLICA CHAPA DUPLA REFORÇADA DE ABRIR C/"],"PF175E":[2,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR"],"PF250D":[2,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO 2 FOLHAS"],"PF255":[1,""],"PF257":[2,"DETALHE PORTA METÁLICA DE ABRIR + GRADE +"],"PF260":[1,""],"PF150D":[2,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF150E":[2,"PORTA METÁLICA DE ABRIR (ESQUERDA)"],"PF151D":[2,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF151E":[2,"PORTA METÁLICA DE ABRIR (ESQUERDA)"],"PF152D":[2,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF152E":[2,"PORTA METÁLICA DE ABRIR (ESQUERDA)"],"PF153D":[2,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF153E":[2,"PORTA METÁLICA DE ABRIR (ESQUERDA)"],"PF158D":[2,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO"],"PF158E":[2,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO"],"PF159D":[3,"PORTA METÁLICA DE ABRIR + GRADE + VENEZIANA +"],"PF159E":[3,"PORTA METÁLICA DE ABRIR + GRADE + VENEZIANA +"],"PF155E":[2,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF266":[2,"PORTA METÁLICA DE ABRIR - 2 FOLHAS"],"PF160E":[2,"PORTA METÁLICA VENEZIANADA DE ABRIR"],"PF164D":[4,"PORTA METÁLICA CHAPA DUPLA REFORÇADA DE ABRIR C/"],"PF163D":[2,"DETALHE PORTA METÁLICA VENEZIANADA DE ABRIR"],"PF164E":[2,"PORTA METÁLICA CHAPA DUPLA REFORÇADA DE ABRIR C/"],"PF168D":[2,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF168E":[2,"PORTA METÁLICA DE ABRIR (ESQUERDA)"],"PF268D":[2,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO 2 FOLHAS"],"PGF460E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF468E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF469D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF469E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF470D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF470E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"POF250":[1,"PORTÃO METÁLICO DE ABRIR CEGO DE ACESSO DE"],"POF450D":[1,""],"POF450E":[1,""],"POF454E":[1,""],"POF477E":[1,"PORTÃO METÁLICO DE CORRER DE VEÍCULOS"],"PGF462D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF463D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF463E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF465D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF467D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF467E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF459D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF459E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF450E":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF450D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF451D":[1,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF152D":[1,"PORTA DE GRADE DE ABRIR - 1 FOLHA"],"PGF251":[1,"PORTA DE GRADE DE ABRIR - 2 FOLHAS"],"POF160D":[1,"PORTÃO METÁLICO DE ABRIR DE TELA"],"POF160":[1,"DETALHES DO PORTÃO METÁLICO DE ABRIR DE TELA"],"GF455":[1,"GRADE DO CONTROLE DO SOLÁRIO"],"GLF459":[2,"GRADE FIXA COM VIDRO LAMINADO"],"GLF461":[2,"GRADE FIXA COM VIDRO LAMINADO"],"GPF453":[2,"GRADE FIXA COM POLICARBONATO"],"JPF350":[2,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E"],"JPF352":[2,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E"],"JPF354":[2,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E"],"JPF355":[2,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA"],"JVF303":[1,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA"],"JPF356":[2,"JANELA METÁLICA BASCULANTE FIXO 45° COM GRADE"],"GF450":[1,"GRADE FIXA"],"GLF462":[1,"GRADE FIXA COM VIDRO LAMINADO"],"JVF301":[2,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA"],"JVF302":[2,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA"],"JVF304":[1,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA"],"JVF307":[1,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA"],"TE05":[1,"TELA FIXA METÁLICA TIPO MOSQUITEIRO"],"TE09":[1,"TELA FIXA METÁLICA TIPO MOSQUITEIRO"],"TE10":[1,"TELA FIXA METÁLICA TIPO MOSQUITEIRO"],"VBF451":[2,"VISOR FIXO EM AÇO COM VIDRO BLINDADO C/ PORTINHOLA"],"VBF457":[2,"VISOR FIXO EM AÇO COM VIDRO BLINDADO"],"VBF458":[2,"VISOR FIXO EM AÇO COM VIDRO BLINDADO"],"VBF459":[2,"VISOR FIXO EM AÇO COM VIDRO BLINDADO C/ PORTINHOLA"],"VPF452":[1,"VISOR FIXO EM AÇO COM POLICARBONATO"],"POF151D":[1,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF151E":[1,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF159E":[1,"PORTÃO METÁLICO DE ABRIR DE TELA"],"POF159D":[1,"PORTÃO METÁLICO DE ABRIR DE TELA"],"POF256":[1,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF452D":[1,"PORTÃO METÁLICO DE CORRER COM TELA DE ACESSO"],"POF473D":[1,""],"POF473E":[1,""],"POF474D":[1,""],"POF474E":[1,""],"POF475D":[1,""],"POF475E":[1,""]};
+/* ===== Projetos (caderno de esquadrias R02, uma página-PDF por código em projetos/) ===== */
+function chaveProjeto(cod){ const m=String(cod||'').toUpperCase().match(/([A-Z]{1,5})\s?-?\s?(\d{2,3})(?:\s?-?\s?([DE]))?(?![A-Z0-9])/); if(!m) return '';
+  const k=m[1]+m[2]+(m[3]||''); return PROJETOS[k]?k:(PROJETOS[m[1]+m[2]]?m[1]+m[2]:''); }
+function botaoProjeto(cod){ const k=chaveProjeto(cod); if(!k) return '';
+  return ` <button class="btn-proj" title="${PROJETOS[k][1]} — ${PROJETOS[k][0]} folha(s)" onclick="event.stopPropagation();verProjeto('${k}')">📐 projeto</button>`; }
+let PV={doc:null,pag:1,zoom:1,k:''};
+async function verProjeto(k){
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-proj'; ov.onclick=e=>{ if(e.target===ov) fecharOv('ov-proj'); };
+  ov.innerHTML=`<div class="modal larga" style="max-width:960px"><h2>${k} — projeto</h2><p>${PROJETOS[k][1]}</p>
+    <div class="proj-nav"><button class="btn sec" onclick="pvIr(-1)">◀</button><span id="pv-pag">…</span><button class="btn sec" onclick="pvIr(1)">▶</button>
+      <button class="btn sec" onclick="pvZoom(-0.25)">−</button><button class="btn sec" onclick="pvZoom(0.25)">+</button>
+      <a class="btn sec" style="text-decoration:none" href="projetos/${k}.pdf" target="_blank">Abrir PDF</a>
+      <button class="btn" style="margin-left:auto" onclick="fecharOv('ov-proj')">Fechar</button></div>
+    <div class="proj-area" id="pv-area"><div class="vazio">Carregando projeto…</div></div></div>`;
+  document.body.appendChild(ov);
+  try{ const lib=await carregarPdfJs(); PV={doc:await lib.getDocument({url:'projetos/'+k+'.pdf'}).promise,pag:1,zoom:1,k}; pvDesenhar(); }
+  catch(err){ document.getElementById('pv-area').innerHTML=`<div class="vazio">Não foi possível mostrar aqui (${err.message}). Use "Abrir PDF".</div>`; }
+}
+async function pvDesenhar(){
+  const area=document.getElementById('pv-area'); if(!area||!PV.doc) return;
+  const pg=await PV.doc.getPage(PV.pag); const base=pg.getViewport({scale:1});
+  const larg=Math.max(280,area.clientWidth-4); const esc=larg/base.width*PV.zoom; const dpr=window.devicePixelRatio||1;
+  const vp=pg.getViewport({scale:esc*dpr}); const cv=document.createElement('canvas');
+  cv.width=vp.width; cv.height=vp.height; cv.style.width=(vp.width/dpr)+'px'; cv.style.height=(vp.height/dpr)+'px';
+  area.innerHTML=''; area.appendChild(cv);
+  await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+  document.getElementById('pv-pag').textContent=`folha ${PV.pag} de ${PV.doc.numPages}`;
+}
+function pvIr(d){ if(!PV.doc) return; PV.pag=Math.min(PV.doc.numPages,Math.max(1,PV.pag+d)); pvDesenhar(); }
+function pvZoom(d){ PV.zoom=Math.min(4,Math.max(0.5,PV.zoom+d)); pvDesenhar(); }
+
+/* ===== Alerta: chaparia não solicitada até 3 du antes do prazo do pedido ===== */
+function renderAlertaPedido(){
+  const el=document.getElementById('alerta-pedido'); if(!el) return;
+  const venc=[], prox=[];
+  ITENS.forEach(it=>{ if((it.status||{}).solicitada||!it.d1) return;
+    const f=difUteis(HOJE,it.c.prazos.solicitada);
+    if(f<0) venc.push(it); else if(f<=ALERTA_PEDIDO_DU) prox.push(it); });
+  if(!venc.length&&!prox.length){ el.style.display='none'; return; }
+  const resumo=l=>{ const g={}; l.forEach(it=>{ const k=chaveProjeto(it.codigo)||it.codigo.toUpperCase(); (g[k]=g[k]||{n:0,ate:it.c.prazos.solicitada}).n++;
+      if(it.c.prazos.solicitada<g[k].ate) g[k].ate=it.c.prazos.solicitada; });
+    return Object.entries(g).sort((a,b)=>a[1].ate<b[1].ate?-1:1).map(([k,v])=>`<b>${k}</b> ×${v.n} (prazo ${BR(v.ate)})`).join(' · '); };
+  el.className='alerta-pedido '+(venc.length?'verm':'amar'); el.style.display='block';
+  el.innerHTML=`<b class="t">⚠ Chaparia não solicitada</b>
+    ${venc.length?` — <b>${venc.length}</b> esquadria(s) com o prazo de pedido <b>vencido</b>`:''}${prox.length?`${venc.length?' e':' —'} <b>${prox.length}</b> com prazo em até ${ALERTA_PEDIDO_DU} dias úteis`:''}
+    <button class="btn sec" onclick="verPendentesPedido()">Ver na lista</button>
+    ${venc.length?`<div class="cods">Vencidas: ${resumo(venc)}</div>`:''}${prox.length?`<div class="cods">Vencem em breve: ${resumo(prox)}</div>`:''}`;
+}
+function verPendentesPedido(){ trocarAba('lista'); FILTRO_SIT=''; document.getElementById('f-etapa').value='solicitada'; render(); window.scrollTo({top:document.getElementById('lista').offsetTop-120,behavior:'smooth'}); }
+
+/* ===== Importar ordem de compra (PDF) — só admin =====
+   Lê o PDF no navegador (pdf.js), acha cada insumo (código da esquadria na descrição + Quant.),
+   distribui as quantidades nas esquadrias ainda sem pedido, em ordem de data de montagem,
+   mostra a prévia e só grava depois da confirmação. */
+const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+function carregarPdfJs(){ return new Promise((res,rej)=>{ if(window.pdfjsLib) return res(window.pdfjsLib);
+  const s=document.createElement('script'); s.src=PDFJS+'pdf.min.js';
+  s.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+'pdf.worker.min.js'; res(window.pdfjsLib); };
+  s.onerror=()=>rej(new Error('Não foi possível carregar o leitor de PDF (sem internet?)')); document.head.appendChild(s); }); }
+async function pdfParaLinhas(buf){
+  const lib=await carregarPdfJs(); const pdf=await lib.getDocument({data:new Uint8Array(buf)}).promise; const linhas=[];
+  for(let n=1;n<=pdf.numPages;n++){
+    const tc=await (await pdf.getPage(n)).getTextContent(); const grupos=[];
+    tc.items.forEach(it=>{ if(!it.str||!it.str.trim()) return; const y=it.transform[5], x=it.transform[4];
+      let g=grupos.find(g=>Math.abs(g.y-y)<3); if(!g){ g={y,itens:[]}; grupos.push(g); } g.itens.push({x,s:it.str}); });
+    grupos.sort((a,b)=>b.y-a.y).forEach(g=>linhas.push(g.itens.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ').replace(/\s+/g,' ').trim()));
+  }
+  return linhas;
+}
+const dataBRIso=s=>{ const m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{2,4})/); if(!m) return ''; const a=m[3].length===2?'20'+m[3]:m[3]; return a+'-'+m[2]+'-'+m[1]; };
+// "JANELA DE FERRO JPF-350 200 x 60" -> JPF350 ; "PF-151D" / "PF151-d" -> PF151D
+function codigoEsq(txt){ const m=String(txt||'').toUpperCase().match(/\b([A-Z]{2,4})\s?-?\s?(\d{3})(?:\s?-?\s?([DE]))?(?![A-Z0-9])/); return m?m[1]+m[2]+(m[3]||''):''; }
+function interpretarOC(linhas){
+  const txt=linhas.join('\n');
+  const oc={num:(txt.match(/Pedido\s+(\d{3,})/)||[])[1]||'', data:dataBRIso((txt.match(/Data do Pedido\s+(\d{2}\/\d{2}\/\d{2,4})/)||[])[1]),
+            fornecedor:((txt.match(/^Fornecedor[ \t]+(.+?)[ \t]+CNPJ/m)||[])[1]||'').trim(), itens:[]};
+  let at=null;
+  const fecha=()=>{ if(at){ at.desc=at.desc.replace(/\s+/g,' ').trim(); at.codigo=codigoEsq(at.desc); oc.itens.push(at); at=null; } };
+  linhas.forEach(l=>{
+    const m=l.match(/^(\d{8,12})\s*-\s*(.*)$/);
+    if(m){ fecha(); const r=m[2]; const q=r.match(/(\d{1,3}(?:\.\d{3})*,\d{2,3})\s+([A-Z]{1,3})\b/);
+      const ds=r.match(/\d{2}\/\d{2}\/\d{2,4}/g)||[];
+      at={insumo:m[1], desc:q?r.slice(0,q.index):r, qtd:q?Math.round(parseFloat(q[1].replace(/\./g,'').replace(',','.'))):0, entrega:dataBRIso(ds[ds.length-1])}; return; }
+    if(!at) return;
+    if(/^(Insumo|Frete|Transportador|Sub-total|Cond\.|Observa)/i.test(l)){ fecha(); return; }
+    if(/^unit\./i.test(l)||/^[\d\s.,]+$/.test(l)) return;           // sobras de colunas numéricas
+    at.desc+=' '+l.replace(/\s+\d+$/,'');
+  });
+  fecha();
+  if(!oc.data) oc.data=HOJE;
+  return oc;
+}
+function distribuirOC(oc){
+  const usadas=new Set(); const porItem=[];
+  oc.itens.forEach(ins=>{
+    const r={...ins, aloc:[], sobra:0};
+    if(!ins.codigo){ r.sobra=ins.qtd; porItem.push(r); return; }
+    const lado=/[DE]$/.test(ins.codigo)&&/\d[DE]$/.test(ins.codigo);
+    const cand=ITENS.filter(it=>{ if(usadas.has(it.chave)||(it.status||{}).solicitada) return false;
+        const c=codigoEsq(it.codigo); return lado? c===ins.codigo : c.replace(/[DE]$/,'')===ins.codigo || c===ins.codigo; })
+      .sort((a,b)=>((a.c.prazos.montada||'9')<(b.c.prazos.montada||'9')?-1:(a.c.prazos.montada||'9')>(b.c.prazos.montada||'9')?1:
+                    a.modulo.localeCompare(b.modulo)||a.un-b.un));
+    cand.slice(0,ins.qtd).forEach(it=>{ usadas.add(it.chave); r.aloc.push(it); });
+    r.sobra=ins.qtd-r.aloc.length; porItem.push(r);
+  });
+  return porItem;
+}
+let OC_ATUAL=null;
+async function importarOC(file){
+  if(!file) return;
+  if(!souAdmin()){ alert('Só o admin importa ordem de compra.'); return; }
+  document.getElementById('status').textContent='Lendo a ordem de compra...';
+  let oc;
+  try{ oc=interpretarOC(await pdfParaLinhas(await file.arrayBuffer())); }
+  catch(err){ alert('Não consegui ler o PDF: '+err.message); document.getElementById('status').textContent=''; return; }
+  if(!oc.itens.length){ alert('Nenhum insumo encontrado no PDF. Confira se é a ordem de compra no padrão do sistema.'); return; }
+  oc.dist=distribuirOC(oc); OC_ATUAL=oc; render();
+  const jaImportada=ITENS.some(it=>(it.status||{}).oc===oc.num);
+  const totAloc=oc.dist.reduce((s,r)=>s+r.aloc.length,0);
+  const linhasIns=oc.dist.map(r=>`<tr><td><b>${r.codigo||'?'}</b></td><td>${r.desc}</td><td class="num">${r.qtd}</td><td class="num">${r.aloc.length}</td>
+     <td class="num" style="color:${r.sobra>0?'#B71C1C':'#14634A'}">${r.sobra>0?r.sobra:'—'}</td></tr>`).join('');
+  const linhasAloc=oc.dist.filter(r=>r.aloc.length).map(r=>{
+     const g={}; r.aloc.forEach(it=>{ const k=it.modulo+'§'+(it.d1||''); (g[k]=g[k]||{mod:it.modulo,mont:it.c.prazos.montada,n:0}).n++; });
+     return `<tr><td><b>${r.codigo}</b></td><td>${Object.values(g).map(x=>`${x.mod} ×${x.n} <span style="color:#6B7280">(montagem até ${BR(x.mont)})</span>`).join('<br>')}</td></tr>`; }).join('');
+  const avisos=[];
+  if(jaImportada) avisos.push(`A OC ${oc.num} já foi importada antes. Gravar de novo pode duplicar.`);
+  oc.dist.filter(r=>!r.codigo).forEach(r=>avisos.push(`Insumo ${r.insumo} sem código de esquadria reconhecido: "${r.desc}".`));
+  oc.dist.filter(r=>r.codigo&&r.sobra>0).forEach(r=>avisos.push(`${r.codigo}: pedido de ${r.qtd}, mas só ${r.aloc.length} esquadria(s) sem pedido na programação. Sobram ${r.sobra}.`));
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-oc';
+  ov.innerHTML=`<div class="modal larga"><h2>Ordem de compra ${oc.num||'(sem número)'}</h2>
+    <p>${oc.fornecedor||''}<br>Data do pedido: <b>${BRc(oc.data)}</b> · entrega prevista: <b>${BRc((oc.itens.find(i=>i.entrega)||{}).entrega||'')}</b></p>
+    ${avisos.map(a=>`<div class="alerta">${a}</div>`).join('')}
+    ${totAloc?`<div class="okbox">${totAloc} esquadria(s) vão ficar como <b>Chaparia solicitada</b> em ${BRc(oc.data)}, na ordem da data de montagem.</div>`:''}
+    <table class="tab-oc"><tr><th>Código</th><th>Insumo na OC</th><th>Qtd.</th><th>Distribuídas</th><th>Sobra</th></tr>${linhasIns}</table>
+    ${linhasAloc?`<table class="tab-oc"><tr><th>Código</th><th>Vai para</th></tr>${linhasAloc}</table>`:''}
+    ${jaImportada?`<label style="font-size:12px"><input type="checkbox" id="oc-forcar" style="width:auto;margin-right:6px">gravar mesmo assim</label>`:''}
+    <div class="mbtns"><button class="btn sec" onclick="fecharOv('ov-oc')">Cancelar</button>
+      ${totAloc?`<button class="btn" id="oc-ok" onclick="confirmarOC()">Confirmar e gravar</button>`:''}</div>
+    <div class="erro" id="oc-erro"></div></div>`;
+  document.body.appendChild(ov);
+  document.getElementById('status').textContent='';
+}
+async function confirmarOC(){
+  const oc=OC_ATUAL; if(!oc) return;
+  const f=document.getElementById('oc-forcar'); if(f&&!f.checked){ document.getElementById('oc-erro').textContent='Marque "gravar mesmo assim" para reimportar esta OC.'; return; }
+  const aloc=[]; const entregaDe={};
+  oc.dist.forEach(r=>r.aloc.forEach(it=>{ aloc.push({chave:it.chave,modulo:it.modulo,codigo:it.codigo}); entregaDe[it.chave]=r.entrega; }));
+  const entrega=(oc.itens.find(i=>i.entrega)||{}).entrega||'';
+  document.getElementById('oc-erro').textContent='Gravando...'; document.getElementById('oc-ok').disabled=true;
+  const r=await apiPost('action=esq_oc&oc='+encodeURIComponent(oc.num)+'&data='+oc.data+'&entrega='+entrega+(f?'&forcar=1':'')+
+    '&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||'')+
+    '&alocacoes='+encodeURIComponent(JSON.stringify(aloc)));
+  if(!r||!r.ok){ document.getElementById('oc-erro').textContent=(r&&r.erro)||'Falha ao gravar.'; document.getElementById('oc-ok').disabled=false; return; }
+  aloc.forEach(a=>{ const it=ITENS.find(x=>x.chave===a.chave); if(!it) return; it.status=it.status||{};
+    if(!it.status.solicitada||f){ it.status.solicitada=oc.data; it.status.oc=oc.num; it.status.entrega_prev=entregaDe[a.chave]||entrega; } it.c=calcular(it); });
+  fecharOv('ov-oc'); OC_ATUAL=null; render(); renderCarga();
+  document.getElementById('status').textContent=`OC ${oc.num}: ${r.gravadas} esquadria(s) marcadas como chaparia solicitada`+(r.puladas?` (${r.puladas} já tinham pedido e foram mantidas)`:'')+'.';
+}
+
+/* ===== login ===== */
+function podeApontar(){
+  const perfil=(sessionStorage.getItem('esq_perfil')||'').toLowerCase();
+  if(!sessionStorage.getItem('esq_user')) return false;
+  return ['apontador','admin','administrador','master'].some(p=>perfil.split(',').map(x=>x.trim()).includes(p));
+}
+function abrirLogin(depois){
+  if(sessionStorage.getItem('esq_user') && !podeApontar()){ alert('Seu perfil é somente visualização. Peça a um apontador para registrar.'); return; }
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-login';
+  ov.innerHTML=`<div class="modal"><h2>Entrar para apontar</h2><p>Usuário cadastrado na aba Usuarios da planilha (perfil apontador ou admin).</p>
+    <label>Usuário</label><input id="lg-user"><label>Senha</label><input id="lg-pass" type="password" onkeydown="if(event.key==='Enter')document.getElementById('lg-ok').click()">
+    <div class="mbtns"><button class="btn sec" onclick="fecharOv('ov-login')">Cancelar</button><button class="btn" id="lg-ok">Entrar</button></div>
+    <div class="erro" id="lg-erro"></div></div>`;
+  document.body.appendChild(ov); document.getElementById('lg-user').focus();
+  document.getElementById('lg-ok').onclick=async()=>{
+    const u=document.getElementById('lg-user').value.trim(), p=document.getElementById('lg-pass').value.trim(), er=document.getElementById('lg-erro');
+    if(!u||!p){ er.textContent='Preencha usuário e senha.'; return; } er.textContent='Verificando...';
+    const r=await api('action=login&usuario='+encodeURIComponent(u)+'&senha='+encodeURIComponent(p));
+    if(r&&r.ok){ sessionStorage.setItem('esq_user',r.usuario); sessionStorage.setItem('esq_nome',r.nome||r.usuario); sessionStorage.setItem('esq_perfil',r.perfil||''); sessionStorage.setItem('esq_senha',p);
+      fecharOv('ov-login'); mostrarUser(); render();
+      if(podeApontar()){ if(depois) depois(); } else alert('Este usuário é somente visualização.'); }
+    else er.textContent=(r&&r.erro)||'Falha no login.';
+  };
+}
+function fecharOv(id){ const o=document.getElementById(id); if(o) o.remove(); }
+function souAdmin(){ return !!sessionStorage.getItem('esq_user') && ['admin','administrador','master'].includes((sessionStorage.getItem('esq_perfil')||'').toLowerCase()); }
+function mostrarUser(){ document.getElementById('btn-oc').style.display=souAdmin()?'inline-flex':'none'; const n=sessionStorage.getItem('esq_nome'); const el=document.getElementById('user-lbl');
+  el.innerHTML=n?('👤 '+n+(podeApontar()?'':' (visualização)')+' · <a href="#" style="color:#C9D2E3" onclick="sair();return false;">sair</a>'):'<a href="#" style="color:#fff" onclick="abrirLogin();return false;">Entrar para apontar</a>'; }
+function sair(){ ['esq_user','esq_nome','esq_perfil','esq_senha'].forEach(k=>sessionStorage.removeItem(k)); mostrarUser(); render(); }
+
+document.getElementById('b-data').value=HOJE;
+lerCap(); mostrarUser(); carregar();
+</script>
+</body>
+</html>
