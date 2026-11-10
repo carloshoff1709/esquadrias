@@ -185,6 +185,10 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 @media (max-width:700px){ .top{padding:8px 12px;gap:8px;} .top .sub{display:none;} .top h1{font-size:15px;min-width:0;}
   .kpis{grid-template-columns:repeat(3,1fr);} .kpi{padding:6px 8px;} .kpi .v{font-size:18px;} .kpi .l{font-size:9px;}
   .wrap{padding:10px 10px 90px;} .aba{padding:8px 8px;font-size:12px;} }
+.abas{align-items:center;} .seg{margin-left:auto;display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;}
+.seg button{border:none;background:none;padding:5px 12px;font-size:12px;font-weight:600;color:var(--mut);cursor:pointer;font-family:inherit;border-right:1px solid var(--line);}
+.seg button:last-child{border-right:none;} .seg button.on{background:var(--txt);color:#fff;}
+@media (max-width:700px){ .abas{flex-wrap:wrap;} .seg{margin:6px 0 0;width:100%;} .seg button{flex:1;} }
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -213,6 +217,11 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
     <button class="aba on" data-aba="lista" onclick="trocarAba('lista')">Apontamento</button>
     <button class="aba" data-aba="carga" onclick="trocarAba('carga')">Carga semanal (gargalo)</button>
     <button class="aba" data-aba="saldo" onclick="trocarAba('saldo')">Saldo de OCs <span id="saldo-tot"></span></button>
+    <div class="seg" id="f-tipo">
+      <button class="on" data-t="" onclick="filtrarTipo('')">Todas</button>
+      <button data-t="porta" onclick="filtrarTipo('porta')">🚪 Portas</button>
+      <button data-t="janela" onclick="filtrarTipo('janela')">🪟 Janelas</button>
+    </div>
   </div>
   <div class="alerta-pedido" id="alerta-pedido"></div>
   <div class="alerta-pedido verm" id="aviso-versao" style="display:none"></div>
@@ -332,7 +341,14 @@ async function api(params){ try{ return await jsonp(params); }catch(_){}
 async function apiPost(params){ try{ const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:params}); if(r.ok) return JSON.parse(await r.text()); }catch(_){} return await api(params); }
 
 /* ===== estado ===== */
-let ITENS=[]; let SALDOS=[]; let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
+let ITENS=[]; let SALDOS=[];
+/* Portas x Janelas (como nas tabelas do caderno: portas = PF, PC, PGF, POF, PM; janelas = JPF, JVF, VPF, GLF, GF, GPF, VBF, TE) */
+let FILTRO_TIPO=''; try{ FILTRO_TIPO=localStorage.getItem('esq_tipo')||''; }catch(_){}
+function tipoEsq(cod){ const m=String(cod||'').toUpperCase().match(/[A-Z]+/); const f=m?m[0]:''; return /^P/.test(f)?'porta':(f?'janela':''); }
+function passaTipo(it){ return !FILTRO_TIPO || tipoEsq(it.codigo)===FILTRO_TIPO; }
+function filtrarTipo(t){ FILTRO_TIPO=t; try{ localStorage.setItem('esq_tipo',t); }catch(_){}
+  document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  render(); renderCarga(); renderSaldo(); } let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
 
 /* ===== cálculo por esquadria ===== */
 function calcular(it){
@@ -390,8 +406,8 @@ async function carregar(){
 
 /* ===== KPIs ===== */
 function renderKpis(){
-  const n={total:ITENS.filter(x=>!x.saldo).length,atr:0,ate:0,dia:0,ok:0,proj:0};
-  ITENS.forEach(it=>{ if(it.saldo) return; n[it.c.sit]++; if(it.c.sit!=='ok'&&it.c.atrasoFim>0) n.proj++; });
+  const n={total:ITENS.filter(x=>!x.saldo&&passaTipo(x)).length,atr:0,ate:0,dia:0,ok:0,proj:0};
+  ITENS.forEach(it=>{ if(it.saldo||!passaTipo(it)) return; n[it.c.sit]++; if(it.c.sit!=='ok'&&it.c.atrasoFim>0) n.proj++; });
   const k=(cls,v,l,f)=>`<div class="kpi ${cls} ${FILTRO_SIT===f?'on':''}" onclick="filtrarSit('${f}')"><div class="v">${v}</div><div class="l">${l}</div></div>`;
   document.getElementById('kpis').innerHTML=
     k('',n.total,'Esquadrias','')+k('k-atr',n.atr,'Atrasadas','atr')+k('k-ate',n.ate,'Atenção','ate')+
@@ -401,7 +417,7 @@ function filtrarSit(f){ FILTRO_SIT=(FILTRO_SIT===f?'':f); if(f==='ok') document.
 
 /* ===== lista por módulo ===== */
 function passaFiltro(it){
-  if(it.saldo) return false;
+  if(it.saldo||!passaTipo(it)) return false;
   const b=document.getElementById('f-busca').value.trim().toLowerCase();
   if(b && !(it.modulo+' '+it.codigo).toLowerCase().includes(b)) return false;
   const et=document.getElementById('f-etapa').value; if(et && (!it.c.prox||it.c.prox.k!==et)) return false;
@@ -420,7 +436,7 @@ function render(){
   const grupos={};
   vis.forEach(it=>{ const g=it.modulo+'§'+(it.d1||''); (grupos[g]=grupos[g]||{mod:it.modulo,d1:it.d1,itens:[]}).itens.push(it); });
   const lista=Object.values(grupos).sort((a,b)=>(a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:a.mod.localeCompare(b.mod));
-  document.getElementById('status').textContent=vis.length+' esquadria(s) em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
+  document.getElementById('status').textContent=vis.length+(FILTRO_TIPO==='porta'?' porta(s)':FILTRO_TIPO==='janela'?' janela(s)':' esquadria(s)')+' em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
   if(!lista.length){ document.getElementById('lista').innerHTML='<div class="vazio">Nada para este filtro.</div>'; atualizarBarra(); return; }
   const pode=podeApontar();
   document.getElementById('lista').innerHTML=lista.map(g=>{
@@ -480,7 +496,7 @@ function renderCarga(){
   const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'}];
   const semAtual=segunda(HOJE); const sems=new Set([semAtual]); const dados={};
   linhas.forEach(l=>dados[l.k]={atr:0});
-  ITENS.forEach(it=>{ if(it.saldo||!it.d1) return;
+  ITENS.forEach(it=>{ if(it.saldo||!passaTipo(it)||!it.d1) return;
     linhas.forEach(l=>{
       const feito=(it.status||{})[l.k]; if(feito&&!incl) return;
       const p=it.c.prazos[l.k];
@@ -506,7 +522,7 @@ function renderCarga(){
 }
 function renderSaldo(){
   const el=document.getElementById('saldo'); if(!el) return;
-  const unid=ITENS.filter(it=>it.saldo);
+  const unid=ITENS.filter(it=>it.saldo&&passaTipo(it));
   const tot=unid.length;
   document.getElementById('saldo-tot').textContent=tot?`(${tot})`:'';
   if(!SALDOS.length&&!tot){ el.innerHTML='<div class="vazio">Nenhum saldo de OC. Quando uma OC tiver mais unidades do que a programação precisa, a sobra aparece aqui.</div>'; return; }
@@ -637,7 +653,7 @@ function htmlResumoComplementos(g){ return Object.entries(g).map(([r,x])=>`<span
 function renderAlertaPedido(){
   const el=document.getElementById('alerta-pedido'); if(!el) return;
   const venc=[], prox=[];
-  ITENS.forEach(it=>{ if(it.saldo||(it.status||{}).solicitada||!it.d1) return;
+  ITENS.forEach(it=>{ if(it.saldo||!passaTipo(it)||(it.status||{}).solicitada||!it.d1) return;
     const f=difUteis(HOJE,it.c.prazos.solicitada);
     if(f<0) venc.push(it); else if(f<=ALERTA_PEDIDO_DU) prox.push(it); });
   if(!venc.length&&!prox.length){ el.style.display='none'; return; }
@@ -846,7 +862,7 @@ async function entrar(){
 }
 
 document.getElementById('b-data').value=HOJE;
-lerCap(); mostrarUser();
+lerCap(); mostrarUser(); document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===FILTRO_TIPO));
 if(sessionStorage.getItem('esq_user')){ document.getElementById('tela-login').style.display='none'; carregar(); } else mostrarTelaLogin();
 </script>
 </body>
