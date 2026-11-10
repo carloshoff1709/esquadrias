@@ -120,6 +120,12 @@ input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;
 .alerta-pedido b.t{font-size:14px;}
 .alerta-pedido .cods{margin-top:4px;font-size:12px;line-height:1.5;}
 .alerta-pedido button{margin-left:8px;}
+.comp{display:inline-block;font-size:10px;font-weight:700;border-radius:5px;padding:1px 5px;margin-top:3px;line-height:1.3;white-space:normal;}
+.comp-policarbonato{background:#E3F0FB;color:#155A99;border:1px solid #B9D5EE;}
+.comp-vidro{background:#E7F6F4;color:#0F6B5E;border:1px solid #B3E0D8;}
+.comp-vidro_blindado{background:#EDE4FA;color:#5B3A99;border:1px solid #D2C0F0;}
+.comp-tela{background:#F1F1EA;color:#5A5A3C;border:1px solid #DCDCC8;}
+.et-sol{display:flex;flex-direction:column;align-items:stretch;}
 .okbox{background:#DDF3E8;color:#14634A;border-radius:8px;padding:7px 10px;font-size:12px;margin:6px 0;}
 </style>
 </head>
@@ -147,6 +153,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;
   <div class="abas">
     <button class="aba on" data-aba="lista" onclick="trocarAba('lista')">Apontamento</button>
     <button class="aba" data-aba="carga" onclick="trocarAba('carga')">Carga semanal (gargalo)</button>
+    <button class="aba" data-aba="saldo" onclick="trocarAba('saldo')">Saldo de OCs <span id="saldo-tot"></span></button>
   </div>
   <div class="alerta-pedido" id="alerta-pedido"></div>
   <div class="avisos" id="avisos"></div>
@@ -170,10 +177,15 @@ input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;
         <span><i class="dot" style="background:#F2C978"></i>vence em até 2 du (pedido: 3 du)</span>
         <span><i class="dot" style="background:#F3A6A6"></i>prazo vencido</span>
         <span><i class="dot" style="background:#D8DCE3"></i>no prazo</span>
+        <span>🔷 policarbonato · 🪟 vidro · 🛡️ blindado · ▦ tela</span>
       </div>
     </div>
     <div id="status">Carregando...</div>
     <div id="lista"></div>
+  </div>
+
+  <div id="pg-saldo" style="display:none;">
+    <div class="carga" id="saldo"></div>
   </div>
 
   <div id="pg-carga" style="display:none;">
@@ -260,7 +272,7 @@ async function api(params){ try{ return await jsonp(params); }catch(_){}
 async function apiPost(params){ try{ const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:params}); if(r.ok) return JSON.parse(await r.text()); }catch(_){} return await api(params); }
 
 /* ===== estado ===== */
-let ITENS=[]; let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
+let ITENS=[]; let SALDOS=[]; let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
 
 /* ===== cálculo por esquadria ===== */
 function calcular(it){
@@ -301,6 +313,10 @@ async function carregar(){
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
   (r.feriados||[]).forEach(f=>FERIADOS.add(f));
   ITENS=r.itens.map(it=>({...it}));
+  SALDOS=r.saldos||[]; renderSaldo();
+  const auto=r.consumidos_auto||[];
+  if(auto.length){ const g={}; auto.forEach(a=>{ const k='OC '+a.oc; (g[k]=g[k]||[]).push(a.modulo+' '+a.codigo); });
+    setTimeout(()=>{ document.getElementById('status').innerHTML='✅ <b>'+auto.length+' esquadria(s)</b> receberam pedido automaticamente do saldo: '+Object.entries(g).map(([k,v])=>k+' → '+v.join(', ')).join(' · '); },0); }
   ITENS.forEach(it=>it.c=calcular(it));
   const av=document.getElementById('avisos');
   if(r.avisos&&r.avisos.length){ av.style.display='block'; av.innerHTML='<b>Avisos da planilha ('+r.avisos.length+'):</b> '+r.avisos.slice(0,8).join(' · ')+(r.avisos.length>8?' …':''); }
@@ -365,7 +381,8 @@ function render(){
       const ets=ETAPAS.map(e=>{
         const st=(it.status||{})[e.k]; const est=estadoEtapa(it,c,e);
         const txt=st?`<b>✓ ${BR(st)}</b>`:`<b>até ${BR(c.prazos[e.k])}</b>`;
-        return `<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&(it.status||{}).oc?' · OC '+it.status.oc:''}"><span class="et-rot">${e.curto}</span>${txt}</button>`;
+        const btn=`<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&(it.status||{}).oc?' · OC '+it.status.oc:''}"><span class="et-rot">${e.curto}</span>${txt}</button>`;
+        return e.k==='solicitada' ? `<div class="et-sol">${btn}${seloComplemento(it.codigo)}</div>` : btn;
       }).join('');
       let prox;
       if(c.sit==='ok') prox=`<span style="color:#185FA5;font-weight:700;">Concluída</span>`;
@@ -420,11 +437,24 @@ function renderCarga(){
   h+='</table>';
   document.getElementById('carga').innerHTML=h;
 }
+function renderSaldo(){
+  const el=document.getElementById('saldo'); if(!el) return;
+  const tot=SALDOS.reduce((t,x)=>t+x.saldo,0);
+  document.getElementById('saldo-tot').textContent=tot?`(${tot})`:'';
+  if(!SALDOS.length){ el.innerHTML='<div class="vazio">Nenhuma OC importada ainda.</div>'; return; }
+  const porCod={}; SALDOS.forEach(x=>{ if(x.saldo>0) porCod[x.codigo]=(porCod[x.codigo]||0)+x.saldo; });
+  const lista=[...SALDOS].sort((a,b)=>b.saldo-a.saldo||(a.data<b.data?-1:1));
+  el.innerHTML=`<div class="cap"><strong>Saldo disponível:</strong> ${Object.keys(porCod).length?Object.entries(porCod).map(([k,v])=>`<b>${k}</b> ${v} un.`).join(' · '):'nenhum'}</div>
+    <table><tr><th style="text-align:left">OC</th><th style="text-align:left">Código</th><th style="text-align:left">Insumo</th><th>Pedida</th><th>Consumida</th><th>Saldo</th><th>Pedido em</th><th>Entrega</th></tr>
+    ${lista.map(x=>`<tr><td class="rot">${x.oc}</td><td style="text-align:left"><b>${x.codigo}</b></td><td style="text-align:left;white-space:normal;max-width:320px">${x.descricao}</td>
+      <td>${x.pedida}</td><td>${x.consumido}</td><td style="font-weight:800;color:${x.saldo>0?'#14634A':'#9CA3AF'}">${x.saldo}</td><td>${BRc(x.data)}</td><td>${BRc(x.entrega)}</td></tr>`).join('')}</table>
+    <div class="nota">O saldo é usado sozinho quando o PCP coloca na programação um módulo com esse código: ao abrir o dashboard, as esquadrias sem pedido recebem a data, o número e a entrega da OC (mais antiga primeiro, na ordem da Data 1).</div>`;
+}
 function salvarCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>localStorage.setItem('esq_'+id,document.getElementById(id).value)); }catch(_){} }
 function lerCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>{ const v=localStorage.getItem('esq_'+id); if(v) document.getElementById(id).value=v; }); }catch(_){} }
 function trocarAba(a){ ABA=a; document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
-  document.getElementById('pg-lista').style.display=a==='lista'?'block':'none'; document.getElementById('pg-carga').style.display=a==='carga'?'block':'none';
-  if(a==='carga') renderCarga(); atualizarBarra(); }
+  ['lista','carga','saldo'].forEach(x=>document.getElementById('pg-'+x).style.display=a===x?'block':'none');
+  if(a==='carga') renderCarga(); if(a==='saldo') renderSaldo(); atualizarBarra(); }
 
 /* ===== seleção e apontamento ===== */
 function sel(ch,on){ on?SEL.add(ch):SEL.delete(ch); atualizarBarra(); }
@@ -515,6 +545,15 @@ async function pvDesenhar(){
 function pvIr(d){ if(!PV.doc) return; PV.pag=Math.min(PV.doc.numPages,Math.max(1,PV.pag+d)); pvDesenhar(); }
 function pvZoom(d){ PV.zoom=Math.min(4,Math.max(0.5,PV.zoom+d)); pvDesenhar(); }
 
+const COMPLEMENTOS={"PF175E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF250D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF257":[["policarbonato","Policarbonato 4mm","POLICARBONATO CRISTAL 4mm"]],"PF151D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF151E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF152D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF152E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF153D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF153E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF158D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF158E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF159D":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF159E":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF160E":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF268D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"POF250":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF477E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF160D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"GLF459":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"GLF461":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"GPF453":[["policarbonato","Policarbonato 4mm c/ película insulfilm","POLICARBONATO 4mm C/ PELÍCULA INSULFIM"]],"JPF350":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF352":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF354":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF355":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JVF303":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JPF356":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"GLF462":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"JVF301":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF302":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF304":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF307":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"TE05":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUITEIRO DE AÇO GALVANIZADO #14 FIO"]],"TE09":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUETEIRO DE AÇO GALVANIZADO #14"]],"TE10":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUETEIRO DE AÇO GALVANIZADO #14"]],"VBF451":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF457":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF458":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF459":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VPF452":[["policarbonato","Policarbonato translúcido 12mm","POLICARBONATO TRANSLÚCIDO (e=12mm)"]],"POF151D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF151E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF159E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF159D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF256":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF452D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF473D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF473E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF475D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF475E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]]};
+/* ===== Complementos (revestimento conforme caderno R02): comprar à parte da chaparia ===== */
+const ICONE_COMP={policarbonato:'🔷',vidro:'🪟',vidro_blindado:'🛡️',tela:'▦'};
+function complementos(cod){ const k=chaveProjeto(cod)||(String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'')); return COMPLEMENTOS[k]||COMPLEMENTOS[k.replace(/[DE]$/,'')]||[]; }
+function seloComplemento(cod){ return complementos(cod).map(([t,r,sp])=>`<span class="comp comp-${t}" title="Comprar à parte da chaparia — caderno: ${sp.replace(/"/g,'&quot;')}">${ICONE_COMP[t]||''} ${r}</span>`).join(''); }
+// resumo: rótulo -> {tipo, codigos:{COD:qtd}}
+function resumoComplementos(lista){ const g={}; lista.forEach(([cod,q])=>complementos(cod).forEach(([t,r])=>{ const x=g[r]=g[r]||{t,cods:{}}; const k=chaveProjeto(cod)||cod; x.cods[k]=(x.cods[k]||0)+q; })); return g; }
+function htmlResumoComplementos(g){ return Object.entries(g).map(([r,x])=>`<span class="comp comp-${x.t}" style="font-size:11px">${ICONE_COMP[x.t]} ${r}: ${Object.entries(x.cods).map(([c,q])=>c+' ×'+q).join(', ')}</span>`).join(' '); }
+
 /* ===== Alerta: chaparia não solicitada até 3 du antes do prazo do pedido ===== */
 function renderAlertaPedido(){
   const el=document.getElementById('alerta-pedido'); if(!el) return;
@@ -530,7 +569,8 @@ function renderAlertaPedido(){
   el.innerHTML=`<b class="t">⚠ Chaparia não solicitada</b>
     ${venc.length?` — <b>${venc.length}</b> esquadria(s) com o prazo de pedido <b>vencido</b>`:''}${prox.length?`${venc.length?' e':' —'} <b>${prox.length}</b> com prazo em até ${ALERTA_PEDIDO_DU} dias úteis`:''}
     <button class="btn sec" onclick="verPendentesPedido()">Ver na lista</button>
-    ${venc.length?`<div class="cods">Vencidas: ${resumo(venc)}</div>`:''}${prox.length?`<div class="cods">Vencem em breve: ${resumo(prox)}</div>`:''}`;
+    ${venc.length?`<div class="cods">Vencidas: ${resumo(venc)}</div>`:''}${prox.length?`<div class="cods">Vencem em breve: ${resumo(prox)}</div>`:''}
+    ${(()=>{ const g=resumoComplementos(venc.concat(prox).map(it=>[it.codigo,1])); return Object.keys(g).length?`<div class="cods"><b>Comprar junto (complementos):</b> ${htmlResumoComplementos(g)}</div>`:''; })()}`;
 }
 function verPendentesPedido(){ trocarAba('lista'); FILTRO_SIT=''; document.getElementById('f-etapa').value='solicitada'; render(); window.scrollTo({top:document.getElementById('lista').offsetTop-120,behavior:'smooth'}); }
 
@@ -580,14 +620,15 @@ function distribuirOC(oc){
   const usadas=new Set(); const porItem=[];
   oc.itens.forEach(ins=>{
     const r={...ins, aloc:[], sobra:0};
-    if(!ins.codigo){ r.sobra=ins.qtd; porItem.push(r); return; }
+    r.ja=0; if(!ins.codigo){ r.sobra=ins.qtd; porItem.push(r); return; }
     const lado=/[DE]$/.test(ins.codigo)&&/\d[DE]$/.test(ins.codigo);
     const cand=ITENS.filter(it=>{ if(usadas.has(it.chave)||(it.status||{}).solicitada) return false;
         const c=codigoEsq(it.codigo); return lado? c===ins.codigo : c.replace(/[DE]$/,'')===ins.codigo || c===ins.codigo; })
       .sort((a,b)=>((a.c.prazos.montada||'9')<(b.c.prazos.montada||'9')?-1:(a.c.prazos.montada||'9')>(b.c.prazos.montada||'9')?1:
                     a.modulo.localeCompare(b.modulo)||a.un-b.un));
-    cand.slice(0,ins.qtd).forEach(it=>{ usadas.add(it.chave); r.aloc.push(it); });
-    r.sobra=ins.qtd-r.aloc.length; porItem.push(r);
+    r.ja=ITENS.filter(it=>(it.status||{}).oc===oc.num && (lado? codigoEsq(it.codigo)===ins.codigo : codigoEsq(it.codigo).replace(/[DE]$/,'')===ins.codigo||codigoEsq(it.codigo)===ins.codigo)).length;
+    cand.slice(0,Math.max(0,ins.qtd-r.ja)).forEach(it=>{ usadas.add(it.chave); r.aloc.push(it); });
+    r.sobra=Math.max(0,ins.qtd-r.ja-r.aloc.length); porItem.push(r);
   });
   return porItem;
 }
@@ -601,46 +642,61 @@ async function importarOC(file){
   catch(err){ alert('Não consegui ler o PDF: '+err.message); document.getElementById('status').textContent=''; return; }
   if(!oc.itens.length){ alert('Nenhum insumo encontrado no PDF. Confira se é a ordem de compra no padrão do sistema.'); return; }
   oc.dist=distribuirOC(oc); OC_ATUAL=oc; render();
-  const jaImportada=ITENS.some(it=>(it.status||{}).oc===oc.num);
+  // duplicidade: OC já usada em alguma esquadria OU registrada no saldo
+  const jaEsq=ITENS.filter(it=>(it.status||{}).oc===oc.num).length;
+  const jaSaldo=SALDOS.filter(x=>x.oc===oc.num);
+  const jaImportada=!!(jaEsq||jaSaldo.length);
   const totAloc=oc.dist.reduce((s,r)=>s+r.aloc.length,0);
-  const linhasIns=oc.dist.map(r=>`<tr><td><b>${r.codigo||'?'}</b></td><td>${r.desc}</td><td class="num">${r.qtd}</td><td class="num">${r.aloc.length}</td>
-     <td class="num" style="color:${r.sobra>0?'#B71C1C':'#14634A'}">${r.sobra>0?r.sobra:'—'}</td></tr>`).join('');
+  const temJa=oc.dist.some(r=>r.ja>0);
+  const totSobra=oc.dist.filter(r=>r.codigo).reduce((s,r)=>s+r.sobra,0);
+  const linhasIns=oc.dist.map(r=>`<tr><td><b>${r.codigo||'?'}</b></td><td>${r.desc}</td><td class="num">${r.qtd}</td>${temJa?`<td class="num">${r.ja||'—'}</td>`:''}<td class="num">${r.aloc.length}</td>
+     <td class="num" style="color:${r.sobra>0?'#8A5200':'#14634A'}">${r.sobra>0?r.sobra:'—'}</td></tr>`).join('');
   const linhasAloc=oc.dist.filter(r=>r.aloc.length).map(r=>{
      const g={}; r.aloc.forEach(it=>{ const k=it.modulo+'§'+(it.d1||''); (g[k]=g[k]||{mod:it.modulo,mont:it.c.prazos.montada,n:0}).n++; });
      return `<tr><td><b>${r.codigo}</b></td><td>${Object.values(g).map(x=>`${x.mod} ×${x.n} <span style="color:#6B7280">(montagem até ${BR(x.mont)})</span>`).join('<br>')}</td></tr>`; }).join('');
   const avisos=[];
-  if(jaImportada) avisos.push(`A OC ${oc.num} já foi importada antes. Gravar de novo pode duplicar.`);
+  if(!oc.num) avisos.push('Não encontrei o número do pedido no PDF. Confira se é a ordem de compra no padrão do sistema.');
   oc.dist.filter(r=>!r.codigo).forEach(r=>avisos.push(`Insumo ${r.insumo} sem código de esquadria reconhecido: "${r.desc}".`));
-  oc.dist.filter(r=>r.codigo&&r.sobra>0).forEach(r=>avisos.push(`${r.codigo}: pedido de ${r.qtd}, mas só ${r.aloc.length} esquadria(s) sem pedido na programação. Sobram ${r.sobra}.`));
+
   const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-oc';
   ov.innerHTML=`<div class="modal larga"><h2>Ordem de compra ${oc.num||'(sem número)'}</h2>
+    ${jaImportada?`<div class="alerta" style="font-size:13px"><b>⚠ A OC ${oc.num} já foi importada.</b><br>
+      ${jaEsq} esquadria(s) já estão com esta OC${jaSaldo.length?` · saldo registrado: ${jaSaldo.map(x=>`${x.codigo} ${x.saldo} de ${x.pedida}`).join(', ')}`:''}${jaSaldo[0]&&jaSaldo[0].data?` · pedido de ${BRc(jaSaldo[0].data)}`:''}.<br>
+      Nada será gravado, a não ser que você escolha <b>reimportar</b> abaixo. A reimportação não duplica: desconta o que já foi usado e só refaz o saldo desta OC.</div>`:''}
     <p>${oc.fornecedor||''}<br>Data do pedido: <b>${BRc(oc.data)}</b> · entrega prevista: <b>${BRc((oc.itens.find(i=>i.entrega)||{}).entrega||'')}</b></p>
     ${avisos.map(a=>`<div class="alerta">${a}</div>`).join('')}
     ${totAloc?`<div class="okbox">${totAloc} esquadria(s) vão ficar como <b>Chaparia solicitada</b> em ${BRc(oc.data)}, na ordem da data de montagem.</div>`:''}
-    <table class="tab-oc"><tr><th>Código</th><th>Insumo na OC</th><th>Qtd.</th><th>Distribuídas</th><th>Sobra</th></tr>${linhasIns}</table>
+    ${totSobra?`<div class="alerta" style="background:#FFF1D6;color:#7A4A00">${totSobra} unidade(s) não têm esquadria na programação agora e ficam como <b>saldo da OC</b>: ${oc.dist.filter(r=>r.sobra>0&&r.codigo).map(r=>`<b>${r.codigo}</b> ${r.sobra}`).join(' · ')}. Quando o PCP incluir módulos com esses códigos, o saldo é usado automaticamente.</div>`:''}
+    ${(()=>{ const g=resumoComplementos(oc.dist.filter(r=>r.codigo).map(r=>[r.codigo,r.qtd])); return Object.keys(g).length?`<div class="alerta" style="background:#E3F0FB;color:#123F6B"><b>Itens complementares para o setor de compras</b> (não fazem parte desta OC de chaparia; quantidade = esquadrias):<br>${htmlResumoComplementos(g)}<br><span style="font-size:11px">Medidas e quantidade de placas por esquadria: ver 📐 projeto.</span></div>`:''; })()}
+    <table class="tab-oc"><tr><th>Código</th><th>Insumo na OC</th><th>Qtd.</th>${temJa?'<th>Já usadas</th>':''}<th>Distribuídas agora</th><th>Saldo</th></tr>${linhasIns}</table>
     ${linhasAloc?`<table class="tab-oc"><tr><th>Código</th><th>Vai para</th></tr>${linhasAloc}</table>`:''}
-    ${jaImportada?`<label style="font-size:12px"><input type="checkbox" id="oc-forcar" style="width:auto;margin-right:6px">gravar mesmo assim</label>`:''}
+    ${jaImportada?`<label style="font-size:13px;display:block;margin-top:6px"><input type="checkbox" id="oc-forcar" style="width:auto;margin-right:6px" onchange="const b=document.getElementById('oc-ok'); if(b) b.textContent=this.checked?'Reimportar OC':'Confirmar e gravar'; document.getElementById('oc-erro').textContent=''">Reimportar esta OC (atualiza o saldo, sem duplicar)</label>`:''}
     <div class="mbtns"><button class="btn sec" onclick="fecharOv('ov-oc')">Cancelar</button>
-      ${totAloc?`<button class="btn" id="oc-ok" onclick="confirmarOC()">Confirmar e gravar</button>`:''}</div>
+      ${(totAloc||totSobra)?`<button class="btn" id="oc-ok" onclick="confirmarOC()">Confirmar e gravar</button>`:''}</div>
     <div class="erro" id="oc-erro"></div></div>`;
   document.body.appendChild(ov);
   document.getElementById('status').textContent='';
 }
 async function confirmarOC(){
   const oc=OC_ATUAL; if(!oc) return;
-  const f=document.getElementById('oc-forcar'); if(f&&!f.checked){ document.getElementById('oc-erro').textContent='Marque "gravar mesmo assim" para reimportar esta OC.'; return; }
+  const f=document.getElementById('oc-forcar'); if(f&&!f.checked){ document.getElementById('oc-erro').textContent='Esta OC já foi importada. Marque "Reimportar esta OC" ou cancele.'; return; }
+  if(!oc.num){ document.getElementById('oc-erro').textContent='OC sem número: não é possível gravar.'; return; }
   const aloc=[]; const entregaDe={};
   oc.dist.forEach(r=>r.aloc.forEach(it=>{ aloc.push({chave:it.chave,modulo:it.modulo,codigo:it.codigo}); entregaDe[it.chave]=r.entrega; }));
   const entrega=(oc.itens.find(i=>i.entrega)||{}).entrega||'';
   document.getElementById('oc-erro').textContent='Gravando...'; document.getElementById('oc-ok').disabled=true;
   const r=await apiPost('action=esq_oc&oc='+encodeURIComponent(oc.num)+'&data='+oc.data+'&entrega='+entrega+(f?'&forcar=1':'')+
     '&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||'')+
-    '&alocacoes='+encodeURIComponent(JSON.stringify(aloc)));
-  if(!r||!r.ok){ document.getElementById('oc-erro').textContent=(r&&r.erro)||'Falha ao gravar.'; document.getElementById('oc-ok').disabled=false; return; }
+    '&alocacoes='+encodeURIComponent(JSON.stringify(aloc))+
+    '&saldos='+encodeURIComponent(JSON.stringify(oc.dist.filter(r=>r.codigo).map(r=>({codigo:r.codigo,descricao:r.desc,qtd_pedida:r.qtd,saldo:r.sobra})))));
+  if(!r||!r.ok){ document.getElementById('oc-erro').textContent=(r&&r.erro)||'Falha ao gravar.'; document.getElementById('oc-ok').disabled=false;
+    if(r&&r.duplicada) await carregar();   // outra pessoa importou nesse meio-tempo: atualiza a tela
+    return; }
   aloc.forEach(a=>{ const it=ITENS.find(x=>x.chave===a.chave); if(!it) return; it.status=it.status||{};
     if(!it.status.solicitada||f){ it.status.solicitada=oc.data; it.status.oc=oc.num; it.status.entrega_prev=entregaDe[a.chave]||entrega; } it.c=calcular(it); });
-  fecharOv('ov-oc'); OC_ATUAL=null; render(); renderCarga();
-  document.getElementById('status').textContent=`OC ${oc.num}: ${r.gravadas} esquadria(s) marcadas como chaparia solicitada`+(r.puladas?` (${r.puladas} já tinham pedido e foram mantidas)`:'')+'.';
+  fecharOv('ov-oc'); OC_ATUAL=null;
+  const msg=`OC ${oc.num}: ${r.gravadas} esquadria(s) marcadas como chaparia solicitada`+(r.puladas?` (${r.puladas} já tinham pedido e foram mantidas)`:'')+(r.saldo?` · ${r.saldo} un. ficaram em saldo`:'')+'.';
+  await carregar(); document.getElementById('status').textContent=msg;
 }
 
 /* ===== login ===== */

@@ -58,6 +58,16 @@ As senhas ficam em texto na planilha — use senhas próprias deste sistema e re
 Ao lado de cada código aparece **📐 projeto**: abre as folhas de detalhamento daquele código (caderno R02) dentro da página, com zoom e **Abrir PDF**.
 Para uma revisão nova do caderno, gere de novo a pasta `projetos/` (um PDF por código, nome = código sem hífen, ex.: `PF151E.pdf`, `JPF350.pdf`) e atualize a lista `PROJETOS` no `index.html`.
 
+## Complementos (policarbonato, vidro, tela)
+
+Ao lado de *Chaparia solicitada* aparece o revestimento que a esquadria leva conforme o caderno R02
+(🔷 policarbonato · 🪟 vidro · 🛡️ vidro blindado · ▦ tela), com a especificação completa ao passar o mouse.
+Esses itens **não vêm na OC de chaparia** e precisam ser comprados à parte:
+- a faixa de *Chaparia não solicitada* mostra **Comprar junto (complementos)** por tipo e código;
+- a prévia da importação de OC mostra os **Itens complementares para o setor de compras** com as quantidades da OC.
+Medidas e número de placas por esquadria: botão 📐 projeto. A lista fica em `COMPLEMENTOS` no `index.html`
+(gerada do caderno; refazer quando sair nova revisão).
+
 ## Alerta de chaparia não solicitada
 
 Faixa no topo quando há esquadrias **sem pedido de chaparia** com o prazo do pedido (Data 1 − 24 dias úteis):
@@ -74,9 +84,12 @@ Botão **📄 Importar OC** no topo (aparece só para perfil `admin`).
 4. Aparece uma prévia (para onde vai cada unidade e o que sobra). Só grava depois de **Confirmar**.
 5. Grava *Chaparia solicitada* com a **data do pedido**, o **número da OC** e a **entrega prevista**. A previsão de término passa a usar essa entrega.
 
-- A mesma OC não é importada duas vezes (a prévia avisa; dá para forçar).
+- A mesma OC não é importada duas vezes: a prévia procura o número da OC nas esquadrias **e** no saldo e avisa antes de gravar; o servidor confere de novo e recusa. Para atualizar uma OC, use **Reimportar esta OC** (desconta o que já foi usado e refaz só o saldo dela, sem duplicar).
 - Esquadrias que já tinham pedido não são alteradas.
-- Sobra = quantidade pedida maior que as esquadrias sem pedido na programação.
+- **Saldo da OC**: se a OC tiver mais unidades do que esquadrias sem pedido na programação, a diferença fica na aba **Saldo_OC** (por OC e código).
+  Quando o PCP incluir módulos novos com esse código, ao abrir o dashboard as esquadrias novas recebem o pedido automaticamente
+  (OC mais antiga primeiro, na ordem da Data 1). A aba **Saldo de OCs** do dashboard mostra o que sobra.
+- Reimportar a mesma OC ("gravar mesmo assim") recalcula o saldo dela, descontando o que já foi usado.
 - Desfazer *Chaparia solicitada* numa esquadria limpa também a OC dela.
 - Portas com lado (ex.: `PF-151E`) só vão para esquadrias do mesmo lado; sem lado na OC, vale qualquer lado.
 
