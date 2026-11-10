@@ -71,6 +71,9 @@ uma *Solicitação de compra* marcada antes é mantida. Saldo de portas funciona
 ## Filtro Portas / Janelas
 
 Botões **Todas · Portas · Janelas** ao lado das abas. Vale para indicadores, alerta, lista, carga semanal e saldo, e fica lembrado no navegador.
+O filtro **Próxima etapa** acompanha o tipo: em **Janelas** só as etapas de chaparia/montagem/pintura; em **Portas** só
+*Falta emitir solicitação de compra · Falta OC aprovada · Falta recebimento previsto · Aguardando recebimento*; em **Todas**, os dois grupos
+e *Falta pedido (chaparia ou SC de porta)*.
 Classificação como nas tabelas do caderno: **portas** = códigos que começam com P (PF, PC, PGF, POF, PM); **janelas** = demais (JPF, JVF, VPF, GLF, GF, GPF, VBF, TE).
 
 ## Projeto de cada esquadria
@@ -131,3 +134,9 @@ Teste rápido: abra a URL `/exec` no navegador — aparece `{"ok":true,"app":"Es
 - Marcar uma etapa preenche as anteriores vazias com a mesma data; desfazer uma etapa limpa as seguintes.
 - Datas sem ano digitadas na planilha podem ficar com o ano errado — o dashboard avisa quando a Data 1 cai muito no passado.
 - Ao mudar o `Code.gs`: **Implantar → Gerenciar implantações → lápis → Nova versão**. A URL continua a mesma.
+
+## Carga semanal
+
+Cada célula conta as esquadrias com prazo daquela etapa na semana (a semana atual soma as atrasadas).
+**Chaparia a receber** inclui as que ainda nem foram pedidas; "s/ pedido" em vermelho mostra quantas estão sem pedido/OC.
+**Clique num número** para abrir a lista só com aquelas esquadrias.

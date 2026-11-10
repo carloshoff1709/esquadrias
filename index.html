@@ -193,6 +193,10 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 .linha.cab-porta{background:#FAFAFB;color:#7A5AF8;border-top:1px dashed var(--line);}
 .et-vazio{display:block;}
 @media (max-width:900px){ .linha.cab-porta{display:none;} }
+.cel.clic[onclick]{cursor:pointer;} .cel.clic[onclick]:hover span{text-decoration:underline;}
+.cel small.sp{display:block;position:relative;z-index:1;font-size:9.5px;font-weight:700;color:var(--verm);margin-top:1px;}
+.chip-filtro{display:inline-block;background:#EFF4FB;color:var(--azul);border-radius:999px;padding:2px 10px;font-weight:600;margin-right:6px;}
+.chip-filtro a{color:var(--azul);margin-left:6px;}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -233,15 +237,8 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 
   <div id="pg-lista">
     <div class="filtros">
-      <input type="text" id="f-busca" placeholder="Buscar módulo ou esquadria" oninput="render()" style="min-width:200px;">
-      <select id="f-etapa" onchange="render()">
-        <option value="">Qualquer próxima etapa</option>
-        <option value="solicitada">Falta pedir chaparia</option>
-        <option value="recebida">Falta receber chaparia</option>
-        <option value="montada">Falta montar</option>
-        <option value="env_pintura">Falta enviar p/ pintura</option>
-        <option value="pintada">Na pintura</option>
-      </select>
+      <input type="text" id="f-busca" placeholder="Buscar módulo ou esquadria" oninput="FILTRO_CHAVES=null;render()" style="min-width:200px;">
+      <select id="f-etapa" onchange="FILTRO_CHAVES=null;render()"></select>
       <label>Data 1 de <input type="date" id="f-de" onchange="render()"></label>
       <label>até <input type="date" id="f-ate" onchange="render()"></label>
       <label><input type="checkbox" id="f-concl" onchange="render()"> mostrar concluídas</label>
@@ -273,7 +270,7 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
       <div id="carga"></div>
       <div class="nota">
         Cada esquadria cai na semana do prazo da etapa: chaparia recebida até <b>D1 − 14 du</b>, montagem pronta até <b>D1 − 7 du</b>, pintura pronta até a <b>Data 1</b>.
-        A coluna <b>Atrasado</b> soma o que já passou do prazo e ainda não foi feito; isso entra na semana atual como carga extra.
+        A coluna <b>Atrasado</b> soma o que já passou do prazo e ainda não foi feito; isso entra na semana atual como carga extra. <b>Chaparia a receber</b> inclui as que ainda nem foram pedidas ("s/ pedido" em vermelho = risco maior). <b>Clique num número</b> para ver essas esquadrias na lista.
         Com a capacidade preenchida, semanas acima dela ficam em vermelho: é o gargalo.
       </div>
     </div>
@@ -362,7 +359,27 @@ let ITENS=[]; let SALDOS=[];
 let FILTRO_TIPO=''; try{ FILTRO_TIPO=localStorage.getItem('esq_tipo')||''; }catch(_){}
 function tipoEsq(cod){ const m=String(cod||'').toUpperCase().match(/[A-Z]+/); const f=m?m[0]:''; return /^P/.test(f)?'porta':(f?'janela':''); }
 function passaTipo(it){ return !FILTRO_TIPO || tipoEsq(it.codigo)===FILTRO_TIPO; }
-function filtrarTipo(t){ FILTRO_TIPO=t; try{ localStorage.setItem('esq_tipo',t); }catch(_){}
+/* "Próxima etapa": opções mudam com o filtro Todas / Portas / Janelas */
+const OPC_JANELA=[['j:solicitada','Falta pedir chaparia'],['j:recebida','Já pedida, falta receber chaparia'],['j:montada','Falta montar'],['j:env_pintura','Falta enviar p/ pintura'],['j:pintada','Na pintura']];
+const OPC_PORTA=[['p:solicitada','Falta emitir solicitação de compra'],['p:recebida','Falta OC aprovada'],['p:montada','Falta recebimento previsto'],['p:env_pintura','Aguardando recebimento da porta']];
+function montarOpcoesEtapa(){
+  const sel=document.getElementById('f-etapa'); const atual=sel.value;
+  const op=l=>l.map(([v,t])=>`<option value="${v}">${t}</option>`).join('');
+  sel.innerHTML='<option value="">Qualquer próxima etapa</option>'+
+    (FILTRO_TIPO==='porta'?op(OPC_PORTA):FILTRO_TIPO==='janela'?op(OPC_JANELA):
+     `<option value="pedido">Falta pedido (chaparia ou SC de porta)</option><optgroup label="Janelas">${op(OPC_JANELA)}</optgroup><optgroup label="Portas">${op(OPC_PORTA)}</optgroup>`);
+  sel.value=[...sel.options].some(o=>o.value===atual)?atual:'';   // etapa que não existe no tipo escolhido volta para "qualquer"
+}
+function passaEtapa(it,et){
+  const porta=ehPorta(it.codigo), st=it.status||{}, prox=it.c.prox&&it.c.prox.k;
+  if(et==='pedido') return !st.solicitada;
+  const [t,k]=et.split(':');
+  if((t==='p')!==porta) return false;
+  if(t==='p'&&k==='montada') return !!st.recebida && !st.montada && !st.env_pintura;   // OC aprovada sem data prevista
+  return prox===k;
+}
+function filtrarTipo(t){ FILTRO_TIPO=t; FILTRO_CHAVES=null; try{ localStorage.setItem('esq_tipo',t); }catch(_){}
+  montarOpcoesEtapa();
   document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   render(); renderCarga(); renderSaldo(); } let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
 
@@ -442,9 +459,10 @@ function filtrarSit(f){ FILTRO_SIT=(FILTRO_SIT===f?'':f); if(f==='ok') document.
 /* ===== lista por módulo ===== */
 function passaFiltro(it){
   if(it.saldo||!passaTipo(it)) return false;
+  if(FILTRO_CHAVES) return FILTRO_CHAVES.set.has(it.chave);
   const b=document.getElementById('f-busca').value.trim().toLowerCase();
   if(b && !(it.modulo+' '+it.codigo).toLowerCase().includes(b)) return false;
-  const et=document.getElementById('f-etapa').value; if(et && (!it.c.prox||it.c.prox.k!==et)) return false;
+  const et=document.getElementById('f-etapa').value; if(et && !passaEtapa(it,et)) return false;
   const de=document.getElementById('f-de').value, ate=document.getElementById('f-ate').value;
   if(de && (!it.d1||it.d1<de)) return false; if(ate && (!it.d1||it.d1>ate)) return false;
   if(FILTRO_SIT==='proj'){ if(it.c.sit==='ok'||it.c.atrasoFim<=0) return false; }
@@ -462,7 +480,7 @@ function render(){
   const grupos={};
   vis.forEach(it=>{ const g=it.modulo+'§'+(it.d1||''); (grupos[g]=grupos[g]||{mod:it.modulo,d1:it.d1,itens:[]}).itens.push(it); });
   const lista=Object.values(grupos).sort((a,b)=>(a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:a.mod.localeCompare(b.mod));
-  document.getElementById('status').textContent=vis.length+(FILTRO_TIPO==='porta'?' porta(s)':FILTRO_TIPO==='janela'?' janela(s)':' esquadria(s)')+' em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
+  document.getElementById('status').innerHTML=(FILTRO_CHAVES?`<span class="chip-filtro">Carga semanal: ${FILTRO_CHAVES.rotulo} <a href="#" onclick="limparFiltroCarga();return false;">✕ limpar</a></span> `:'')+vis.length+(FILTRO_TIPO==='porta'?' porta(s)':FILTRO_TIPO==='janela'?' janela(s)':' esquadria(s)')+' em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
   if(!lista.length){ document.getElementById('lista').innerHTML='<div class="vazio">Nada para este filtro.</div>'; atualizarBarra(); return; }
   const pode=podeApontar();
   document.getElementById('lista').innerHTML=lista.map(g=>{
@@ -523,33 +541,46 @@ function renderCarga(){
   const incl=document.getElementById('c-concl').checked;
   const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'},{k:'env_pintura',nome:'Portas a receber',cap:'',porta:true}]
     .filter(l=>!FILTRO_TIPO||(FILTRO_TIPO==='porta')===!!l.porta);
-  const semAtual=segunda(HOJE); const sems=new Set([semAtual]); const dados={};
-  linhas.forEach(l=>dados[l.k]={atr:0});
+  const semAtual=segunda(HOJE); const sems=new Set([semAtual]);
+  CARGA={};   // CARGA[k][semana] = [chaves]   (semana 'atr' = já vencidas)
+  const add=(k,sem,ch)=>{ (CARGA[k]=CARGA[k]||{}); (CARGA[k][sem]=CARGA[k][sem]||[]).push(ch); };
   ITENS.forEach(it=>{ if(it.saldo||!passaTipo(it)||!it.d1) return;
     linhas.forEach(l=>{
       if(!!l.porta!==ehPorta(it.codigo)) return;
       const feito=(it.status||{})[l.k]; if(feito&&!incl) return;
       const p=it.c.prazos[l.k];
-      if(!feito && p<HOJE){ dados[l.k].atr++; return; }
-      const s=segunda(p); if(s<semAtual) return; sems.add(s); dados[l.k][s]=(dados[l.k][s]||0)+1;
+      if(!feito && p<HOJE){ add(l.k,'atr',it.chave); return; }
+      const s=segunda(p); if(s<semAtual) return; sems.add(s); add(l.k,s,it.chave);
     });
   });
   const lista=[...sems].sort().slice(0,16);
-  const maxV=Math.max(1,...linhas.flatMap(l=>lista.map(s=>(dados[l.k][s]||0)+(s===semAtual?dados[l.k].atr:0))));
+  const cel=(k,s)=>{ const a=(CARGA[k]||{})[s]||[]; return s===semAtual?a.concat((CARGA[k]||{}).atr||[]):a; };
+  const semPedido=ch=>ch.filter(c=>{ const it=ITENS.find(x=>x.chave===c); return it&&!(it.status||{})[pedidoK(it)]; }).length;
+  const maxV=Math.max(1,...linhas.flatMap(l=>lista.map(s=>cel(l.k,s).length)));
   let h='<table><tr><th style="text-align:left">Semana (segunda)</th><th>Atrasado</th>'+lista.map(s=>`<th>${BR(s)}${s===semAtual?'<br>(atual)':''}</th>`).join('')+'</tr>';
   linhas.forEach(l=>{
     const cap=l.cap?(+document.getElementById(l.cap).value||0):0;
-    h+=`<tr><td class="rot">${l.nome}</td><td class="cel ${dados[l.k].atr?'atr':'zero'}"><span>${dados[l.k].atr||'·'}</span></td>`;
+    const atr=(CARGA[l.k]||{}).atr||[]; const spA=semPedido(atr);
+    h+=`<tr><td class="rot">${l.nome}</td><td class="cel clic ${atr.length?'atr':'zero'}" ${atr.length?`onclick="abrirCarga('${l.k}','atr','${l.nome}')"`:''} title="${atr.length?'Clique para ver na lista':''}"><span>${atr.length||'·'}</span>${spA?`<small class="sp">${spA} s/ pedido</small>`:''}</td>`;
     lista.forEach(s=>{
-      const v=(dados[l.k][s]||0); const tot=v+(s===semAtual?dados[l.k].atr:0);
-      const over=cap>0&&tot>cap;
-      h+=`<td class="cel ${over?'over':''} ${tot?'':'zero'}" title="${v} no prazo${s===semAtual&&dados[l.k].atr?' + '+dados[l.k].atr+' atrasadas':''}${cap?' · capacidade '+cap:''}"><i class="bar" style="height:${Math.round(22*tot/maxV)}px"></i><span>${tot||'·'}</span></td>`;
+      const a=cel(l.k,s), tot=a.length, sp=semPedido(a), over=cap>0&&tot>cap;
+      h+=`<td class="cel clic ${over?'over':''} ${tot?'':'zero'}" ${tot?`onclick="abrirCarga('${l.k}','${s}','${l.nome}')"`:''} title="${tot?`${tot} esquadria(s)${s===semAtual&&atr.length?' (inclui '+atr.length+' atrasadas)':''}${sp?' · '+sp+' ainda sem pedido':''}${cap?' · capacidade '+cap:''} — clique para ver`:''}"><i class="bar" style="height:${Math.round(22*tot/maxV)}px"></i><span>${tot||'·'}</span>${sp?`<small class="sp">${sp} s/ pedido</small>`:''}</td>`;
     });
     h+='</tr>';
   });
   h+='</table>';
   document.getElementById('carga').innerHTML=h;
 }
+let CARGA={}; let FILTRO_CHAVES=null;
+function abrirCarga(k,sem,nome){
+  const semAtual=segunda(HOJE);
+  const ch=sem==='atr'?((CARGA[k]||{}).atr||[]):(((CARGA[k]||{})[sem]||[]).concat(sem===semAtual?((CARGA[k]||{}).atr||[]):[]));
+  FILTRO_CHAVES={set:new Set(ch), rotulo:`${nome} · ${sem==='atr'?'atrasadas':'semana de '+BR(sem)+(sem===semAtual?' (inclui atrasadas)':'')}`};
+  document.getElementById('f-etapa').value=''; FILTRO_SIT='';
+  if([...FILTRO_CHAVES.set].some(c=>{ const it=ITENS.find(x=>x.chave===c); return it&&it.c.sit==='ok'; })) document.getElementById('f-concl').checked=true;
+  trocarAba('lista'); render();
+}
+function limparFiltroCarga(){ FILTRO_CHAVES=null; render(); }
 function renderSaldo(){
   const el=document.getElementById('saldo'); if(!el) return;
   const unid=ITENS.filter(it=>it.saldo&&passaTipo(it));
@@ -698,7 +729,7 @@ function renderAlertaPedido(){
     ${venc.length?`<div class="cods">Vencidas: ${resumo(venc)}</div>`:''}${prox.length?`<div class="cods">Vencem em breve: ${resumo(prox)}</div>`:''}
     ${(()=>{ const g=resumoComplementos(venc.concat(prox).map(it=>[it.codigo,1])); return Object.keys(g).length?`<div class="cods"><b>Comprar junto (complementos):</b> ${htmlResumoComplementos(g)}</div>`:''; })()}</details>`;
 }
-function verPendentesPedido(){ trocarAba('lista'); FILTRO_SIT=''; document.getElementById('f-etapa').value='solicitada'; render(); window.scrollTo({top:document.getElementById('lista').offsetTop-120,behavior:'smooth'}); }
+function verPendentesPedido(){ trocarAba('lista'); FILTRO_SIT=''; document.getElementById('f-etapa').value=FILTRO_TIPO==='porta'?'p:solicitada':FILTRO_TIPO==='janela'?'j:solicitada':'pedido'; render(); window.scrollTo({top:document.getElementById('lista').offsetTop-120,behavior:'smooth'}); }
 
 /* ===== Importar ordem de compra (PDF) — só admin =====
    Lê o PDF no navegador (pdf.js), acha cada insumo (código da esquadria na descrição + Quant.),
@@ -892,7 +923,7 @@ async function entrar(){
 }
 
 document.getElementById('b-data').value=HOJE;
-lerCap(); mostrarUser(); document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===FILTRO_TIPO));
+lerCap(); mostrarUser(); montarOpcoesEtapa(); document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===FILTRO_TIPO));
 if(sessionStorage.getItem('esq_user')){ document.getElementById('tela-login').style.display='none'; carregar(); } else mostrarTelaLogin();
 </script>
 </body>
