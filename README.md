@@ -36,7 +36,7 @@ Na primeira tentativa de login, a aba **Usuarios** é criada sozinha. Preencha:
 | joao | ***** | João | apontador |
 | ana | ***** | Ana | visualizador |
 
-Perfis: `apontador` e `admin` apontam; `visualizador` só vê. Ver o dashboard não exige login.
+Perfis: `apontador` e `admin` apontam; `visualizador` só vê. **Todo acesso exige login** (a página abre na tela de login e o Apps Script só entrega dados para usuário válido).
 As senhas ficam em texto na planilha — use senhas próprias deste sistema e restrinja quem edita a planilha.
 
 ### 3. GitHub Pages

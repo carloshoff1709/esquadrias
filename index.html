@@ -97,6 +97,12 @@ input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;
 .mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
 .erro{color:#C62828;font-size:12px;margin-top:6px;min-height:14px;}
 .vazio{padding:30px;text-align:center;color:#9CA3AF;}
+#tela-login{position:fixed;inset:0;background:#1A2540;z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;}
+#tela-login .caixa{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 20px 50px rgba(0,0,0,.3);}
+#tela-login h2{font-size:19px;margin-bottom:2px;} #tela-login .sub2{font-size:13px;color:#6B7280;margin-bottom:16px;}
+#tela-login label{font-size:12px;color:#6B7280;display:block;margin:10px 0 4px;}
+#tela-login input{width:100%;border:1px solid #D8DCE3;border-radius:8px;padding:10px 12px;font-size:15px;font-family:inherit;}
+#tela-login .btn{width:100%;margin-top:16px;padding:11px;font-size:15px;}
 .modal.larga{max-width:760px;max-height:88vh;overflow:auto;}
 .tab-oc{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;}
 .tab-oc th{font-size:10px;text-transform:uppercase;color:#6B7280;text-align:left;border-bottom:1px solid #E3E8EF;padding:5px 6px;}
@@ -118,6 +124,16 @@ input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;
 </style>
 </head>
 <body>
+<div id="tela-login">
+  <div class="caixa">
+    <h2>Esquadrias</h2>
+    <div class="sub2">Chaparia, montagem e pintura · entre para continuar</div>
+    <label>Usuário</label><input id="tl-user" autocomplete="username">
+    <label>Senha</label><input id="tl-pass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="btn" id="tl-ok" onclick="entrar()">Entrar</button>
+    <div class="erro" id="tl-erro"></div>
+  </div>
+</div>
 <div class="top">
   <h1>Esquadrias — Chaparia, Montagem e Pintura<span class="sub" id="sub">Prazos em dias úteis contados para trás a partir da Data 1</span></h1>
   <button class="tbtn" id="btn-oc" style="display:none" onclick="document.getElementById('in-oc').click()">📄 Importar OC</button>
@@ -279,7 +295,9 @@ function estadoEtapa(it,c,e){
 async function carregar(){
   if(API_URL.indexOf('COLE_AQUI')===0){ document.getElementById('status').innerHTML='Configure a URL do Apps Script no index.html (const API_URL). Veja o README.'; return; }
   document.getElementById('status').textContent='Carregando programação de esquadrias...';
-  const r=await api('action=esq_listar');
+  if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
+  const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
+  if(r&&r.login){ sair(); return; }
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
   (r.feriados||[]).forEach(f=>FERIADOS.add(f));
   ITENS=r.itens.map(it=>({...it}));
@@ -652,11 +670,27 @@ function abrirLogin(depois){
 function fecharOv(id){ const o=document.getElementById(id); if(o) o.remove(); }
 function souAdmin(){ return !!sessionStorage.getItem('esq_user') && ['admin','administrador','master'].includes((sessionStorage.getItem('esq_perfil')||'').toLowerCase()); }
 function mostrarUser(){ document.getElementById('btn-oc').style.display=souAdmin()?'inline-flex':'none'; const n=sessionStorage.getItem('esq_nome'); const el=document.getElementById('user-lbl');
-  el.innerHTML=n?('👤 '+n+(podeApontar()?'':' (visualização)')+' · <a href="#" style="color:#C9D2E3" onclick="sair();return false;">sair</a>'):'<a href="#" style="color:#fff" onclick="abrirLogin();return false;">Entrar para apontar</a>'; }
-function sair(){ ['esq_user','esq_nome','esq_perfil','esq_senha'].forEach(k=>sessionStorage.removeItem(k)); mostrarUser(); render(); }
+  el.innerHTML=n?('👤 '+n+(podeApontar()?'':' (visualização)')+' · <a href="#" style="color:#C9D2E3" onclick="sair();return false;">sair</a>'):''; }
+function sair(){ ['esq_user','esq_nome','esq_perfil','esq_senha'].forEach(k=>sessionStorage.removeItem(k));
+  ITENS=[]; SEL.clear(); document.getElementById('lista').innerHTML=''; document.getElementById('carga').innerHTML='';
+  document.getElementById('kpis').innerHTML=''; document.getElementById('alerta-pedido').style.display='none'; document.getElementById('avisos').style.display='none';
+  mostrarUser(); mostrarTelaLogin(); }
+function mostrarTelaLogin(){ const t=document.getElementById('tela-login'); t.style.display='flex'; document.getElementById('tl-erro').textContent='';
+  document.getElementById('tl-pass').value=''; setTimeout(()=>document.getElementById('tl-user').focus(),50); }
+async function entrar(){
+  const u=document.getElementById('tl-user').value.trim(), p=document.getElementById('tl-pass').value.trim(), er=document.getElementById('tl-erro');
+  if(!u||!p){ er.textContent='Preencha usuário e senha.'; return; }
+  er.textContent='Verificando...'; document.getElementById('tl-ok').disabled=true;
+  const r=await apiPost('action=login&usuario='+encodeURIComponent(u)+'&senha='+encodeURIComponent(p));
+  document.getElementById('tl-ok').disabled=false;
+  if(r&&r.ok){ sessionStorage.setItem('esq_user',r.usuario); sessionStorage.setItem('esq_nome',r.nome||r.usuario); sessionStorage.setItem('esq_perfil',r.perfil||''); sessionStorage.setItem('esq_senha',p);
+    document.getElementById('tela-login').style.display='none'; mostrarUser(); carregar(); }
+  else er.textContent=(r&&r.erro)||'Sem resposta do servidor. Tente de novo.';
+}
 
 document.getElementById('b-data').value=HOJE;
-lerCap(); mostrarUser(); carregar();
+lerCap(); mostrarUser();
+if(sessionStorage.getItem('esq_user')){ document.getElementById('tela-login').style.display='none'; carregar(); } else mostrarTelaLogin();
 </script>
 </body>
 </html>
