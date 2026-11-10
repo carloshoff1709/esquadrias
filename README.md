@@ -53,6 +53,21 @@ As senhas ficam em texto na planilha — use senhas próprias deste sistema e re
 - **Usuarios** — logins.
 - **Feriados** (opcional) — datas na coluna A, somadas aos feriados nacionais e ao 20/09 já previstos.
 
+## Portas (fornecedor externo)
+
+Portas (códigos que começam com P) são compradas prontas e têm outro fluxo. **Data 1 = prazo de entrega da porta.**
+
+| Etapa | Prazo | Coluna na Status_Esquadrias |
+|---|---|---|
+| Solicitação de compra emitida | Data 1 − 35 du | solicitada |
+| OC aprovada | Data 1 − 30 du (entrega do fornecedor: 30 du) | recebida |
+| Recebimento previsto | data informada (vem da OC; vermelho se depois da Data 1) | montada |
+| Porta recebida | Data 1 | env_pintura |
+
+Prazos em `LEAD_PORTA` no `index.html` (aprovação 5 du, entrega 30 du).
+Ao importar uma OC, as portas recebem *OC aprovada* (data do pedido) e *Recebimento previsto* (data de entrega da OC);
+uma *Solicitação de compra* marcada antes é mantida. Saldo de portas funciona igual ao das janelas.
+
 ## Filtro Portas / Janelas
 
 Botões **Todas · Portas · Janelas** ao lado das abas. Vale para indicadores, alerta, lista, carga semanal e saldo, e fica lembrado no navegador.

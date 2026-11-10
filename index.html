@@ -189,6 +189,10 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 .seg button{border:none;background:none;padding:5px 12px;font-size:12px;font-weight:600;color:var(--mut);cursor:pointer;font-family:inherit;border-right:1px solid var(--line);}
 .seg button:last-child{border-right:none;} .seg button.on{background:var(--txt);color:#fff;}
 @media (max-width:700px){ .abas{flex-wrap:wrap;} .seg{margin:6px 0 0;width:100%;} .seg button{flex:1;} }
+.linha.porta .et-rot{display:block;font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;}
+.linha.cab-porta{background:#FAFAFB;color:#7A5AF8;border-top:1px dashed var(--line);}
+.et-vazio{display:block;}
+@media (max-width:900px){ .linha.cab-porta{display:none;} }
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -279,11 +283,11 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 <div class="barra-acao" id="barra">
   <strong id="b-n">0 selecionadas</strong>
   <select id="b-etapa">
-    <option value="solicitada">Chaparia solicitada</option>
-    <option value="recebida">Chaparia recebida</option>
-    <option value="montada">Montagem feita</option>
-    <option value="env_pintura">Enviada p/ pintura</option>
-    <option value="pintada">Pintura concluída</option>
+    <option value="solicitada">Chaparia solicitada · porta: SC emitida</option>
+    <option value="recebida">Chaparia recebida · porta: OC aprovada</option>
+    <option value="montada">Montagem feita · porta: recebimento previsto</option>
+    <option value="env_pintura">Enviada p/ pintura · porta: recebida</option>
+    <option value="pintada">Pintura concluída (só janelas)</option>
   </select>
   <input type="date" id="b-data">
   <button class="btn" onclick="aplicarLote(false)">Apontar</button>
@@ -304,6 +308,18 @@ const ETAPAS=[
   {k:'env_pintura',nome:'Enviada p/ pintura',  curto:'Envio pint.',antes:LEAD.pintura},
   {k:'pintada',    nome:'Pintura concluída',   curto:'Pintada',  antes:0}
 ];
+/* PORTAS: compradas prontas (fornecedor externo). Data 1 = prazo de entrega da porta.
+   Mesmas colunas da planilha, com outro significado (ver README). */
+const LEAD_PORTA={aprovacao:5, entrega:30};
+const ETAPAS_PORTA=[
+  {k:'solicitada', nome:'Solicitação de compra emitida', curto:'SC',        antes:LEAD_PORTA.aprovacao+LEAD_PORTA.entrega},
+  {k:'recebida',   nome:'OC aprovada',                   curto:'OC aprov.', antes:LEAD_PORTA.entrega},
+  {k:'montada',    nome:'Recebimento previsto',          curto:'Prev.',     antes:LEAD_PORTA.entrega, previsto:true},
+  {k:'env_pintura',nome:'Porta recebida',                curto:'Recebida',  antes:0}
+];
+function ehPorta(cod){ return /^P/.test(String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'')); }
+function etapasDe(it){ return ehPorta(it.codigo)?ETAPAS_PORTA:ETAPAS; }
+const pedidoK=it=>ehPorta(it.codigo)?'recebida':'solicitada';   // etapa que indica "tem OC/pedido"
 const ATENCAO_DU=2;
 const ALERTA_PEDIDO_DU=3;   // chaparia não solicitada: alerta a partir de 3 dias úteis antes do prazo do pedido
 const limiteAtencao=k=>k==='solicitada'?ALERTA_PEDIDO_DU:ATENCAO_DU;
@@ -352,11 +368,18 @@ function filtrarTipo(t){ FILTRO_TIPO=t; try{ localStorage.setItem('esq_tipo',t);
 
 /* ===== cálculo por esquadria ===== */
 function calcular(it){
-  const st=it.status||{}; const d1=it.d1;
-  const prazos={}; ETAPAS.forEach(e=>prazos[e.k]=d1?addUteis(d1,-e.antes):'');
-  const prox=ETAPAS.find(e=>!st[e.k]);
+  const st=it.status||{}; const d1=it.d1; const ets=etapasDe(it);
+  const prazos={}; ets.forEach(e=>prazos[e.k]=d1?addUteis(d1,-e.antes):'');
+  const prox=ets.find(e=>!st[e.k]&&!e.previsto);   // recebimento previsto é informação, não etapa com prazo
   let fim;
-  if(!prox) fim=st.pintada;
+  if(ehPorta(it.codigo)){
+    if(!prox) fim=st.env_pintura;
+    else if(st.montada)    fim=maxS(st.montada,HOJE);                                   // recebimento previsto informado
+    else if(st.recebida)   fim=maxS(addUteis(st.recebida,LEAD_PORTA.entrega),HOJE);     // OC aprovada
+    else if(st.solicitada) fim=addUteis(maxS(addUteis(st.solicitada,LEAD_PORTA.aprovacao),HOJE),LEAD_PORTA.entrega);
+    else                   fim=addUteis(HOJE,LEAD_PORTA.aprovacao+LEAD_PORTA.entrega);
+  }
+  else if(!prox) fim=st.pintada;
   else if(st.env_pintura) fim=maxS(addUteis(st.env_pintura,LEAD.pintura),HOJE);
   else if(st.montada)     fim=addUteis(maxS(st.montada,HOJE),LEAD.pintura);
   else if(st.recebida)    fim=addUteis(maxS(st.recebida,HOJE),LEAD.montagem+LEAD.pintura);
@@ -369,11 +392,12 @@ function calcular(it){
     folga=difUteis(HOJE,prazos[prox.k]);            // du até o prazo da próxima etapa
     if(folga<0||atrasoFim>0) sit='atr'; else if(folga<=limiteAtencao(prox.k)) sit='ate';
   }
-  return {prazos,prox,fim,atrasoFim,sit,folga};
+  return {prazos,prox,fim,atrasoFim,sit,folga,ets};
 }
 function estadoEtapa(it,c,e){
   const st=it.status||{};
-  if(st[e.k]) return 'feito';
+  if(st[e.k]) return (e.previsto && it.d1 && st[e.k]>it.d1) ? 'atr' : 'feito';   // previsão depois da Data 1 = vermelho
+  if(e.previsto) return '';
   if(!c.prazos[e.k]) return '';
   const f=difUteis(HOJE,c.prazos[e.k]);
   return f<0?'atr':(f<=limiteAtencao(e.k)?'ate':'');
@@ -386,7 +410,7 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-10-saldo-unidades'; const av0=document.getElementById('aviso-versao');
+  const VERSAO_MIN='2026-11-10.3'; const av0=document.getElementById('aviso-versao');
   if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
@@ -411,7 +435,7 @@ function renderKpis(){
   const k=(cls,v,l,f)=>`<div class="kpi ${cls} ${FILTRO_SIT===f?'on':''}" onclick="filtrarSit('${f}')"><div class="v">${v}</div><div class="l">${l}</div></div>`;
   document.getElementById('kpis').innerHTML=
     k('',n.total,'Esquadrias','')+k('k-atr',n.atr,'Atrasadas','atr')+k('k-ate',n.ate,'Atenção','ate')+
-    k('k-dia',n.dia,'Em dia','dia')+k('k-ok',n.ok,'Pintadas','ok')+k('k-atr',n.proj,'Vão terminar depois da Data 1','proj');
+    k('k-dia',n.dia,'Em dia','dia')+k('k-ok',n.ok,'Concluídas','ok')+k('k-atr',n.proj,'Vão terminar depois da Data 1','proj');
 }
 function filtrarSit(f){ FILTRO_SIT=(FILTRO_SIT===f?'':f); if(f==='ok') document.getElementById('f-concl').checked=true; render(); }
 
@@ -429,6 +453,8 @@ function passaFiltro(it){
   return true;
 }
 const ROT_SIT={atr:'Atrasado',ate:'Atenção',dia:'Em dia',ok:'Concluído'};
+const CAB_JANELA=`<div class="linha cab"><span></span><span>Esquadria</span><span>Data 1</span>${ETAPAS.map(e=>`<span>${e.nome}</span>`).join('')}<span>Próximo passo</span></div>`;
+const CAB_PORTA=`<div class="linha cab cab-porta"><span></span><span>Porta</span><span>Data 1 (entrega)</span>${ETAPAS_PORTA.map(e=>`<span>${e.nome}</span>`).join('')}<span></span><span>Próximo passo</span></div>`;
 const ORDEM_SIT={atr:0,ate:1,dia:2,ok:3};
 function render(){
   renderKpis(); renderAlertaPedido();
@@ -441,9 +467,10 @@ function render(){
   const pode=podeApontar();
   document.getElementById('lista').innerHTML=lista.map(g=>{
     const id=g.mod+'§'+(g.d1||'');
+    const jan=g.itens.filter(it=>!ehPorta(it.codigo)), por=g.itens.filter(it=>ehPorta(it.codigo));
     const pior=g.itens.reduce((p,it)=>ORDEM_SIT[it.c.sit]<ORDEM_SIT[p]?it.c.sit:p,'ok');
-    const feitas=g.itens.reduce((s,it)=>s+ETAPAS.filter(e=>(it.status||{})[e.k]).length,0);
-    const pct=Math.round(100*feitas/(g.itens.length*ETAPAS.length));
+    const feitas=g.itens.reduce((s,it)=>s+etapasDe(it).filter(e=>(it.status||{})[e.k]).length,0);
+    const pct=Math.round(100*feitas/g.itens.reduce((s,it)=>s+etapasDe(it).length,0));
     const padrao=pior==='atr'||pior==='ate'||!!document.getElementById('f-busca').value;
     const aberto=(id in ABRIR)?ABRIR[id]:padrao; ESTADO_ABERTO[id]=aberto;
     const chaves=g.itens.map(it=>it.chave);
@@ -451,13 +478,13 @@ function render(){
     const cab=`<div class="mod-head" onclick="abrir('${esc(id)}')">
       ${pode?`<input type="checkbox" ${todas?'checked':''} onclick="event.stopPropagation();selGrupo(${esc(JSON.stringify(chaves))},this.checked)">`:''}
       <span class="nome">${g.mod}</span>
-      <span class="meta">Data 1: <b>${BRc(g.d1)}</b> · ${g.itens.length} esquadria(s) · pedir chaparia até ${BR(g.d1?addUteis(g.d1,-ETAPAS[0].antes):'')}</span>
+      <span class="meta">Data 1: <b>${BRc(g.d1)}</b> · ${g.itens.length} esquadria(s) · ${jan.length?'pedir chaparia até '+BR(g.d1?addUteis(g.d1,-ETAPAS[0].antes):''):''}${jan.length&&por.length?' · ':''}${por.length?'emitir SC das portas até '+BR(g.d1?addUteis(g.d1,-ETAPAS_PORTA[0].antes):''):''}</span>
       <span class="barra" title="${pct}% das etapas apontadas"><i style="width:${pct}%"></i></span>
       <span class="sit s-${pior}">${ROT_SIT[pior]}</span>
       <span class="meta">${aberto?'▼':'▶'}</span></div>`;
     if(!aberto) return `<div class="mod">${cab}</div>`;
-    const linhas=g.itens.map(it=>linhaHTML(it,pode)).join('');
-    return `<div class="mod">${cab}<div class="linha cab"><span></span><span>Esquadria</span><span>Data 1</span>${ETAPAS.map(e=>`<span>${e.nome}</span>`).join('')}<span>Próximo passo</span></div>${linhas}</div>`;
+    const linhas=jan.map(it=>linhaHTML(it,pode)).join('')+(por.length?`${jan.length?CAB_PORTA:''}`+por.map(it=>linhaHTML(it,pode)).join(''):'');
+    return `<div class="mod">${cab}${jan.length?CAB_JANELA:CAB_PORTA}${linhas}</div>`;
   }).join('');
   atualizarBarra();
 }
@@ -467,14 +494,15 @@ function abrir(id){ ABRIR[id]=!ESTADO_ABERTO[id]; render(); }
 
 function linhaHTML(it,pode){
       const c=it.c;
-      const ets=ETAPAS.map(e=>{
+      const etsDef=etapasDe(it); const porta=ehPorta(it.codigo);
+      const ets=etsDef.map(e=>{
         const st=(it.status||{})[e.k]; const est=estadoEtapa(it,c,e);
-        const txt=st?`<b>✓ ${BR(st)}</b>`:(c.prazos[e.k]?`<b>até ${BR(c.prazos[e.k])}</b>`:'<b>—</b>');
+        const txt=st?(e.previsto?`<b>prev. ${BR(st)}</b>`:`<b>✓ ${BR(st)}</b>`):(e.previsto?'<b>a informar</b>':(c.prazos[e.k]?`<b>até ${BR(c.prazos[e.k])}</b>`:'<b>—</b>'));
         const btn=`<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&(it.status||{}).oc?' · OC '+it.status.oc:''}"><span class="et-rot">${e.curto}</span>${txt}</button>`;
         return e.k==='solicitada' ? `<div class="et-sol">${btn}${seloComplemento(it.codigo)}</div>` : btn;
-      }).join('');
+      }).join('')+(porta?'<span class="et-vazio"></span>':'');
       let prox;
-      if(it.saldo){ const st0=it.status||{}; prox=`<span class="p-saldo">Em saldo · OC ${it.oc}</span><div class="p2">${c.prox?'Próxima etapa: '+c.prox.nome:'Pronta (pintada)'} · vai para o próximo módulo com ${chaveProjeto(it.codigo)||it.codigo}${st0.entrega_prev&&!st0.recebida?' · entrega prev. '+BR(st0.entrega_prev):''}</div>`; }
+      if(it.saldo){ const st0=it.status||{}; prox=`<span class="p-saldo">Em saldo · OC ${it.oc}</span><div class="p2">${c.prox?'Próxima etapa: '+c.prox.nome:(ehPorta(it.codigo)?'Recebida':'Pronta (pintada)')} · vai para o próximo módulo com ${chaveProjeto(it.codigo)||it.codigo}${st0.entrega_prev&&!st0.recebida?' · entrega prev. '+BR(st0.entrega_prev):''}</div>`; }
       else if(c.sit==='ok') prox=`<span style="color:#185FA5;font-weight:700;">Concluída</span>`;
       else{
         const f=c.folga;
@@ -482,7 +510,7 @@ function linhaHTML(it,pode){
         const st0=it.status||{}; const ocTxt=st0.oc?` · OC ${st0.oc}${st0.entrega_prev?' (entrega prev. '+BR(st0.entrega_prev)+')':''}`:'';
         prox=`${c.prox.nome} até ${BR(c.prazos[c.prox.k])} · ${quando}<div class="p2">Previsão de término: ${BRc(c.fim)}${ocTxt}${c.atrasoFim>0?` <b style="color:#B71C1C">(+${c.atrasoFim} du após a Data 1)</b>`:''}</div>`;
       }
-      return `<div class="linha${it.saldo?' saldo':''}">
+      return `<div class="linha${it.saldo?' saldo':''}${porta?' porta':''}">
         <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
         <span class="cod">${it.codigo}${it.un>1?`<small>#${it.un}</small>`:''}${botaoProjeto(it.codigo)}</span>
         <span class="d1">${it.saldo?'<span class="tag-saldo">saldo</span>':BRc(it.d1)}</span>
@@ -493,11 +521,13 @@ function linhaHTML(it,pode){
 /* ===== carga semanal ===== */
 function renderCarga(){
   const incl=document.getElementById('c-concl').checked;
-  const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'}];
+  const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'},{k:'env_pintura',nome:'Portas a receber',cap:'',porta:true}]
+    .filter(l=>!FILTRO_TIPO||(FILTRO_TIPO==='porta')===!!l.porta);
   const semAtual=segunda(HOJE); const sems=new Set([semAtual]); const dados={};
   linhas.forEach(l=>dados[l.k]={atr:0});
   ITENS.forEach(it=>{ if(it.saldo||!passaTipo(it)||!it.d1) return;
     linhas.forEach(l=>{
+      if(!!l.porta!==ehPorta(it.codigo)) return;
       const feito=(it.status||{})[l.k]; if(feito&&!incl) return;
       const p=it.c.prazos[l.k];
       if(!feito && p<HOJE){ dados[l.k].atr++; return; }
@@ -508,7 +538,7 @@ function renderCarga(){
   const maxV=Math.max(1,...linhas.flatMap(l=>lista.map(s=>(dados[l.k][s]||0)+(s===semAtual?dados[l.k].atr:0))));
   let h='<table><tr><th style="text-align:left">Semana (segunda)</th><th>Atrasado</th>'+lista.map(s=>`<th>${BR(s)}${s===semAtual?'<br>(atual)':''}</th>`).join('')+'</tr>';
   linhas.forEach(l=>{
-    const cap=+document.getElementById(l.cap).value||0;
+    const cap=l.cap?(+document.getElementById(l.cap).value||0):0;
     h+=`<tr><td class="rot">${l.nome}</td><td class="cel ${dados[l.k].atr?'atr':'zero'}"><span>${dados[l.k].atr||'·'}</span></td>`;
     lista.forEach(s=>{
       const v=(dados[l.k][s]||0); const tot=v+(s===semAtual?dados[l.k].atr:0);
@@ -535,11 +565,11 @@ function renderSaldo(){
       <div class="muted small">Cada unidade pode ser apontada (recebida, montada, pintura). Quando o PCP incluir um módulo com o código, ele herda a unidade mais adiantada.</div></div>
     ${Object.values(grupos).sort((a,b)=>a.oc<b.oc?-1:a.oc>b.oc?1:a.cod.localeCompare(b.cod)).map(g=>{
       const ch=g.itens.map(i=>i.chave), todas=ch.every(c=>SEL.has(c));
-      const etapas=ETAPAS.map(e=>`${g.itens.filter(i=>(i.status||{})[e.k]).length}`).join(' / ');
+      const etsG=ehPorta(g.cod)?ETAPAS_PORTA:ETAPAS; const etapas=etsG.map(e=>`${g.itens.filter(i=>(i.status||{})[e.k]).length}`).join(' / ');
       return `<div class="mod"><div class="mod-head">${pode?`<input type="checkbox" ${todas?'checked':''} onclick="selGrupo(${esc(JSON.stringify(ch))},this.checked)">`:''}
         <span class="nome">${g.cod}</span><span class="meta">OC ${g.oc} · ${g.itens.length} un. em saldo</span>${botaoProjeto(g.cod)}
-        <span class="meta" style="margin-left:auto" title="solicitada / recebida / montada / enviada / pintada">etapas: ${etapas}</span></div>
-        <div class="linha cab"><span></span><span>Esquadria</span><span></span>${ETAPAS.map(e=>`<span>${e.nome}</span>`).join('')}<span>Situação</span></div>
+        <span class="meta" style="margin-left:auto" title="${etsG.map(e=>e.nome).join(' / ')}">etapas: ${etapas}</span></div>
+        ${ehPorta(g.cod)?CAB_PORTA:CAB_JANELA}
         ${g.itens.sort((a,b)=>a.un-b.un).map(it=>linhaHTML(it,pode)).join('')}</div>`; }).join('')}
     <details class="det"><summary>Resumo por OC (${resumo.length})</summary>
     <table class="tab-oc"><tr><th>OC</th><th>Código</th><th>Insumo</th><th>Pedida</th><th>Consumida</th><th>Saldo</th><th>Pedido em</th><th>Entrega</th></tr>
@@ -560,14 +590,14 @@ function atualizarBarra(){ document.getElementById('b-n').textContent=SEL.size+'
 
 function abrirEtapa(chave,k){
   if(!podeApontar()){ abrirLogin(()=>abrirEtapa(chave,k)); return; }
-  const it=ITENS.find(x=>x.chave===chave); const e=ETAPAS.find(x=>x.k===k); const feito=(it.status||{})[k];
+  const it=ITENS.find(x=>x.chave===chave); const e=etapasDe(it).find(x=>x.k===k); const feito=(it.status||{})[k];
   const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-et';
   ov.innerHTML=`<div class="modal"><h2>${e.nome}</h2>
     <p><b>${it.modulo}</b> · ${it.codigo}${it.un>1?' #'+it.un:''}<br>${it.saldo?'Unidade em saldo (sem módulo)':'Data 1: '+BRc(it.d1)+' · prazo desta etapa: '+BRc(it.c.prazos[k])}${feito?'<br>Apontado em '+BRc(feito):''}</p>
-    <label>Data do apontamento</label><input type="date" id="et-data" value="${feito||HOJE}">
+    <label>${e.previsto?'Data de recebimento previsto (informada pelo fornecedor)':'Data do apontamento'}</label><input type="date" id="et-data" value="${feito||(e.previsto?((it.status||{}).entrega_prev||HOJE):HOJE)}">
     <label><input type="checkbox" id="et-mod" style="width:auto;margin-right:6px;">${it.saldo?'aplicar a todas as unidades de saldo deste código nesta OC':'aplicar a todas as esquadrias deste módulo com a mesma Data 1'}</label>
     <div class="mbtns">
-      ${feito&&!(it.saldo&&k==='solicitada')?`<button class="btn del" onclick="confirmarEtapa('${esc(chave)}','${k}',true)">Desfazer</button>`:''}
+      ${feito&&!(it.saldo&&(k==='solicitada'||(ehPorta(it.codigo)&&k==='recebida')))?`<button class="btn del" onclick="confirmarEtapa('${esc(chave)}','${k}',true)">Desfazer</button>`:''}
       <button class="btn sec" onclick="fecharOv('ov-et')">Cancelar</button>
       <button class="btn" onclick="confirmarEtapa('${esc(chave)}','${k}',false)">Apontar</button>
     </div><div class="erro" id="et-erro"></div></div>`;
@@ -599,10 +629,10 @@ async function gravar(chaves,k,data){
   if(r&&!r.ok&&/permiss/i.test(r.erro||'')){ ['esq_user','esq_nome','esq_perfil','esq_senha'].forEach(k=>sessionStorage.removeItem(k)); mostrarUser(); alert(r.erro); return false; }
   if(!r||!r.ok) return false;
   // atualiza a tela sem recarregar tudo (mesma regra do servidor)
-  const i=ETAPAS.findIndex(x=>x.k===k);
   chaves.forEach(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return; it.status=it.status||{};
+    const ETAPAS=['solicitada','recebida','montada','env_pintura','pintada'].map(k=>({k})); const i=ETAPAS.findIndex(x=>x.k===k);
     if(data){ it.status[k]=data; for(let j=0;j<i;j++) if(!it.status[ETAPAS[j].k]) it.status[ETAPAS[j].k]=data; }
-    else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0){ delete it.status.oc; delete it.status.entrega_prev; } }
+    else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0||(i===1&&ehPorta(it.codigo))){ delete it.status.oc; delete it.status.entrega_prev; } }
     it.c=calcular(it); });
   render(); renderCarga(); renderSaldo(); return true;
 }
@@ -654,15 +684,15 @@ function renderAlertaPedido(){
   const el=document.getElementById('alerta-pedido'); if(!el) return;
   const venc=[], prox=[];
   ITENS.forEach(it=>{ if(it.saldo||!passaTipo(it)||(it.status||{}).solicitada||!it.d1) return;
-    const f=difUteis(HOJE,it.c.prazos.solicitada);
+    const f=difUteis(HOJE,it.c.prazos.solicitada);   // 1ª etapa: chaparia solicitada (janela) ou SC emitida (porta)
     if(f<0) venc.push(it); else if(f<=ALERTA_PEDIDO_DU) prox.push(it); });
   if(!venc.length&&!prox.length){ el.style.display='none'; return; }
   const resumo=l=>{ const g={}; l.forEach(it=>{ const k=chaveProjeto(it.codigo)||it.codigo.toUpperCase(); (g[k]=g[k]||{n:0,ate:it.c.prazos.solicitada}).n++;
       if(it.c.prazos.solicitada<g[k].ate) g[k].ate=it.c.prazos.solicitada; });
     return Object.entries(g).sort((a,b)=>a[1].ate<b[1].ate?-1:1).map(([k,v])=>`<b>${k}</b> ×${v.n} (prazo ${BR(v.ate)})`).join(' · '); };
   el.className='alerta-pedido '+(venc.length?'verm':'amar'); el.style.display='block';
-  el.innerHTML=`<b class="t">⚠ Chaparia não solicitada</b>
-    ${venc.length?` — <b>${venc.length}</b> esquadria(s) com o prazo de pedido <b>vencido</b>`:''}${prox.length?`${venc.length?' e':' —'} <b>${prox.length}</b> com prazo em até ${ALERTA_PEDIDO_DU} dias úteis`:''}
+  el.innerHTML=`<b class="t">⚠ ${venc.concat(prox).every(it=>ehPorta(it.codigo))?'Solicitação de compra de portas não emitida':venc.concat(prox).some(it=>ehPorta(it.codigo))?'Pedido não emitido (chaparia / SC de portas)':'Chaparia não solicitada'}</b>
+    ${venc.length?` — <b>${venc.length}</b> ${venc.concat(prox).every(it=>ehPorta(it.codigo))?'porta(s)':'esquadria(s)'} com o prazo de pedido <b>vencido</b>`:''}${prox.length?`${venc.length?' e':' —'} <b>${prox.length}</b> com prazo em até ${ALERTA_PEDIDO_DU} dias úteis`:''}
     <button class="btn sec mini" onclick="verPendentesPedido()">Ver na lista</button>
     <details class="det-al"><summary>detalhes</summary>
     ${venc.length?`<div class="cods">Vencidas: ${resumo(venc)}</div>`:''}${prox.length?`<div class="cods">Vencem em breve: ${resumo(prox)}</div>`:''}
@@ -722,10 +752,10 @@ function distribuirOC(oc,vinc){
     if(!ins.codigo){ r.sobra=ins.qtd; porItem.push(r); return; }
     r.ja=ITENS.filter(it=>!it.saldo && (it.status||{}).oc===oc.num && casaCodigo(ins.codigo,it.codigo)).length;
     let cap=Math.max(0,ins.qtd-r.ja);
-    r.manuais=ITENS.filter(it=>{ const st=it.status||{}; return !it.saldo && st.solicitada && !st.oc && !usadas.has(it.chave) && casaCodigo(ins.codigo,it.codigo); }).sort(ordemMontagem);
+    r.manuais=ITENS.filter(it=>{ const st=it.status||{}; return !it.saldo && st[pedidoK(it)] && !st.oc && !usadas.has(it.chave) && casaCodigo(ins.codigo,it.codigo); }).sort(ordemMontagem);
     r.manuais.forEach(it=>{ if(vinc.has(it.chave) && r.vinc.length<cap){ r.vinc.push(it); usadas.add(it.chave); } });
     cap-=r.vinc.length;
-    const cand=ITENS.filter(it=>!it.saldo && !usadas.has(it.chave) && !(it.status||{}).solicitada && casaCodigo(ins.codigo,it.codigo)).sort(ordemMontagem);
+    const cand=ITENS.filter(it=>!it.saldo && !usadas.has(it.chave) && !(it.status||{})[pedidoK(it)] && casaCodigo(ins.codigo,it.codigo)).sort(ordemMontagem);
     cand.slice(0,cap).forEach(it=>{ usadas.add(it.chave); r.aloc.push(it); });
     r.sobra=Math.max(0,cap-r.aloc.length); porItem.push(r);
   });
@@ -765,7 +795,7 @@ function montarPreviaOC(){
   const linhasManuais=oc.dist.filter(r=>r.manuais.length).map(r=>r.manuais.map(it=>{
      const on=r.vinc.includes(it);
      return `<tr><td><input type="checkbox" style="width:auto" ${on?'checked':''} onchange="alternarVinculo('${esc(it.chave)}',this.checked)"></td>
-       <td><b>${r.codigo}</b></td><td>${it.modulo} · ${it.codigo}${it.un>1?' #'+it.un:''}</td><td>marcada em ${BRc(it.status.solicitada)}</td><td style="color:#6B7280">montagem até ${BR(it.c.prazos.montada)}</td></tr>`; }).join('')).join('');
+       <td><b>${r.codigo}</b></td><td>${it.modulo} · ${it.codigo}${it.un>1?' #'+it.un:''}</td><td>${ehPorta(it.codigo)?'OC aprovada em '+BRc(it.status.recebida):'marcada em '+BRc(it.status.solicitada)}</td><td style="color:#6B7280">montagem até ${BR(it.c.prazos.montada)}</td></tr>`; }).join('')).join('');
   const excesso=oc.dist.filter(r=>r.manuais.length>r.vinc.length && r.vinc.length+r.ja>=r.qtd).map(r=>r.codigo);
   const avisos=[];
   if(!oc.num) avisos.push('Não encontrei o número do pedido no PDF. Confira se é a ordem de compra no padrão do sistema.');
