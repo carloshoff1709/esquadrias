@@ -197,24 +197,88 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 .cel small.sp{display:block;position:relative;z-index:1;font-size:9.5px;font-weight:700;color:var(--verm);margin-top:1px;}
 .chip-filtro{display:inline-block;background:#EFF4FB;color:var(--azul);border-radius:999px;padding:2px 10px;font-weight:600;margin-right:6px;}
 .chip-filtro a{color:var(--azul);margin-left:6px;}
-.grid-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px;}
-.cardg{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
-.topo-g{display:grid;grid-template-columns:1fr 220px;gap:20px;align-items:center;margin-bottom:10px;}
-.topo-g .big{font-size:30px;font-weight:700;line-height:1.1;}
-.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#F2F4F7;margin:4px 0 8px;}
-.stack i{display:block;height:100%;}
-.stack-leg{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;} .stack-leg span>i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
-.fun{display:grid;grid-template-columns:170px 1fr 110px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #F2F4F7;font-size:12.5px;}
-.fun:last-child{border-bottom:none;}
-.fun-b{position:relative;height:10px;background:#F2F4F7;border-radius:5px;overflow:hidden;}
-.fun-b i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;} .fun-b i.t{background:#B2CCFF;} .fun-b i.a{background:#F97066;}
-.fun-v{text-align:right;} .v-atr,.v-atr a{color:var(--verm);font-weight:600;}
-.fun.garg{background:#FEF3F2;margin:0 -8px;padding:5px 8px;border-radius:6px;}
-.tag-garg{font-size:9.5px;font-weight:700;color:#fff;background:var(--verm);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle;}
+.cardg{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
 .tg{width:100%;border-collapse:collapse;font-size:12.5px;} .tg th{font-size:10px;color:#98A2B3;text-transform:uppercase;text-align:left;font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line);}
-.tg td{padding:5px 6px;border-bottom:1px solid #F2F4F7;} .tg .num{text-align:right;} .tg th:nth-child(n+2){text-align:right;} .tg td:nth-child(n+2){text-align:right;}
+.tg td{padding:5px 6px;border-bottom:1px solid #F2F4F7;font-variant-numeric:tabular-nums;} .tg .num{text-align:right;} .tg th:nth-child(n+2){text-align:right;} .tg td:nth-child(n+2){text-align:right;}
 a.lk{color:inherit;text-decoration:none;border-bottom:1px dotted #98A2B3;} a.lk:hover{color:var(--azul);border-bottom-color:var(--azul);}
-@media (max-width:700px){ .topo-g{grid-template-columns:1fr;} .fun{grid-template-columns:120px 1fr 80px;} .grid-g{grid-template-columns:1fr;} }
+.v-atr,.v-atr a{color:var(--verm);font-weight:600;}
+.tag-garg{font-size:9.5px;font-weight:700;color:#fff;background:var(--verm);border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:1px;}
+/* painel BI */
+.bi{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;}
+.bi>.cardg{grid-column:span 4;min-width:0;} .bi>.c6{grid-column:span 6;} .bi>.c12{grid-column:span 12;}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.ct h3{font-size:13.5px;font-weight:700;margin:0;color:var(--txt);} .ct .sub{font-size:11.5px;color:var(--mut);margin-top:2px;}
+.anel-w{display:flex;align-items:center;gap:16px;}
+.anel{flex:0 0 auto;display:block;} .anel .sg{cursor:pointer;transition:opacity .12s;} .anel .sg:hover{opacity:.78;}
+.an-v{font-size:26px;font-weight:700;fill:#111827;} .an-l{font-size:11px;fill:#6B7280;}
+.leg{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.leg-r{display:grid;grid-template-columns:10px 1fr auto 36px;gap:8px;align-items:center;padding:5px 6px;border-radius:6px;font-size:12.5px;}
+.leg-r[data-g]{cursor:pointer;} .leg-r[data-g]:hover,.leg-r[data-g]:focus-visible{background:#F3F5F8;outline:none;}
+.leg-r i{width:10px;height:10px;border-radius:2px;} .leg-r b{font-size:14px;} .leg-r .p{color:var(--mut);text-align:right;font-size:11.5px;font-variant-numeric:tabular-nums;}
+.legh{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--mut);} .legh span>i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+.mt{display:grid;grid-template-columns:56px 1fr 36px;gap:8px;align-items:center;font-size:12px;padding:3px 6px;} .mt b{text-align:right;}
+.mt-b{height:8px;border-radius:4px;background:#cde2fb;overflow:hidden;} .mt-b i{display:block;height:100%;background:#2a78d6;border-radius:4px;}
+.kv{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:5px 6px;border-top:1px solid #F2F4F7;} .kv span{color:var(--mut);}
+.fn{display:grid;grid-template-columns:minmax(118px,170px) 1fr 92px;gap:10px;align-items:center;padding:5px 6px;border-bottom:1px solid #F2F4F7;font-size:12.5px;margin:0 -6px;}
+.fn:last-child{border-bottom:none;} .fn.garg{background:#FEF3F2;border-radius:6px;}
+.fn-b{display:flex;gap:2px;align-items:center;height:24px;min-width:0;} .fn-b i{display:block;height:14px;min-width:3px;flex:0 0 auto;}
+.fn-b i:last-child{border-radius:0 4px 4px 0;} .fn-b i[data-g]{cursor:pointer;} .fn-b i[data-g]:hover,.fn-b i:focus-visible{filter:brightness(1.12);outline:none;}
+.fn-0{display:block;width:100%;height:1px;background:#EEF0F3;}
+.fn-v{display:flex;gap:6px;justify-content:flex-end;align-items:baseline;font-variant-numeric:tabular-nums;} .fn-t{font-weight:700;font-size:13.5px;} .fn-t[data-g]{cursor:pointer;border-bottom:1px dotted #98A2B3;}
+.fn-v .v-atr{font-size:11.5px;}
+.cc .legh{margin-bottom:6px;}
+.cc-a{display:grid;grid-template-columns:30px 1fr;}
+.cc-y{position:relative;} .cc-y span{position:absolute;right:7px;transform:translateY(50%);font-size:10.5px;color:#898781;font-variant-numeric:tabular-nums;}
+.cc-p{position:relative;border-bottom:1px solid #c3c2b7;} .cc-p .gl{position:absolute;left:0;right:0;height:1px;background:#EEF0F3;}
+.cc-cols{position:absolute;inset:0;display:grid;}
+.cc-s{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;position:relative;} .cc-s.hl{background:#FEF3F2;border-radius:6px 6px 0 0;}
+.cc-t{font-size:11px;font-weight:700;color:var(--txt);margin-bottom:3px;font-variant-numeric:tabular-nums;line-height:1;}
+.cc-b{width:min(24px,64%);display:flex;flex-direction:column-reverse;gap:2px;border-radius:4px 4px 0 0;overflow:hidden;}
+.cc-b i{display:block;min-height:2px;} .cc-b i[data-g]{cursor:pointer;} .cc-b i[data-g]:hover{filter:brightness(1.12);}
+.cc-x{display:grid;margin-left:30px;margin-top:5px;} .cc-x div{text-align:center;font-size:10px;color:var(--mut);line-height:1.25;min-width:0;} .cc-x b{display:block;color:#374151;font-weight:600;font-size:10.5px;}
+.tv-btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:var(--mut);cursor:pointer;font-family:inherit;}
+.tv-btn:hover{background:#F3F4F6;} .cardg.tv .cc{display:none;} .cardg:not(.tv) .tvw-w{display:none;} .tvw-w{overflow-x:auto;}
+.tvw td:first-child{white-space:nowrap;} .tvw .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;} .tvw tr.tot td{font-weight:700;}
+.rk .rb{display:flex;align-items:center;gap:8px;justify-content:flex-end;} .rb-b{flex:1;max-width:90px;height:8px;background:#F2F4F7;border-radius:0 4px 4px 0;overflow:hidden;}
+.rb-b i{display:block;height:100%;background:#d03b3b;border-radius:0 4px 4px 0;} .rk .rb b{min-width:46px;color:var(--verm);}
+#bi-tt{position:fixed;z-index:9999;pointer-events:none;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(16,24,40,.14);border-radius:8px;padding:8px 10px;font-size:12px;min-width:150px;max-width:280px;display:none;}
+#bi-tt .t{font-weight:700;margin-bottom:5px;color:var(--txt);} #bi-tt .l{display:flex;align-items:center;gap:7px;padding:1px 0;} #bi-tt .l i{width:12px;height:3px;border-radius:2px;flex:0 0 auto;}
+#bi-tt .l b{min-width:20px;font-variant-numeric:tabular-nums;} #bi-tt .l span{color:var(--mut);} #bi-tt .f{color:#98A2B3;font-size:11px;margin-top:5px;}
+@media (max-width:1050px){ .bi>.cardg{grid-column:span 6;} .bi>.c12{grid-column:span 12;} }
+@media (max-width:720px){ .bi>.cardg,.bi>.c6{grid-column:span 12;} .fn{grid-template-columns:110px 1fr 74px;} .cc-x div{font-size:9px;} .cc-x b{font-size:9.5px;} .cc-t{font-size:10px;} .cardg{padding:12px;} }
+/* programa de montagem */
+.mont .ct{align-items:center;}
+.mont-ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;} .mont-ctl .seg{margin-left:0;} .mont-ctl .seg button{padding:5px 11px;}
+.mont-ctl .chk{font-size:12px;color:var(--mut);display:inline-flex;gap:5px;align-items:center;cursor:pointer;}
+.btn.sm{padding:5px 11px;font-size:12px;} .btn[disabled]{opacity:.5;cursor:default;}
+.mont-res{font-size:12.5px;color:var(--mut);margin:-2px 0 10px;} .mont-res b{color:var(--txt);}
+.mtiles{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.mtile{flex:1 1 96px;max-width:170px;border:1px solid var(--line);border-left:3px solid #2a78d6;border-radius:8px;padding:7px 10px;background:#fff;}
+.mtile[data-g]{cursor:pointer;} .mtile[data-g]:hover,.mtile[data-g]:focus-visible{background:#F5F8FC;outline:none;}
+.mtile.atr{border-left-color:#d03b3b;background:#FEF3F2;} .mtile.atr[data-g]:hover{background:#FDE7E5;} .mtile.hj{border-left-color:#fab219;}
+.mtile span{display:block;font-size:11.5px;font-weight:600;color:#374151;} .mtile span em{font-style:normal;font-weight:700;color:#B54708;}
+.mtile b{display:block;font-size:22px;line-height:1.15;color:var(--txt);} .mtile small{display:block;font-size:10.5px;color:var(--mut);}
+.tm-w{overflow-x:auto;}
+.tm{width:100%;border-collapse:collapse;font-size:12.5px;} .tm th{font-size:10px;color:#98A2B3;text-transform:uppercase;text-align:left;font-weight:600;padding:5px 6px;border-bottom:1px solid var(--line);white-space:nowrap;}
+.tm td{padding:6px;border-bottom:1px solid #F2F4F7;vertical-align:top;} .tm td.sq{font-weight:700;color:#98A2B3;width:26px;text-align:right;font-variant-numeric:tabular-nums;}
+.tm tr.bloq td{background:#FAFAFB;} .tm tr.bloq td:not(.sq):not(.st){color:#6B7280;}
+.tm td.atr{color:var(--verm);font-weight:600;} .tm td.ate{color:var(--amar);font-weight:600;} .tm td.st{white-space:nowrap;font-size:12px;}
+.tm .pr{color:#067647;font-weight:600;} .tm .bl{color:#98A2B3;}
+.chip-ch{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+.chip-ch.ok{background:#ECFDF3;color:#067647;} .chip-ch.ate{background:#FFFAEB;color:#B54708;} .chip-ch.atr{background:#FEF3F2;color:#B42318;}
+.tm tr.corte td{background:#FFF7E6;color:#B54708;font-weight:700;text-align:center;font-size:11.5px;border-top:2px solid #fab219;}
+.mont-mais{margin-top:8px;font-size:12.5px;}
+@media (max-width:720px){
+  .mtile{flex:1 1 70px;padding:6px 8px;} .mtile b{font-size:19px;}
+  .mont-ctl .seg button{padding:5px 8px;white-space:nowrap;}
+  .tm,.tm tbody{display:block;} .tm tr:first-child{display:none;}
+  .tm tr{display:grid;grid-template-columns:22px auto 1fr auto;grid-template-areas:"sq md d1 st" "sq es es es" "sq pz pz pz" "sq ch ch ch";column-gap:8px;row-gap:3px;padding:9px 2px;border-bottom:1px solid #F2F4F7;}
+  .tm td{display:block;border:none;padding:0;} .tm tr.bloq{background:#FAFAFB;} .tm tr.bloq td{background:none;}
+  .tm td.sq{grid-area:sq;} .tm td.md{grid-area:md;} .tm td.d1{grid-area:d1;color:var(--mut);font-size:12px;align-self:center;} .tm td.d1::before{content:'Data 1 ';}
+  .tm td.es{grid-area:es;} .tm td.pz{grid-area:pz;font-size:12px;} .tm td.pz::before{content:'Montar até: ';color:var(--mut);font-weight:400;}
+  .tm td.ch{grid-area:ch;} .tm td.st{grid-area:st;text-align:right;font-size:11.5px;}
+  .tm tr.corte{display:block;padding:0;} .tm tr.corte td{padding:6px;}
+}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -561,68 +625,332 @@ function linhaHTML(it,pode){
 }
 
 
-/* ===== Visão geral: status, funil por etapa (gargalo), próximos vencimentos, módulos em risco, fornecedor ===== */
-let GERAL_GRUPOS={};   // id -> [chaves] para o clique
+/* ===== Visão geral: painel estilo BI (anéis, barras empilhadas, colunas por semana, tabelas) =====
+   Cada marca (fatia, segmento, coluna, linha da legenda) mostra tooltip e, ao clicar, abre o Apontamento só com aquelas esquadrias. */
+const COR_SIT={atr:'#d03b3b',ate:'#fab219',dia:'#0ca30c',ok:'#2a78d6'};
+const NOME_SIT={atr:'Atrasadas',ate:'Atenção',dia:'Em dia',ok:'Concluídas'};
+const SITS=['atr','ate','dia','ok'];
+/* carga: rampa ordinal azul (clara → escura na ordem do prazo); a cor segue a etapa, não a posição */
+const SERIES_CARGA=[{k:'recebida',nome:'Chaparia a receber',cor:'#86b6ef'},{k:'montada',nome:'Montagens',cor:'#3987e5'},{k:'pintada',nome:'Pinturas',cor:'#1c5cab'},{k:'env_pintura',nome:'Portas a receber',cor:'#0d366b',porta:true}];
+let GERAL_GRUPOS={}, GERAL_TT=[];
+const escH=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function gid(chaves,rotulo){ const id='g'+Object.keys(GERAL_GRUPOS).length; GERAL_GRUPOS[id]={chaves,rotulo}; return id; }
 function abrirGeral(id){ const g=GERAL_GRUPOS[id]; if(g&&g.chaves.length) abrirChaves(g.chaves,g.rotulo); }
+function ttReg(titulo,linhas,rodape){ GERAL_TT.push({titulo,linhas,rodape}); return GERAL_TT.length-1; }
+/* atributos de uma marca interativa: tooltip (data-tt) + clique (data-g). foco=false nas fatias do SVG (a legenda já é focável) */
+function marcaAttr(lista,rotulo,tt,foco){
+  const ch=lista.map(it=>it.chave); let a=` data-tt="${tt}"`;
+  if(ch.length){ a+=` data-g="${gid(ch,rotulo)}"`; if(foco!==false) a+=` tabindex="0" role="button" aria-label="${escH(rotulo)}: ${ch.length}"`; }
+  return a;
+}
+const pctDe=(n,t)=>t?Math.round(100*n/t):0;
+
+function anelSVG(segs,centroV,centroL){
+  const T=136, c=T/2, R=c-2, r=R-17, mid=(R+r)/2, tot=segs.reduce((s,x)=>s+x.v,0);
+  let h=`<svg class="anel" viewBox="0 0 ${T} ${T}" width="${T}" height="${T}" role="img" aria-label="${escH(centroL)}: ${escH(centroV)}">`;
+  h+=`<circle cx="${c}" cy="${c}" r="${mid}" fill="none" stroke="#EEF0F3" stroke-width="${R-r}"/>`;
+  const vivos=segs.filter(x=>x.v>0);
+  if(vivos.length===1){ const x=vivos[0]; h+=`<circle class="sg" cx="${c}" cy="${c}" r="${mid}" fill="none" stroke="${x.cor}" stroke-width="${R-r}"${x.attr}/>`; }
+  else if(vivos.length>1){
+    const gap=2/mid; let a=-Math.PI/2;
+    const p=(rad,ang)=>(c+rad*Math.cos(ang)).toFixed(2)+' '+(c+rad*Math.sin(ang)).toFixed(2);
+    vivos.forEach(x=>{ const span=2*Math.PI*x.v/tot; const a0=a+gap/2; let a1=a+span-gap/2; if(a1-a0<0.01) a1=a0+0.01; a+=span;
+      const big=(a1-a0)>Math.PI?1:0;
+      h+=`<path class="sg" d="M${p(R,a0)} A${R} ${R} 0 ${big} 1 ${p(R,a1)} L${p(r,a1)} A${r} ${r} 0 ${big} 0 ${p(r,a0)} Z" fill="${x.cor}"${x.attr}/>`; });
+  }
+  h+=`<text x="${c}" y="${c+5}" text-anchor="middle" class="an-v">${centroV}</text><text x="${c}" y="${c+22}" text-anchor="middle" class="an-l">${escH(centroL)}</text></svg>`;
+  return h;
+}
+function anelProgresso(p,centroL){
+  const T=136, c=T/2, w=15, rad=c-w/2-2, C=2*Math.PI*rad, f=Math.max(0,Math.min(100,p));
+  return `<svg class="anel" viewBox="0 0 ${T} ${T}" width="${T}" height="${T}" role="img" aria-label="${escH(centroL)}: ${f}%">
+    <circle cx="${c}" cy="${c}" r="${rad}" fill="none" stroke="#cde2fb" stroke-width="${w}"/>
+    ${f>0?`<circle cx="${c}" cy="${c}" r="${rad}" fill="none" stroke="#2a78d6" stroke-width="${w}" stroke-linecap="${f<100?'round':'butt'}" stroke-dasharray="${(C*f/100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 ${c} ${c})"/>`:''}
+    <text x="${c}" y="${c+5}" text-anchor="middle" class="an-v">${f}%</text><text x="${c}" y="${c+22}" text-anchor="middle" class="an-l">${escH(centroL)}</text></svg>`;
+}
+/* cartão com anel de situação + legenda (nome, quantidade, %) */
+function cartaoAnel(titulo,sub,grupos,centroV,centroL,rot){
+  const tot=SITS.reduce((s,k)=>s+grupos[k].n,0);
+  const segs=SITS.map(k=>{ const g=grupos[k];
+    const tt=ttReg(titulo,[[COR_SIT[k],g.n,NOME_SIT[k]+' · '+pctDe(g.n,tot)+'%']],g.n?'Clique para ver na lista':'');
+    return {k,v:g.n,cor:COR_SIT[k],attr:marcaAttr(g.its,rot+': '+NOME_SIT[k],tt,false),attrL:marcaAttr(g.its,rot+': '+NOME_SIT[k],tt)}; });
+  return `<div class="cardg"><div class="ct"><div><h3>${titulo}</h3><div class="sub">${sub}</div></div></div>
+    <div class="anel-w">${anelSVG(segs,centroV,centroL)}
+      <div class="leg">${segs.map(s=>`<div class="leg-r"${s.attrL}><i style="background:${s.cor}"></i><span>${NOME_SIT[s.k]}</span><b>${s.v}</b><span class="p">${pctDe(s.v,tot)}%</span></div>`).join('')}</div>
+    </div></div>`;
+}
+const legSit=(ks)=>`<div class="legh">${(ks||SITS).map(k=>`<span><i style="background:${COR_SIT[k]}"></i>${NOME_SIT[k]}</span>`).join('')}</div>`;
+
+/* barras horizontais empilhadas por etapa (onde estão), segmentos por situação */
+function cartaoFunil(titulo,lista,defs,classe){
+  if(!lista.length) return '';
+  const linhas=defs.map(d=>{ const its=lista.filter(d.f); const by={atr:[],ate:[],dia:[],ok:[]}; its.forEach(it=>by[it.c.sit].push(it)); return {...d,its,by}; });
+  const garg=linhas.filter(l=>!l.fim).reduce((m,l)=>(!m||l.by.atr.length>m.by.atr.length||(l.by.atr.length===m.by.atr.length&&l.its.length>m.its.length))?l:m,null);
+  const temG=garg&&garg.by.atr.length>0, max=Math.max(1,...linhas.map(l=>l.its.length));
+  const rows=linhas.map(l=>{ const eg=temG&&l===garg;
+    const segs=SITS.filter(k=>l.by[k].length).map(k=>{ const n=l.by[k].length;
+      const tt=ttReg(titulo+' · '+l.nome,SITS.filter(x=>l.by[x].length).map(x=>[COR_SIT[x],l.by[x].length,NOME_SIT[x]]),'Clique para ver as '+NOME_SIT[k].toLowerCase());
+      return `<i class="sg" style="width:calc(${(100*n/max).toFixed(2)}% - 2px);background:${COR_SIT[k]}"${marcaAttr(l.by[k],titulo+': '+l.nome+' ('+NOME_SIT[k].toLowerCase()+')',tt)}></i>`; }).join('');
+    const ttRow=ttReg(titulo+' · '+l.nome,[['#98A2B3',l.its.length,'no total']],l.its.length?'Clique para ver na lista':'');
+    return `<div class="fn${eg?' garg':''}"><div class="fn-n">${l.nome}${eg?'<span class="tag-garg">gargalo</span>':''}</div>
+      <div class="fn-b">${segs||'<span class="fn-0"></span>'}</div>
+      <div class="fn-v"><span class="fn-t"${marcaAttr(l.its,titulo+': '+l.nome,ttRow)}>${l.its.length}</span>${l.by.atr.length?`<span class="v-atr">${l.by.atr.length} atras.</span>`:''}</div></div>`; }).join('');
+  const sub=temG?`Gargalo: <b>${garg.nome}</b> · ${garg.by.atr.length} atrasada(s)`:'Nenhuma etapa com atraso';
+  return `<div class="cardg ${classe||''}"><div class="ct"><div><h3>${titulo} <span class="muted">· ${lista.length}</span></h3><div class="sub">${sub}</div></div>${legSit()}</div>${rows}</div>`;
+}
+
+/* colunas empilhadas por semana (HTML) + tabela equivalente */
+function escalaY(m){ const cand=[1,2,5,10,20,25,50,100,200,250,500,1000,2000,5000]; const st=cand.find(s=>s*4>=m)||Math.ceil(m/4); const n=Math.max(1,Math.ceil(m/st)); return {max:st*n,st,n}; }
+function cartaoColunas(titulo,sub,buckets,series,classe){
+  const H=150, tots=buckets.map(b=>series.reduce((s,se)=>s+((b.vals[se.k]||[]).length),0));
+  const {max,st,n}=escalaY(Math.max(1,...tots)), nb=buckets.length;
+  const grid=`grid-template-columns:repeat(${nb},minmax(0,1fr))`;
+  let y='', gl='';
+  for(let i=0;i<=n;i++){ const b=Math.round(H*i/n); y+=`<span style="bottom:${b}px">${st*i}</span>`; if(i) gl+=`<i class="gl" style="bottom:${b}px"></i>`; }
+  const cols=buckets.map((b,bi)=>{ const tot=tots[bi]; const linhasTT=series.map(se=>[se.cor,(b.vals[se.k]||[]).length,se.nome]).filter(x=>x[1]).reverse();
+    const ttCol=ttReg(b.titulo,linhasTT.length?linhasTT:[['#98A2B3',0,'nada nesta semana']],tot?'Clique num segmento para ver na lista':'');
+    const segs=series.filter(se=>(b.vals[se.k]||[]).length).map(se=>{ const its=b.vals[se.k];
+      return `<i style="flex:${its.length} 1 0;background:${se.cor}"${marcaAttr(its,titulo+': '+se.nome+' · '+b.titulo,ttReg(b.titulo,linhasTT,'Clique para ver: '+se.nome.toLowerCase()))}></i>`; }).join('');
+    return `<div class="cc-s${b.hl?' hl':''}" data-tt="${ttCol}"><div class="cc-t">${tot||''}</div>${tot?`<div class="cc-b" style="height:${Math.max(3,Math.round(H*tot/max))}px">${segs}</div>`:''}</div>`; }).join('');
+  const xs=buckets.map(b=>`<div><b>${b.rot}</b>${b.sub||'&nbsp;'}</div>`).join('');
+  const tab=`<table class="tg tvw"><tr><th>Série</th>${buckets.map(b=>`<th>${b.rot}${b.sub?' '+b.sub:''}</th>`).join('')}</tr>
+    ${series.map(se=>`<tr><td><i class="sw" style="background:${se.cor}"></i>${se.nome}</td>${buckets.map(b=>`<td>${(b.vals[se.k]||[]).length||'·'}</td>`).join('')}</tr>`).join('')}
+    <tr class="tot"><td>Total</td>${tots.map(t=>`<td>${t||'·'}</td>`).join('')}</tr></table>`;
+  const leg=`<div class="legh">${series.map(se=>`<span><i style="background:${se.cor}"></i>${se.nome}</span>`).join('')}</div>`;
+  return `<div class="cardg ${classe||''}"><div class="ct"><div><h3>${titulo}</h3><div class="sub">${sub}</div></div>
+      <button class="tv-btn" onclick="const c=this.closest('.cardg');c.classList.toggle('tv');this.textContent=c.classList.contains('tv')?'Gráfico':'Tabela';">Tabela</button></div>
+    <div class="cc">${leg}
+      <div class="cc-a"><div class="cc-y" style="height:${H+16}px">${y}</div>
+        <div class="cc-p" style="height:${H+16}px">${gl}<div class="cc-cols" style="${grid}">${cols}</div></div></div>
+      <div class="cc-x" style="${grid}">${xs}</div></div>
+    <div class="tvw-w">${tab}</div></div>`;
+}
+
 function renderGeral(){
-  const el=document.getElementById('geral'); if(!el) return; GERAL_GRUPOS={};
+  const el=document.getElementById('geral'); if(!el) return; GERAL_GRUPOS={}; GERAL_TT=[];
   const base=ITENS.filter(it=>!it.saldo&&passaTipo(it));
   if(!base.length){ el.innerHTML='<div class="vazio">Sem esquadrias para este filtro.</div>'; return; }
   const ch=l=>l.map(it=>it.chave);
   const clk=(l,rot,html)=>l.length?`<a href="#" class="lk" onclick="abrirGeral('${gid(ch(l),rot)}');return false;">${html}</a>`:html;
-  // 1) situação
-  const S={atr:[],ate:[],dia:[],ok:[]}; base.forEach(it=>S[it.c.sit].push(it));
-  const tot=base.length, pct=n=>Math.round(100*n/tot);
-  const etTot=base.reduce((s,it)=>s+etapasDe(it).filter(e=>!e.previsto).length,0), etFeitas=base.reduce((s,it)=>s+etapasDe(it).filter(e=>!e.previsto&&(it.status||{})[e.k]).length,0);
-  const corS={atr:'#D92D20',ate:'#F79009',dia:'#12B76A',ok:'#2E6BC6'}, nomeS={atr:'Atrasadas',ate:'Atenção',dia:'Em dia',ok:'Concluídas'};
-  const barraSit=`<div class="stack">${['atr','ate','dia','ok'].map(k=>S[k].length?`<i style="width:${100*S[k].length/tot}%;background:${corS[k]}" title="${nomeS[k]}: ${S[k].length}"></i>`:'').join('')}</div>
-    <div class="stack-leg">${['atr','ate','dia','ok'].map(k=>`<span><i style="background:${corS[k]}"></i>${clk(S[k],'Visão geral: '+nomeS[k],`<b>${S[k].length}</b> ${nomeS[k].toLowerCase()} <span class="muted">(${pct(S[k].length)}%)</span>`)}</span>`).join('')}</div>`;
-  // 2) funil por etapa
-  const funil=(lista,defs,titulo)=>{
-    if(!lista.length) return '';
-    const linhas=defs.map(d=>{ const its=lista.filter(d.f); return {...d,its,atr:its.filter(it=>it.c.sit==='atr')}; });
-    const ativos=linhas.filter(l=>!l.fim);
-    const garg=ativos.reduce((m,l)=>(!m||l.atr.length>m.atr.length||(l.atr.length===m.atr.length&&l.its.length>m.its.length))?l:m,null);
-    const max=Math.max(1,...linhas.map(l=>l.its.length));
-    return `<div class="cardg"><div class="h3">${titulo} <span class="muted">· ${lista.length}</span></div>
-      ${linhas.map(l=>{ const eg=garg&&l===garg&&l.atr.length>0;
-        return `<div class="fun ${eg?'garg':''}"><div class="fun-n">${l.nome}${eg?' <span class="tag-garg">gargalo</span>':''}</div>
-          <div class="fun-b"><i class="t" style="width:${100*l.its.length/max}%"></i><i class="a" style="width:${100*l.atr.length/max}%"></i></div>
-          <div class="fun-v">${clk(l.its,titulo+': '+l.nome,`<b>${l.its.length}</b>`)}${l.atr.length?` <span class="v-atr">${clk(l.atr,titulo+': '+l.nome+' (atrasadas)',l.atr.length+' atras.')}</span>`:''}</div></div>`; }).join('')}</div>`;
-  };
-  const pk=(k)=>it=>it.c.prox&&it.c.prox.k===k;
-  const jan=base.filter(it=>!ehPorta(it.codigo)), por=base.filter(it=>ehPorta(it.codigo));
-  const fJan=funil(jan,[{nome:'Falta pedir chaparia',f:pk('solicitada')},{nome:'Aguardando chaparia',f:pk('recebida')},{nome:'A montar',f:pk('montada')},{nome:'A enviar p/ pintura',f:pk('env_pintura')},{nome:'Na pintura',f:pk('pintada')},{nome:'Concluídas',f:it=>!it.c.prox,fim:true}],'Janelas — onde estão');
-  const fPor=funil(por,[{nome:'Falta solicitação de compra',f:pk('solicitada')},{nome:'Falta OC aprovada',f:pk('recebida')},{nome:'Aguardando entrega',f:pk('env_pintura')},{nome:'Recebidas',f:it=>!it.c.prox,fim:true}],'Portas — onde estão');
-  // 3) próximos 10 du
+  const nomeTipo=FILTRO_TIPO==='porta'?'Portas':FILTRO_TIPO==='janela'?'Janelas':'Esquadrias';
+
+  // 1) anel: esquadrias por situação
+  const GS={}; SITS.forEach(k=>GS[k]={n:0,its:[]}); base.forEach(it=>{ GS[it.c.sit].n++; GS[it.c.sit].its.push(it); });
+  const cSit=cartaoAnel(nomeTipo+' por situação','Situação da próxima etapa de cada uma',GS,base.length,nomeTipo.toLowerCase(),nomeTipo);
+  // 2) anel: módulos (lote = módulo + Data 1) pela pior esquadria
+  const gm={}; base.forEach(it=>{ const k=it.modulo+'§'+(it.d1||''); (gm[k]=gm[k]||[]).push(it); });
+  const GM={}; SITS.forEach(k=>GM[k]={n:0,its:[]});
+  Object.values(gm).forEach(its=>{ const pior=its.reduce((p,it)=>ORDEM_SIT[it.c.sit]<ORDEM_SIT[p]?it.c.sit:p,'ok'); GM[pior].n++; GM[pior].its.push(...its); });
+  const nMod=Object.keys(gm).length;
+  const cMod=cartaoAnel('Módulos por situação','Cada módulo/lote assume a pior situação entre as suas esquadrias',GM,nMod,'módulos','Módulos');
+  // 3) anel de progresso: etapas apontadas
+  const av=l=>{ let t=0,f=0; l.forEach(it=>etapasDe(it).forEach(e=>{ if(e.previsto) return; t++; if((it.status||{})[e.k]) f++; })); return {t,f,p:pctDe(f,t)}; };
+  const avT=av(base), jan=base.filter(it=>!ehPorta(it.codigo)), por=base.filter(it=>ehPorta(it.codigo));
+  const medidor=(nome,a)=>`<div class="mt"><span>${nome}</span><div class="mt-b"><i style="width:${a.p}%"></i></div><b>${a.p}%</b></div>`;
+  const proj=base.filter(it=>it.c.sit!=='ok'&&it.c.atrasoFim>0);
+  const nSaldo=ITENS.filter(it=>it.saldo&&passaTipo(it)).length;
+  const cAv=`<div class="cardg"><div class="ct"><div><h3>Avanço das etapas</h3><div class="sub">${avT.f} de ${avT.t} etapas apontadas</div></div></div>
+    <div class="anel-w">${anelProgresso(avT.p,'apontado')}
+      <div class="leg">${jan.length&&por.length?medidor('Janelas',av(jan))+medidor('Portas',av(por)):''}
+        <div class="kv"><span>Previsão depois da Data 1</span><b class="${proj.length?'v-atr':''}">${clk(proj,'Vão terminar depois da Data 1',proj.length)}</b></div>
+        <div class="kv"><span>Concluídas</span><b>${clk(GS.ok.its,'Concluídas',GS.ok.n)}</b></div>
+        ${nSaldo?`<div class="kv"><span>Saldo de OC</span><b>${nSaldo} un.</b></div>`:''}</div></div></div>`;
+
+  // 4) onde estão (barras empilhadas por etapa)
+  const pk=k=>it=>it.c.prox&&it.c.prox.k===k;
+  const larg=(jan.length&&por.length)?'c6':'c12';
+  const fJan=cartaoFunil('Janelas — onde estão',jan,[{nome:'Falta pedir chaparia',f:pk('solicitada')},{nome:'Aguardando chaparia',f:pk('recebida')},{nome:'A montar',f:pk('montada')},{nome:'A enviar p/ pintura',f:pk('env_pintura')},{nome:'Na pintura',f:pk('pintada')},{nome:'Concluídas',f:it=>!it.c.prox,fim:true}],larg);
+  const fPor=cartaoFunil('Portas — onde estão',por,[{nome:'Falta solicitação de compra',f:pk('solicitada')},{nome:'Falta OC aprovada',f:pk('recebida')},{nome:'Aguardando entrega',f:pk('env_pintura')},{nome:'Recebidas',f:it=>!it.c.prox,fim:true}],larg);
+
+  // 5) semanas: atual + 7 seguintes
+  const semAtual=segunda(HOJE), sems=[]; { const d=D(semAtual); for(let i=0;i<8;i++){ sems.push(S(d)); d.setDate(d.getDate()+7); } }
+  const fimJan=(()=>{ const d=D(sems[7]); d.setDate(d.getDate()+7); return S(d); })();
+  const rotSem=s=>({rot:BR(s),sub:s===semAtual?'atual':'',titulo:'Semana de '+BR(s)+(s===semAtual?' (atual)':''),hl:false});
+  // 5a) Data 1 por semana, cor = situação atual
+  const bD1=[{rot:'Venc.',sub:'pend.',titulo:'Data 1 já passou — pendentes',hl:true,vals:{}},...sems.map(s=>({...rotSem(s),vals:{}}))], depois=[];
+  base.forEach(it=>{ if(!it.d1) return; let b;
+    if(it.d1<semAtual){ if(it.c.sit==='ok') return; b=bD1[0]; } else if(it.d1>=fimJan){ depois.push(it); return; } else b=bD1[1+sems.indexOf(segunda(it.d1))];
+    if(b) (b.vals[it.c.sit]=b.vals[it.c.sit]||[]).push(it); });
+  const cD1=cartaoColunas('Data 1 por semana','Pela semana da Data 1 · cor = situação atual'+(depois.length?` · ${clk(depois,'Data 1 depois de '+BR(fimJan),depois.length+' depois de '+BR(fimJan))}`:''),bD1,SITS.map(k=>({k,nome:NOME_SIT[k],cor:COR_SIT[k]})),'c6');
+  // 5b) carga de prazos pendentes por semana (mesma regra da aba Carga semanal)
+  const ser=SERIES_CARGA.filter(l=>!FILTRO_TIPO||(FILTRO_TIPO==='porta')===!!l.porta).filter(l=>l.porta?por.length:jan.length);
+  const bC=[{rot:'Venc.',sub:'',titulo:'Prazos já vencidos',hl:true,vals:{}},...sems.map(s=>({...rotSem(s),vals:{}}))];
+  base.forEach(it=>{ if(!it.d1) return; ser.forEach(l=>{ if(!!l.porta!==ehPorta(it.codigo)) return; if((it.status||{})[l.k]) return;
+    const p=it.c.prazos[l.k]; let b; if(p<HOJE) b=bC[0]; else { const i=sems.indexOf(segunda(p)); if(i<0) return; b=bC[1+i]; }
+    (b.vals[l.k]=b.vals[l.k]||[]).push(it); }); });
+  const cCarga=cartaoColunas('Carga semanal de prazos','Etapas pendentes pela semana do prazo · próximas 8 semanas',bC,ser,'c6');
+
+  // 6) prazos de etapa (vencidas / próximos 10 du)
   const lim=addUteis(HOJE,10); const prox={}, venc={};
   base.forEach(it=>{ const p=it.c.prox; if(!p||!it.d1) return; const d=it.c.prazos[p.k]; const nome=(ehPorta(it.codigo)?'Porta: ':'')+p.nome;
     if(d<HOJE) (venc[nome]=venc[nome]||[]).push(it); else if(d<=lim) (prox[nome]=prox[nome]||[]).push(it); });
   const linhasProx=Object.keys({...venc,...prox}).sort((a,b)=>((venc[b]||[]).length-(venc[a]||[]).length)||((prox[b]||[]).length-(prox[a]||[]).length))
     .map(n=>`<tr><td>${n}</td><td class="num v-atr">${(venc[n]||[]).length?clk(venc[n],'Vencidas: '+n,(venc[n]||[]).length):'·'}</td><td class="num">${(prox[n]||[]).length?clk(prox[n],'Próximos 10 du: '+n,(prox[n]||[]).length):'·'}</td></tr>`).join('');
-  const cProx=`<div class="cardg"><div class="h3">Prazos de etapa</div>
+  const cProx=`<div class="cardg"><div class="ct"><div><h3>Prazos de etapa</h3><div class="sub">Próxima etapa vencida ou vencendo até ${BR(lim)}</div></div></div>
     ${linhasProx?`<table class="tg"><tr><th>Próxima etapa</th><th>Vencidas</th><th>Até ${BR(lim)}</th></tr>${linhasProx}</table>`:'<div class="muted">Nada vencido nem vencendo nos próximos 10 dias úteis.</div>'}</div>`;
-  // 4) módulos em risco
-  const gm={}; base.forEach(it=>{ if(it.c.sit==='ok') return; const k=it.modulo+'§'+(it.d1||''); (gm[k]=gm[k]||{mod:it.modulo,d1:it.d1,its:[]}).its.push(it); });
-  const risco=Object.values(gm).map(g=>({...g,atraso:Math.max(0,...g.its.map(i=>i.c.atrasoFim||0)),atr:g.its.filter(i=>i.c.sit==='atr').length}))
-    .filter(g=>g.atraso>0||g.atr>0).sort((a,b)=>b.atraso-a.atraso||(a.d1<b.d1?-1:1)).slice(0,8);
-  const cRisco=`<div class="cardg"><div class="h3">Módulos em risco <span class="muted">· termina depois da Data 1</span></div>
-    ${risco.length?`<table class="tg"><tr><th>Módulo</th><th>Data 1</th><th>Atrasadas</th><th>Previsão</th></tr>${risco.map(g=>`<tr><td>${clk(g.its,'Módulo em risco: '+g.mod,`<b>${g.mod}</b>`)}</td><td>${BRc(g.d1)}</td><td class="num">${g.atr}/${g.its.length}</td><td class="v-atr">${g.atraso?'+'+g.atraso+' du':'—'}</td></tr>`).join('')}</table>`:'<div class="muted">Nenhum módulo com previsão depois da Data 1. 👍</div>'}</div>`;
-  // 5) fornecedor: entrega prevista vencida e não recebida
+  // 7) módulos em risco (barra = du depois da Data 1)
+  const risco=Object.values(gm).filter(its=>its.some(i=>i.c.sit!=='ok')).map(its=>({mod:its[0].modulo,d1:its[0].d1,its,atraso:Math.max(0,...its.map(i=>i.c.sit==='ok'?0:(i.c.atrasoFim||0))),atr:its.filter(i=>i.c.sit==='atr').length}))
+    .filter(g=>g.atraso>0||g.atr>0).sort((a,b)=>b.atraso-a.atraso||(a.d1<b.d1?-1:1));
+  const maxR=Math.max(1,...risco.map(g=>g.atraso));
+  const cRisco=`<div class="cardg"><div class="ct"><div><h3>Módulos em risco <span class="muted">· ${risco.length}</span></h3><div class="sub">Dias úteis que devem passar da Data 1</div></div></div>
+    ${risco.length?`<table class="tg rk"><tr><th>Módulo</th><th>Data 1</th><th>Atras.</th><th>Atraso previsto</th></tr>${risco.slice(0,8).map(g=>`<tr><td>${clk(g.its,'Módulo em risco: '+g.mod,`<b>${escH(g.mod)}</b>`)}</td><td>${BR(g.d1)}</td><td class="num">${g.atr}/${g.its.length}</td>
+      <td class="rb"><span class="rb-b"><i style="width:${(100*g.atraso/maxR).toFixed(1)}%"></i></span><b>${g.atraso?'+'+g.atraso+' du':'—'}</b></td></tr>`).join('')}</table>${risco.length>8?`<div class="muted small" style="margin-top:6px">+ ${risco.length-8} módulo(s) — ${clk(risco.slice(8).flatMap(g=>g.its),'Módulos em risco (demais)','ver todos')}</div>`:''}`:'<div class="muted">Nenhum módulo com previsão depois da Data 1.</div>'}</div>`;
+  // 8) fornecedor: entrega prevista vencida e não recebida
   const forn={}; base.forEach(it=>{ const st=it.status||{}; const porta=ehPorta(it.codigo);
     const prev=porta?(st.montada||st.entrega_prev):st.entrega_prev; const recebido=porta?st.env_pintura:st.recebida;
     if(st.oc&&prev&&prev<HOJE&&!recebido){ (forn[st.oc]=forn[st.oc]||{oc:st.oc,prev,its:[]}).its.push(it); if(prev<forn[st.oc].prev) forn[st.oc].prev=prev; } });
   const lf=Object.values(forn).sort((a,b)=>a.prev<b.prev?-1:1);
-  const cForn=`<div class="cardg"><div class="h3">Entregas de fornecedor atrasadas</div>
-    ${lf.length?`<table class="tg"><tr><th>OC</th><th>Entrega prevista</th><th>Itens não recebidos</th><th>Atraso</th></tr>${lf.map(f=>`<tr><td><b>${f.oc}</b></td><td>${BRc(f.prev)}</td><td class="num">${clk(f.its,'OC '+f.oc+': não recebidos',f.its.length)}</td><td class="v-atr">${difUteis(f.prev,HOJE)} du</td></tr>`).join('')}</table>`:'<div class="muted">Nenhuma OC com entrega vencida em aberto.</div>'}</div>`;
-  // saldo
-  const nSaldo=ITENS.filter(it=>it.saldo&&passaTipo(it)).length;
-  el.innerHTML=`<div class="cardg topo-g">
-      <div><div class="h3">Situação geral</div>${barraSit}</div>
-      <div class="prog"><div class="h3">Avanço das etapas</div><div class="big">${Math.round(100*etFeitas/Math.max(1,etTot))}%</div><div class="muted small">${etFeitas} de ${etTot} etapas apontadas${nSaldo?` · ${nSaldo} un. em saldo de OC`:''}</div></div>
-    </div>
-    <div class="grid-g">${fJan}${fPor}${cProx}${cRisco}${cForn}</div>`;
+  const cForn=`<div class="cardg"><div class="ct"><div><h3>Entregas de fornecedor atrasadas</h3><div class="sub">OCs com entrega prevista vencida e itens não recebidos</div></div></div>
+    ${lf.length?`<table class="tg"><tr><th>OC</th><th>Entrega prev.</th><th>Itens</th><th>Atraso</th></tr>${lf.map(f=>`<tr><td><b>${escH(f.oc)}</b></td><td>${BRc(f.prev)}</td><td class="num">${clk(f.its,'OC '+f.oc+': não recebidos',f.its.length)}</td><td class="v-atr">${difUteis(f.prev,HOJE)} du</td></tr>`).join('')}</table>`:'<div class="muted">Nenhuma OC com entrega vencida em aberto.</div>'}</div>`;
+
+  el.innerHTML=`<div class="bi">${cSit}${cMod}${cAv}${cartaoMontagem()}${fJan}${fPor}${cD1}${cCarga}${cProx}${cRisco}${cForn}</div>
+    <div class="muted small" style="margin:10px 2px 0">Passe o mouse para ver os números; clique em qualquer fatia, barra ou coluna para abrir o Apontamento só com aquelas esquadrias.</div>`;
+}
+/* tooltip único + clique/teclado do painel (delegação de eventos; textos via textContent) */
+(function(){
+  let tt=null; const alvo=e=>e.target&&e.target.closest?e.target.closest('#geral [data-tt]'):null;
+  function caixa(){ if(!tt){ tt=document.createElement('div'); tt.id='bi-tt'; document.body.appendChild(tt); } return tt; }
+  function mostrar(a,x,y){ const d=GERAL_TT[+a.dataset.tt]; if(!d) return; const t=caixa(); t.textContent='';
+    const h=document.createElement('div'); h.className='t'; h.textContent=d.titulo; t.appendChild(h);
+    d.linhas.forEach(([cor,v,rot])=>{ const l=document.createElement('div'); l.className='l'; const i=document.createElement('i'); i.style.background=cor;
+      const b=document.createElement('b'); b.textContent=v; const s=document.createElement('span'); s.textContent=rot; l.append(i,b,s); t.appendChild(l); });
+    if(d.rodape){ const f=document.createElement('div'); f.className='f'; f.textContent=d.rodape; t.appendChild(f); }
+    t.style.display='block'; const r=t.getBoundingClientRect(); let px=x+14, py=y+14;
+    if(px+r.width>innerWidth-8) px=Math.max(8,x-r.width-14); if(py+r.height>innerHeight-8) py=Math.max(8,y-r.height-14);
+    t.style.left=px+'px'; t.style.top=py+'px'; }
+  const esconder=()=>{ if(tt) tt.style.display='none'; };
+  document.addEventListener('pointermove',e=>{ const a=alvo(e); if(a) mostrar(a,e.clientX,e.clientY); else esconder(); });
+  document.addEventListener('focusin',e=>{ const a=alvo(e); if(a){ const r=a.getBoundingClientRect(); mostrar(a,r.left,r.bottom); } });
+  document.addEventListener('focusout',esconder);
+  window.addEventListener('scroll',esconder,{passive:true});
+  document.addEventListener('click',e=>{ const a=e.target&&e.target.closest?e.target.closest('#geral [data-g]'):null; if(a){ e.preventDefault(); esconder(); abrirGeral(a.dataset.g); } });
+  document.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const a=e.target&&e.target.closest?e.target.closest('#geral [data-g]'):null; if(a){ e.preventDefault(); esconder(); abrirGeral(a.dataset.g); } });
+})();
+
+/* ===== Programa de montagem (dia / semana) =====
+   Janelas ainda não montadas cujo prazo de montagem (Data 1 − 7 du) já venceu (atrasadas) ou cai no período,
+   em sequência pela Data 1 (entrega). Marca as que já têm a chaparia recebida (prontas) e as que aguardam chaparia. */
+let MONT_VISTA='semana', MONT_PRONTAS=false, MONT_TODAS=false;
+try{ MONT_VISTA=localStorage.getItem('esq_mont_vista')||'semana'; MONT_PRONTAS=localStorage.getItem('esq_mont_prontas')==='1'; }catch(_){}
+const DSEM=['dom','seg','ter','qua','qui','sex','sáb'];
+const diaSem=s=>DSEM[D(s).getDay()];
+const somaDias=(s,n)=>{ const d=D(s); d.setDate(d.getDate()+n); return S(d); };
+function capMontagem(){ const el=document.getElementById('cap-mont'); return el?(+el.value||0):0; }
+function periodoMontagem(v){
+  const seg=segunda(HOJE);
+  if(v==='hoje'){ const h=util(HOJE)?HOJE:addUteis(HOJE,1); return {v,ini:h,fimEx:somaDias(h,1),atrasadas:true,rot:(h===HOJE?'Hoje':'Próximo dia útil')+' — '+diaSem(h)+' '+BR(h)}; }
+  if(v==='prox'){ const p=somaDias(seg,7); return {v,ini:p,fimEx:somaDias(p,7),atrasadas:false,rot:'Próxima semana — '+BR(p)+' a '+BR(somaDias(p,4))}; }
+  return {v:'semana',ini:HOJE,fimEx:somaDias(seg,7),atrasadas:true,rot:'Esta semana — '+BR(seg)+' a '+BR(somaDias(seg,4))};
+}
+function infoChaparia(it){ const st=it.status||{}, p=it.c.prazos.montada, oc=st.oc?' · OC '+st.oc:'';
+  if(st.recebida) return {pronta:true,txt:'Recebida '+BR(st.recebida),cls:'ok'};
+  if(st.solicitada){
+    if(st.entrega_prev) return {pronta:false,txt:'Prevista '+BR(st.entrega_prev)+oc,cls:(st.entrega_prev<HOJE||st.entrega_prev>p)?'atr':'ate'};
+    return {pronta:false,txt:'Pedida '+BR(st.solicitada)+oc+' · sem previsão',cls:'ate'}; }
+  return {pronta:false,txt:'Sem pedido',cls:'atr'};
+}
+function prazoMontagemTxt(it){ const p=it.c.prazos.montada;
+  if(p<HOJE) return {txt:`${diaSem(p)} ${BR(p)} · venceu há ${difUteis(p,HOJE)} du`,cls:'atr'};
+  if(p===HOJE) return {txt:'hoje',cls:'ate'};
+  return {txt:`${diaSem(p)} ${BR(p)}`,cls:''};
+}
+function dadosMontagem(){
+  const P=periodoMontagem(MONT_VISTA);
+  const todos=ITENS.filter(it=>!it.saldo&&it.d1&&!ehPorta(it.codigo)&&!(it.status||{}).montada)
+    .filter(it=>{ const p=it.c.prazos.montada; return (P.atrasadas&&p<HOJE)||(p>=P.ini&&p<P.fimEx); })
+    .sort((a,b)=>(a.d1<b.d1?-1:a.d1>b.d1?1:0)||(a.c.prazos.montada<b.c.prazos.montada?-1:a.c.prazos.montada>b.c.prazos.montada?1:0)
+      ||a.modulo.localeCompare(b.modulo)||a.codigo.localeCompare(b.codigo)||((a.un||0)-(b.un||0)));
+  todos.forEach(it=>{ it._ch=infoChaparia(it); });
+  const its=MONT_PRONTAS?todos.filter(it=>it._ch.pronta):todos;
+  const cap=capMontagem(), lim=cap?(P.v==='hoje'?Math.ceil(cap/5):cap):0;
+  return {P,todos,its,cap,lim};
+}
+function setMont(campo,valor){
+  if(campo==='vista'){ MONT_VISTA=valor; MONT_TODAS=false; try{ localStorage.setItem('esq_mont_vista',valor); }catch(_){} }
+  if(campo==='prontas'){ MONT_PRONTAS=!!valor; try{ localStorage.setItem('esq_mont_prontas',valor?'1':'0'); }catch(_){} }
+  if(campo==='todas') MONT_TODAS=!MONT_TODAS;
+  renderGeral();
+}
+function abrirMontagem(){ const {P,its}=dadosMontagem(); if(its.length) abrirChaves(its.map(i=>i.chave),'Programa de montagem · '+P.rot); }
+
+function cartaoMontagem(){
+  if(FILTRO_TIPO==='porta') return '';
+  const {P,todos,its,cap,lim}=dadosMontagem();
+  const atr=todos.filter(it=>it.c.prazos.montada<HOJE), prontas=todos.filter(it=>it._ch.pronta), bloq=todos.filter(it=>!it._ch.pronta);
+  // blocos por dia
+  const dias=[]; { let s=P.ini; while(s<P.fimEx){ if(util(s)) dias.push(s); s=somaDias(s,1); } }
+  const blocos=[...(P.atrasadas?[{rot:'Atrasadas',sub:'prazo vencido',its:atr,cls:'atr'}]:[]),
+    ...dias.map(s=>({rot:diaSem(s)+' '+BR(s),sub:s===HOJE?'hoje':'',its:todos.filter(it=>it.c.prazos.montada===s),cls:s===HOJE?'hj':''}))];
+  const tiles=blocos.map(b=>{ const np=b.its.filter(it=>it._ch.pronta).length;
+    const tt=ttReg('Montagem · '+b.rot,[['#0ca30c',np,'prontas p/ montar'],['#98A2B3',b.its.length-np,'aguardando chaparia']],b.its.length?'Clique para ver na lista':'');
+    return `<div class="mtile ${b.cls}"${marcaAttr(b.its,'Montagem · '+b.rot,tt)}><span>${b.rot}${b.sub?` <em>${b.sub}</em>`:''}</span><b>${b.its.length}</b><small>${np} pronta(s)</small></div>`; }).join('');
+  // tabela em sequência
+  const mostra=MONT_TODAS?its:its.slice(0,15);
+  let linhas='';
+  mostra.forEach((it,i)=>{ const pz=prazoMontagemTxt(it), ch=it._ch;
+    linhas+=`<tr class="${ch.pronta?'':'bloq'}"><td class="sq">${i+1}</td>
+      <td class="md"><a href="#" class="lk" onclick="abrirChaves(['${esc(it.chave)}'],'Montagem: ${esc(it.modulo)} ${esc(it.codigo)}');return false;"><b>${escH(it.modulo)}</b></a></td>
+      <td class="d1">${BR(it.d1)}</td>
+      <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${seloComplemento(it.codigo)?`<div>${seloComplemento(it.codigo)}</div>`:''}</td>
+      <td class="pz ${pz.cls}">${pz.txt}</td>
+      <td class="ch"><span class="chip-ch ${ch.cls}">${escH(ch.txt)}</span></td>
+      <td class="st">${ch.pronta?'<span class="pr">● Pronta</span>':'<span class="bl">○ Aguardando chaparia</span>'}</td></tr>`;
+    if(lim&&i+1===lim&&its.length>lim) linhas+=`<tr class="corte"><td colspan="7">▲ capacidade ${P.v==='hoje'?'do dia':'da semana'}: ${lim} — daqui para baixo passa da capacidade</td></tr>`;
+  });
+  const vis=[['hoje','Hoje'],['semana','Esta semana'],['prox','Próxima semana']];
+  const capTxt=cap?` · capacidade ${P.v==='hoje'?'do dia ≈ ':''}<b>${lim}</b>${todos.length>lim?` <span class="v-atr">(excede em ${todos.length-lim})</span>`:''}`
+    :` · <a href="#" class="lk" onclick="trocarAba('carga');return false;">informe a capacidade de montagem</a> na Carga semanal para ver o corte`;
+  return `<div class="cardg c12 mont"><div class="ct"><div><h3>Programa de montagem</h3><div class="sub">${P.rot} · ${P.atrasadas?'atrasadas + ':''}prazo de montagem no período, em sequência pela Data 1 (entrega)</div></div>
+      <div class="mont-ctl"><div class="seg">${vis.map(([k,n])=>`<button class="${P.v===k?'on':''}" onclick="setMont('vista','${k}')">${n}</button>`).join('')}</div>
+        <label class="chk"><input type="checkbox" ${MONT_PRONTAS?'checked':''} onchange="setMont('prontas',this.checked)"> só prontas</label>
+        <button class="btn sec sm" onclick="abrirMontagem()" ${its.length?'':'disabled'}>Abrir no Apontamento</button>
+        <button class="btn sec sm" id="btn-mont-xls" onclick="baixarMontagem()" ${its.length?'':'disabled'}>📥 Excel</button>
+        <button class="btn sec sm" onclick="imprimirMontagem()" ${its.length?'':'disabled'}>🖨 Imprimir</button></div></div>
+    <div class="mont-res"><b>${todos.length}</b> janela(s)${P.atrasadas?` · <span class="${atr.length?'v-atr':''}">${atr.length} atrasada(s)</span>`:''} · <b>${prontas.length}</b> pronta(s) p/ montar · ${bloq.length} aguardando chaparia${capTxt}</div>
+    <div class="mtiles">${tiles}</div>
+    ${its.length?`<div class="tm-w"><table class="tm"><tr><th>#</th><th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Prazo montagem</th><th>Chaparia</th><th>Situação</th></tr>${linhas}</table></div>
+      ${its.length>15?`<div class="mont-mais"><a href="#" class="lk" onclick="setMont('todas');return false;">${MONT_TODAS?'Mostrar só as 15 primeiras':'Mostrar todas ('+its.length+')'}</a></div>`:''}`
+      :`<div class="muted" style="padding:6px 0">${MONT_PRONTAS&&todos.length?'Nenhuma pronta para montar no período (todas aguardam chaparia).':'Nada a montar neste período.'}</div>`}
+  </div>`;
+}
+function linhasMontagem(its){
+  return its.map((it,i)=>{ const pz=prazoMontagemTxt(it), k=chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
+    return {seq:i+1,modulo:it.modulo,d1:BRc(it.d1),cod:it.codigo+(it.un>1?' #'+it.un:''),desc:(PROJETOS[k]||[])[1]||'',prazo:BRc(it.c.prazos.montada),sit:pz.cls==='atr'?'Atrasada ('+difUteis(it.c.prazos.montada,HOJE)+' du)':(pz.cls==='ate'?'Vence hoje':'No prazo'),
+      ch:it._ch.txt,pronta:it._ch.pronta?'Pronta':'Aguardando chaparia',comp:complementos(it.codigo).map(([t,r])=>r).join(' + '),obs:(it.status||{}).obs||''}; });
+}
+async function baixarMontagem(){
+  const {P,its,lim}=dadosMontagem(); if(!its.length) return;
+  const btn=document.getElementById('btn-mont-xls'); const txt=btn?btn.textContent:''; if(btn){ btn.textContent='Gerando...'; btn.disabled=true; }
+  try{
+    const X=await carregarXlsx(); const L=linhasMontagem(its);
+    const aoa=[['Programa de montagem — '+P.rot],['Gerado em '+BRc(HOJE)+' · sequência pela Data 1'+(lim?' · capacidade '+lim:'')],[],
+      ['Seq.','Módulo','Data 1 (entrega)','Esquadria','Descrição (caderno)','Prazo montagem','Situação do prazo','Chaparia','Pronta?','Complemento','Obs.','Montada (✓)']]
+      .concat(L.map(r=>[r.seq,r.modulo,r.d1,r.cod,r.desc,r.prazo,r.sit,r.ch,r.pronta,r.comp,r.obs,'']));
+    const ws=X.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:12},{wch:12},{wch:12},{wch:44},{wch:13},{wch:16},{wch:26},{wch:18},{wch:34},{wch:24},{wch:11}];
+    ws['!autofilter']={ref:'A4:L4'};
+    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Montagem');
+    X.writeFile(wb,`montagem_${P.v}_${P.ini}.xlsx`);
+  }catch(err){ alert('Não foi possível gerar o Excel: '+err.message); }
+  if(btn){ btn.textContent=txt; btn.disabled=false; }
+}
+function htmlImpressaoMontagem(){
+  const {P,its,lim}=dadosMontagem(); const L=linhasMontagem(its);
+  let corpo=''; L.forEach((r,i)=>{ corpo+=`<tr class="${r.pronta==='Pronta'?'':'b'}"><td>${r.seq}</td><td><b>${escH(r.modulo)}</b></td><td>${r.d1}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.desc)}</span></td><td class="${r.sit.startsWith('Atras')?'a':''}">${r.prazo}<br><span class="d">${r.sit}</span></td><td>${escH(r.ch)}</td><td>${escH(r.comp)}</td><td class="ok">☐</td><td class="obs">${escH(r.obs)}</td></tr>`;
+    if(lim&&i+1===lim&&L.length>lim) corpo+=`<tr class="c"><td colspan="9">▲ capacidade: ${lim} — abaixo desta linha passa da capacidade</td></tr>`; });
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Programa de montagem — ${escH(P.rot)}</title><style>
+    @page{size:A4 landscape;margin:10mm} body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;margin:0}
+    h1{font-size:16px;margin:0 0 2px} .s{color:#555;margin:0 0 10px} table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #bbb;padding:4px 5px;text-align:left;vertical-align:top} th{background:#eee;font-size:9.5px;text-transform:uppercase}
+    .d{color:#666;font-size:9.5px} .a{color:#b42318;font-weight:bold} .ok{width:46px;text-align:center;font-size:16px} .obs{width:110px}
+    tr{page-break-inside:avoid} tr.b td{color:#555;background:#f6f6f6} tr.c td{background:#fff4e5;font-weight:bold;text-align:center;color:#b54708}
+  </style></head><body><h1>Programa de montagem — ${escH(P.rot)}</h1>
+    <p class="s">${its.length} janela(s) em sequência pela Data 1 · ${its.filter(i=>i._ch.pronta).length} pronta(s) · linhas em cinza aguardam chaparia · impresso em ${BRc(HOJE)}</p>
+    <table><tr><th>#</th><th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Prazo montagem</th><th>Chaparia</th><th>Complemento</th><th>Montada</th><th>Obs.</th></tr>${corpo}</table></body></html>`;
+}
+function imprimirMontagem(){
+  const f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+  document.body.appendChild(f); const doc=f.contentDocument; doc.open(); doc.write(htmlImpressaoMontagem()); doc.close();
+  setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(_){} setTimeout(()=>f.remove(),1500); },250);
 }
 
 /* ===== carga semanal ===== */

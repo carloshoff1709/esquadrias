@@ -137,10 +137,26 @@ Teste rápido: abra a URL `/exec` no navegador — aparece `{"ok":true,"app":"Es
 
 ## Visão geral (aba inicial)
 
-Painel resumido: **situação geral** (atrasadas / atenção / em dia / concluídas e % de etapas apontadas), **funil por etapa**
-de janelas e de portas com a etapa **gargalo** destacada (a que tem mais atrasadas), **prazos de etapa** (vencidos e nos próximos
-10 dias úteis), **módulos em risco** (previsão depois da Data 1) e **entregas de fornecedor atrasadas** por OC.
-Todo número sublinhado abre a lista do Apontamento só com aquelas esquadrias. Respeita o filtro Todas/Portas/Janelas.
+Painel no estilo BI, sem biblioteca externa (SVG/HTML no próprio `index.html`):
+
+- **Anéis:** esquadrias por situação; módulos por situação (cada módulo/lote assume a pior situação entre as suas esquadrias); avanço das etapas (% apontado, com medidores de janelas e portas).
+- **Onde estão:** barras empilhadas por etapa, para janelas e para portas, com os segmentos atrasadas / atenção / em dia. A etapa com mais atrasadas recebe o selo **gargalo**.
+- **Data 1 por semana:** colunas pela semana da Data 1 (8 semanas), coloridas pela situação atual. "Venc." agrupa as pendentes com Data 1 já passada.
+- **Carga semanal de prazos:** etapas pendentes pela semana do prazo, pela mesma regra da aba Carga semanal. Há um botão **Tabela** para ver os números.
+- **Tabelas:** prazos de etapa (vencidas e próximos 10 du), módulos em risco (barra de du após a Data 1) e entregas de fornecedor atrasadas.
+
+### Programa de montagem (na Visão geral)
+
+O cartão lista as **janelas ainda não montadas** com prazo de montagem (Data 1 − 7 du) vencido ou dentro do período. A sequência segue a **Data 1** (entrega); empates vão pelo prazo de montagem e depois pelo módulo.
+
+- **Períodos:** *Hoje* (atrasadas + prazo hoje), *Esta semana* (atrasadas + prazo até sexta) e *Próxima semana* (só o prazo da semana seguinte).
+- **Blocos por dia:** atrasadas e cada dia útil, com quantas estão prontas. Feriados ficam de fora.
+- **Situação de cada linha:** *Pronta* (chaparia recebida) ou *Aguardando chaparia*, com a entrega prevista da OC ou "sem pedido". "Só prontas" esconde as que aguardam.
+- **Corte de capacidade:** se a capacidade de montagem estiver preenchida na aba Carga semanal, aparece uma linha de corte. Por semana vale a capacidade semanal; por dia, cerca de 1/5 dela.
+- **Ações:** *Abrir no Apontamento* (para marcar "montada" em lote), *Excel* (com a coluna "Montada ✓") e *Imprimir* (A4 deitado, com caixa de seleção).
+
+Passar o mouse mostra os números. Clicar em qualquer fatia, segmento, coluna ou número sublinhado abre o Apontamento só com aquelas esquadrias.
+Todo o painel respeita o filtro Todas/Portas/Janelas.
 
 ### Como a situação de cada esquadria é calculada
 
