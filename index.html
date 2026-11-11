@@ -342,6 +342,21 @@ button.comp:not(:disabled):hover{text-decoration:underline;color:#185FA5!importa
   .mh-pipe{order:5;flex:1 1 100%;} .mh-prox{order:6;flex:1 1 100%;min-width:0;}
   .pp-row{gap:3px;} .pp{font-size:10px;padding:1px 5px;} .pp-l,.pp-t{display:none;}
 }
+/* conferência editável */
+.vt th.ck,.vt td.ck{width:28px;text-align:center;} .vt td.ck input,.vt th.ck input{width:16px;height:16px;cursor:pointer;}
+.vt tr.sel td{background:#F0F6FF;}
+button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} button.ve:hover{border-color:#98A2B3;} button.ve:focus-visible{outline:2px solid #1F4E8C;outline-offset:1px;}
+.vf-pe{flex-wrap:wrap;align-items:center;justify-content:space-between;}
+.vf-lote{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1 1 auto;}
+.vf-lote b{font-size:12.5px;white-space:nowrap;} .vf-lote select,.vf-lote input[type=date]{border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12.5px;font-family:inherit;background:#fff;max-width:300px;}
+.vf-lote .btn{padding:6px 12px;font-size:12.5px;} .vf-lote .btn:disabled{opacity:.45;cursor:default;}
+.vf-msg{font-size:12px;color:#067647;font-weight:600;} .vf-msg.erro{color:var(--verm);}
+.vf-bt{display:flex;gap:8px;margin-left:auto;}
+@media (max-width:720px){
+  .vt.pode tr{grid-template-columns:24px auto 1fr auto;grid-template-areas:"ck md d1 si" "ck es es es" "ck et et et" "ck px px px";}
+  .vt.pode td.ck{grid-area:ck;align-self:start;padding-top:2px;} .vt tr.sel{background:#F0F6FF;border-radius:8px;} .vt tr.sel td{background:none;}
+  .vf-lote select{max-width:100%;flex:1 1 100%;} .vf-bt{width:100%;justify-content:flex-end;}
+}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -719,27 +734,80 @@ function abrirGeral(id){ const g=GERAL_GRUPOS[id]; if(g&&g.chaves.length) abrirV
 /* janela de conferência (só leitura) aberta pelos cliques da Visão geral */
 const SIT1={atr:'Atrasada',ate:'Atenção',dia:'Em dia',ok:'Concluída'};
 let VF=null;
-function abrirVerif(chaves,rotulo){
-  fecharOv('ov-vf'); VF={chaves,rotulo};
+let VF_SEL=new Set();
+function opcoesEtapaVF(its){
+  const temJ=its.some(it=>!ehPorta(it.codigo)), temP=its.some(it=>ehPorta(it.codigo));
+  const ops=ETAPAS.map(e=>{ const p=ETAPAS_PORTA.find(x=>x.k===e.k);
+    const nome=temJ&&temP?(p?`${e.nome} · porta: ${p.nome}`:`${e.nome} (só janelas)`):(temP?(p?p.nome:''):e.nome);
+    return nome?{k:e.k,nome}:null; }).filter(Boolean);
+  if(its.some(it=>complementos(it.codigo).length)) ops.push({k:'complemento',nome:'Complemento recebido'});
+  return ops;
+}
+function abrirVerif(chaves,rotulo,manter){
+  const antigo=document.querySelector('#ov-vf .vf-corpo'), rolagem=manter&&antigo?antigo.scrollTop:0;
+  const etAnt=manter&&document.getElementById('vf-etapa')?document.getElementById('vf-etapa').value:'';
+  const dtAnt=manter&&document.getElementById('vf-data')?document.getElementById('vf-data').value:'';
+  fecharOv('ov-vf');
+  if(!manter||!VF){ VF={chaves,rotulo,msg:''}; VF_SEL=new Set(); }
   const its=chaves.map(c=>ITENS.find(x=>x.chave===c)).filter(Boolean)
     .sort((a,b)=>((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.modulo.localeCompare(b.modulo)||a.codigo.localeCompare(b.codigo)||((a.un||0)-(b.un||0)));
   const cont={atr:0,ate:0,dia:0,ok:0}; its.forEach(it=>cont[it.c.sit]++);
+  const pode=podeApontar();
   const linhas=its.map(it=>{ const c=it.c, st=it.status||{};
     const ets=etapasDe(it).map(e=>{ const est=estadoEtapa(it,c,e), f=st[e.k];
-      return `<span class="ve ${est}" title="${e.nome}: ${f?(e.previsto?'previsto ':'feito ')+BRc(f):(e.previsto?'a informar':'prazo '+BRc(c.prazos[e.k]))}">${f&&!e.previsto?'✓ ':''}${e.curto}</span>`; }).join('');
+      const tit=`${e.nome}: ${f?(e.previsto?'previsto ':'feito ')+BRc(f):(e.previsto?'a informar':'prazo '+BRc(c.prazos[e.k]))}${pode?' — clique para apontar':''}`;
+      const txt=`${f&&!e.previsto?'✓ ':''}${e.curto}`;
+      return pode?`<button type="button" class="ve ${est}" title="${tit}" onclick="abrirEtapa('${esc(it.chave)}','${e.k}')">${txt}</button>`:`<span class="ve ${est}" title="${tit}">${txt}</span>`; }).join('');
     const prox=c.sit==='ok'?'<span class="muted">Concluída</span>':(c.prox?`${c.prox.nome} até <b>${BR(c.prazos[c.prox.k])}</b>${c.atrasoFim>0?`<div class="v-atr">+${c.atrasoFim} du após a Data 1${c.motivo?' · '+c.motivo:''}</div>`:''}`:'—');
     const oc=st.oc?`<div class="muted">OC ${escH(st.oc)}${st.entrega_prev&&!st[pedidoK(it)==='recebida'?'env_pintura':'recebida']?' · entrega prev. '+BR(st.entrega_prev):''}</div>`:'';
-    const sc=seloCompIt(it,false);
-    return `<tr><td class="md"><b>${escH(it.modulo)}</b></td><td class="d1">${it.saldo?'saldo':BR(it.d1)}</td>
+    const sc=seloCompIt(it,pode), on=VF_SEL.has(it.chave);
+    return `<tr class="${on?'sel':''}">${pode?`<td class="ck"><input type="checkbox" ${on?'checked':''} aria-label="Selecionar ${escH(it.modulo)} ${escH(it.codigo)}" onchange="vfSel('${esc(it.chave)}',this.checked)"></td>`:''}<td class="md"><b>${escH(it.modulo)}</b></td><td class="d1">${it.saldo?'saldo':BR(it.d1)}</td>
       <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${sc?`<div>${sc}</div>`:''}</td>
       <td class="et2">${ets}</td><td class="px">${prox}${oc}</td><td class="si"><span class="sit s-${c.sit}">${SIT1[c.sit]}</span></td></tr>`; }).join('');
+  // barra de apontamento em lote (etapa sugerida = próximo passo mais comum)
+  let lote='';
+  if(pode){
+    const ops=opcoesEtapaVF(its), freq={}; its.forEach(it=>{ if(it.c.prox) freq[it.c.prox.k]=(freq[it.c.prox.k]||0)+1; });
+    const sug=etAnt||(Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]||[ops[0]&&ops[0].k])[0];
+    lote=`<div class="vf-lote"><b id="vf-n">0 selecionada(s)</b>
+      <select id="vf-etapa" aria-label="Etapa">${ops.map(o=>`<option value="${o.k}" ${o.k===sug?'selected':''}>${o.nome}</option>`).join('')}</select>
+      <input type="date" id="vf-data" value="${dtAnt||HOJE}" aria-label="Data">
+      <button class="btn" id="vf-ok" onclick="vfAplicar(false)" disabled>Apontar</button>
+      <button class="btn del" id="vf-des" onclick="vfAplicar(true)" disabled>Desfazer</button>
+      <span class="vf-msg" id="vf-msg">${VF.msg||''}</span></div>`;
+  }
   const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-vf'; ov.onclick=e=>{ if(e.target===ov) fecharOv('ov-vf'); };
   ov.innerHTML=`<div class="modal vf" role="dialog" aria-modal="true" aria-label="${escH(rotulo)}">
-    <div class="vf-top"><div><h2>${escH(rotulo)}</h2><div class="vf-res">${its.length} esquadria(s) ${SITS.filter(k=>cont[k]).map(k=>`<span class="sit s-${k}">${cont[k]} ${SIT1[k].toLowerCase()}</span>`).join(' ')}</div></div>
+    <div class="vf-top"><div><h2>${escH(rotulo)}</h2><div class="vf-res">${its.length} esquadria(s) ${SITS.filter(k=>cont[k]).map(k=>`<span class="sit s-${k}">${cont[k]} ${SIT1[k].toLowerCase()}</span>`).join(' ')}${pode?'<span class="muted"> · clique numa etapa para apontar, ou selecione várias e use a barra abaixo</span>':''}</div></div>
       <button class="vf-x" onclick="fecharOv('ov-vf')" aria-label="Fechar">✕</button></div>
-    <div class="vf-corpo"><table class="vt"><tr><th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Etapas</th><th>Próximo passo</th><th>Situação</th></tr>${linhas}</table></div>
-    <div class="vf-pe"><button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div>`;
-  document.body.appendChild(ov); const bx=ov.querySelector('.vf-x'); if(bx) bx.focus();
+    <div class="vf-corpo"><table class="vt${pode?' pode':''}"><tr>${pode?'<th class="ck"><input type="checkbox" id="vf-all" aria-label="Selecionar todas" onchange="vfTodos(this.checked)"></th>':''}<th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Etapas</th><th>Próximo passo</th><th>Situação</th></tr>${linhas}</table></div>
+    <div class="vf-pe">${lote}<div class="vf-bt"><button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div></div>`;
+  document.body.appendChild(ov);
+  const corpo=ov.querySelector('.vf-corpo'); if(corpo&&rolagem) corpo.scrollTop=rolagem;
+  vfAtualizarLote();
+  if(!manter){ const bx=ov.querySelector('.vf-x'); if(bx) bx.focus(); }
+}
+function vfSel(ch,on){ on?VF_SEL.add(ch):VF_SEL.delete(ch);
+  document.querySelectorAll('#ov-vf .vt tr').forEach(tr=>{ const cb=tr.querySelector('td.ck input'); if(cb) tr.classList.toggle('sel',cb.checked); });
+  vfAtualizarLote(); }
+function vfTodos(on){ if(!VF) return; VF.chaves.forEach(c=>on?VF_SEL.add(c):VF_SEL.delete(c));
+  document.querySelectorAll('#ov-vf .vt td.ck input').forEach(cb=>{ cb.checked=on; cb.closest('tr').classList.toggle('sel',on); });
+  vfAtualizarLote(); }
+function vfAtualizarLote(){ const n=VF?VF.chaves.filter(c=>VF_SEL.has(c)).length:0, el=document.getElementById('vf-n'); if(!el) return;
+  el.textContent=n+' selecionada(s)'; ['vf-ok','vf-des'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!n; });
+  const all=document.getElementById('vf-all'); if(all){ all.checked=!!n&&n===VF.chaves.length; all.indeterminate=n>0&&n<VF.chaves.length; } }
+async function vfAplicar(desfazer){
+  if(!podeApontar()){ abrirLogin(()=>vfAplicar(desfazer)); return; }
+  const sel=document.getElementById('vf-etapa'), k=sel.value, nome=sel.options[sel.selectedIndex].text;
+  const data=desfazer?'':(document.getElementById('vf-data').value||HOJE), msg=document.getElementById('vf-msg');
+  const alvo=VF.chaves.filter(c=>VF_SEL.has(c)).filter(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return false;
+    if(k==='complemento') return complementos(it.codigo).length>0; if(k==='pintada') return !ehPorta(it.codigo); return true; });
+  if(!alvo.length){ msg.textContent='Nenhuma das selecionadas se aplica a esta etapa.'; msg.className='vf-msg erro'; return; }
+  if(desfazer&&!confirm(`Desfazer "${nome}"${k==='complemento'?'':' (e as etapas seguintes)'} em ${alvo.length} esquadria(s)?`)) return;
+  msg.textContent='Salvando...'; msg.className='vf-msg'; ['vf-ok','vf-des'].forEach(id=>document.getElementById(id).disabled=true);
+  const ok=await gravar(alvo,k,data);
+  if(ok){ VF_SEL=new Set(); VF.msg=`✓ ${alvo.length} ${desfazer?'desfeita(s)':'apontada(s)'}: ${nome}${desfazer?'':' em '+BR(data)}`; abrirVerif(VF.chaves,VF.rotulo,true); }
+  else { const m=document.getElementById('vf-msg'); if(m){ m.textContent='Falha ao salvar. Tente de novo.'; m.className='vf-msg erro'; } vfAtualizarLote(); }
 }
 function verifNoApontamento(){ const v=VF; fecharOv('ov-vf'); if(v) abrirChaves(v.chaves,v.rotulo); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('ov-vf')&&!document.getElementById('ov-et')&&!document.getElementById('ov-proj')) fecharOv('ov-vf'); });
@@ -1203,7 +1271,7 @@ async function gravar(chaves,k,data){
     if(data){ it.status[k]=data; for(let j=0;j<i;j++) if(!it.status[ETAPAS[j].k]) it.status[ETAPAS[j].k]=data; }
     else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0||(i===1&&ehPorta(it.codigo))){ delete it.status.oc; delete it.status.entrega_prev; } }
     it.c=calcular(it); });
-  render(); renderCarga(); renderSaldo(); renderGeral(); if(VF&&document.getElementById('ov-vf')) abrirVerif(VF.chaves,VF.rotulo); return true;
+  render(); renderCarga(); renderSaldo(); renderGeral(); if(VF&&document.getElementById('ov-vf')){ VF.msg=''; abrirVerif(VF.chaves,VF.rotulo,true); } return true;
 }
 
 

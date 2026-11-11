@@ -182,7 +182,11 @@ O cartão lista as **janelas ainda não montadas** com prazo de montagem (Data 1
 - **Ações:** *Abrir no Apontamento* (para marcar "montada" em lote), *Excel* (com a coluna "Montada ✓") e *Imprimir* (A4 deitado, com caixa de seleção).
 
 Passar o mouse mostra os números. Clicar em qualquer fatia, segmento, coluna, bloco ou número sublinhado abre uma **janela de conferência** sobre a tela, sem trocar de aba. Ela mostra cada esquadria com o estado das etapas, o próximo passo, a OC e a situação; fecha com ✕, Esc ou clique fora.
-Para apontar, use o botão **Abrir no Apontamento** da própria janela ou do Programa de montagem.
+**Apontar direto pela janela** (perfis apontador e admin):
+- **Uma esquadria:** clique na etapa (Pedido, Recebida, Montada…) para abrir o apontamento dela.
+- **Várias de uma vez:** marque as caixas (ou "selecionar todas"), escolha a etapa e a data no rodapé e clique em **Apontar** ou **Desfazer**. A etapa já vem sugerida pelo próximo passo mais comum da lista; "Complemento recebido" também está disponível.
+
+A janela continua aberta mostrando o novo status, e o painel atrás se atualiza. Perfil visualizador vê a janela só para leitura.
 Todo o painel respeita o filtro Todas/Portas/Janelas.
 
 ### Como a situação de cada esquadria é calculada
