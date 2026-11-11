@@ -135,6 +135,13 @@ Teste rápido: abra a URL `/exec` no navegador — aparece `{"ok":true,"app":"Es
 - Datas sem ano digitadas na planilha podem ficar com o ano errado — o dashboard avisa quando a Data 1 cai muito no passado.
 - Ao mudar o `Code.gs`: **Implantar → Gerenciar implantações → lápis → Nova versão**. A URL continua a mesma.
 
+## Visão geral (aba inicial)
+
+Painel resumido: **situação geral** (atrasadas / atenção / em dia / concluídas e % de etapas apontadas), **funil por etapa**
+de janelas e de portas com a etapa **gargalo** destacada (a que tem mais atrasadas), **prazos de etapa** (vencidos e nos próximos
+10 dias úteis), **módulos em risco** (previsão depois da Data 1) e **entregas de fornecedor atrasadas** por OC.
+Todo número sublinhado abre a lista do Apontamento só com aquelas esquadrias. Respeita o filtro Todas/Portas/Janelas.
+
 ## Carga semanal
 
 Cada célula conta as esquadrias com prazo daquela etapa na semana (a semana atual soma as atrasadas).

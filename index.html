@@ -182,7 +182,7 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 .tag-saldo{font-size:10px;font-weight:700;color:var(--azul);background:#EFF4FB;border-radius:999px;padding:1px 8px;}
 .p-saldo{font-weight:600;color:var(--azul);}
 .modal{border-radius:12px;} .tab-oc th{color:#98A2B3;}
-@media (max-width:700px){ .top{padding:8px 12px;gap:8px;} .top .sub{display:none;} .top h1{font-size:15px;min-width:0;}
+@media (max-width:700px){ .top{padding:8px 12px;gap:8px;} .top .sub{display:none;} .top h1{font-size:15px;min-width:0;flex:1 1 100%;} .top{flex-wrap:wrap;}
   .kpis{grid-template-columns:repeat(3,1fr);} .kpi{padding:6px 8px;} .kpi .v{font-size:18px;} .kpi .l{font-size:9px;}
   .wrap{padding:10px 10px 90px;} .aba{padding:8px 8px;font-size:12px;} }
 .abas{align-items:center;} .seg{margin-left:auto;display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;}
@@ -197,6 +197,24 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 .cel small.sp{display:block;position:relative;z-index:1;font-size:9.5px;font-weight:700;color:var(--verm);margin-top:1px;}
 .chip-filtro{display:inline-block;background:#EFF4FB;color:var(--azul);border-radius:999px;padding:2px 10px;font-weight:600;margin-right:6px;}
 .chip-filtro a{color:var(--azul);margin-left:6px;}
+.grid-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px;}
+.cardg{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+.topo-g{display:grid;grid-template-columns:1fr 220px;gap:20px;align-items:center;margin-bottom:10px;}
+.topo-g .big{font-size:30px;font-weight:700;line-height:1.1;}
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#F2F4F7;margin:4px 0 8px;}
+.stack i{display:block;height:100%;}
+.stack-leg{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;} .stack-leg span>i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+.fun{display:grid;grid-template-columns:170px 1fr 110px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #F2F4F7;font-size:12.5px;}
+.fun:last-child{border-bottom:none;}
+.fun-b{position:relative;height:10px;background:#F2F4F7;border-radius:5px;overflow:hidden;}
+.fun-b i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;} .fun-b i.t{background:#B2CCFF;} .fun-b i.a{background:#F97066;}
+.fun-v{text-align:right;} .v-atr,.v-atr a{color:var(--verm);font-weight:600;}
+.fun.garg{background:#FEF3F2;margin:0 -8px;padding:5px 8px;border-radius:6px;}
+.tag-garg{font-size:9.5px;font-weight:700;color:#fff;background:var(--verm);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle;}
+.tg{width:100%;border-collapse:collapse;font-size:12.5px;} .tg th{font-size:10px;color:#98A2B3;text-transform:uppercase;text-align:left;font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line);}
+.tg td{padding:5px 6px;border-bottom:1px solid #F2F4F7;} .tg .num{text-align:right;} .tg th:nth-child(n+2){text-align:right;} .tg td:nth-child(n+2){text-align:right;}
+a.lk{color:inherit;text-decoration:none;border-bottom:1px dotted #98A2B3;} a.lk:hover{color:var(--azul);border-bottom-color:var(--azul);}
+@media (max-width:700px){ .topo-g{grid-template-columns:1fr;} .fun{grid-template-columns:120px 1fr 80px;} .grid-g{grid-template-columns:1fr;} }
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -222,7 +240,8 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
 <div class="wrap">
   <div class="kpis" id="kpis"></div>
   <div class="abas">
-    <button class="aba on" data-aba="lista" onclick="trocarAba('lista')">Apontamento</button>
+    <button class="aba on" data-aba="geral" onclick="trocarAba('geral')">Visão geral</button>
+    <button class="aba" data-aba="lista" onclick="trocarAba('lista')">Apontamento</button>
     <button class="aba" data-aba="carga" onclick="trocarAba('carga')">Carga semanal (gargalo)</button>
     <button class="aba" data-aba="saldo" onclick="trocarAba('saldo')">Saldo de OCs <span id="saldo-tot"></span></button>
     <div class="seg" id="f-tipo">
@@ -235,7 +254,9 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
   <div class="alerta-pedido verm" id="aviso-versao" style="display:none"></div>
   <div class="avisos" id="avisos"></div>
 
-  <div id="pg-lista">
+  <div id="pg-geral"><div id="geral"></div></div>
+
+  <div id="pg-lista" style="display:none;">
     <div class="filtros">
       <input type="text" id="f-busca" placeholder="Buscar módulo ou esquadria" oninput="FILTRO_CHAVES=null;render()" style="min-width:200px;">
       <select id="f-etapa" onchange="FILTRO_CHAVES=null;render()"></select>
@@ -266,6 +287,7 @@ body{background:var(--bg);color:var(--txt);font-size:13px;}
         <label>Pintura <input type="number" min="0" id="cap-pint" oninput="salvarCap();renderCarga()" placeholder="—"></label>
         <label>Recebimento de chaparia <input type="number" min="0" id="cap-rec" oninput="salvarCap();renderCarga()" placeholder="—"></label>
         <label><input type="checkbox" id="c-concl" onchange="renderCarga()"> incluir o que já foi feito</label>
+        <button class="btn" style="margin-left:auto" onclick="baixarSemPedido()" id="btn-sem-pedido">📥 Baixar itens sem pedido (Excel)</button>
       </div>
       <div id="carga"></div>
       <div class="nota">
@@ -378,10 +400,13 @@ function passaEtapa(it,et){
   if(t==='p'&&k==='montada') return !!st.recebida && !st.montada && !st.env_pintura;   // OC aprovada sem data prevista
   return prox===k;
 }
-function filtrarTipo(t){ FILTRO_TIPO=t; FILTRO_CHAVES=null; try{ localStorage.setItem('esq_tipo',t); }catch(_){}
+function filtrarTipo(t){ FILTRO_TIPO=t; FILTRO_CHAVES=null; const bsp=document.getElementById('btn-sem-pedido'); if(bsp) bsp.textContent=t==='porta'?'📥 Baixar portas sem OC (Excel)':t==='janela'?'📥 Baixar chaparias sem pedido (Excel)':'📥 Baixar itens sem pedido (Excel)'; try{ localStorage.setItem('esq_tipo',t); }catch(_){}
   montarOpcoesEtapa();
   document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  render(); renderCarga(); renderSaldo(); } let SEL=new Set(); let FILTRO_SIT=''; let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção) let ABA='lista';
+  render(); renderCarga(); renderSaldo(); renderGeral(); }
+let SEL=new Set(); let FILTRO_SIT='';
+let ABRIR={};   // id -> true/false (escolha do usuário; sem escolha = abre se atrasado/atenção)
+let ABA='geral';
 
 /* ===== cálculo por esquadria ===== */
 function calcular(it){
@@ -442,7 +467,7 @@ async function carregar(){
   if(r.avisos&&r.avisos.length){ av.style.display='block'; av.innerHTML='<details class="det-al"><summary><b>Avisos da planilha ('+r.avisos.length+')</b> — linhas sem esquadria ou sem Data 1</summary><div class="cods">'+r.avisos.join('<br>')+'</div></details>'; }
   else av.style.display='none';
   document.getElementById('sub').textContent='Aba "'+r.aba+'" · lida em '+r.lido_em+' · prazos em dias úteis antes da Data 1 (chaparia '+LEAD.chaparia+' + montagem '+LEAD.montagem+' + pintura '+LEAD.pintura+')';
-  render(); renderCarga(); renderSaldo();
+  render(); renderCarga(); renderSaldo(); renderGeral();
 }
 
 /* ===== KPIs ===== */
@@ -480,7 +505,7 @@ function render(){
   const grupos={};
   vis.forEach(it=>{ const g=it.modulo+'§'+(it.d1||''); (grupos[g]=grupos[g]||{mod:it.modulo,d1:it.d1,itens:[]}).itens.push(it); });
   const lista=Object.values(grupos).sort((a,b)=>(a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:a.mod.localeCompare(b.mod));
-  document.getElementById('status').innerHTML=(FILTRO_CHAVES?`<span class="chip-filtro">Carga semanal: ${FILTRO_CHAVES.rotulo} <a href="#" onclick="limparFiltroCarga();return false;">✕ limpar</a></span> `:'')+vis.length+(FILTRO_TIPO==='porta'?' porta(s)':FILTRO_TIPO==='janela'?' janela(s)':' esquadria(s)')+' em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
+  document.getElementById('status').innerHTML=(FILTRO_CHAVES?`<span class="chip-filtro">${FILTRO_CHAVES.rotulo} <a href="#" onclick="limparFiltroCarga();return false;">✕ limpar</a></span> `:'')+vis.length+(FILTRO_TIPO==='porta'?' porta(s)':FILTRO_TIPO==='janela'?' janela(s)':' esquadria(s)')+' em '+lista.length+' grupo(s) · hoje '+BRc(HOJE);
   if(!lista.length){ document.getElementById('lista').innerHTML='<div class="vazio">Nada para este filtro.</div>'; atualizarBarra(); return; }
   const pode=podeApontar();
   document.getElementById('lista').innerHTML=lista.map(g=>{
@@ -536,6 +561,71 @@ function linhaHTML(it,pode){
         <span class="prox">${prox}</span></div>`;
 }
 
+
+/* ===== Visão geral: status, funil por etapa (gargalo), próximos vencimentos, módulos em risco, fornecedor ===== */
+let GERAL_GRUPOS={};   // id -> [chaves] para o clique
+function gid(chaves,rotulo){ const id='g'+Object.keys(GERAL_GRUPOS).length; GERAL_GRUPOS[id]={chaves,rotulo}; return id; }
+function abrirGeral(id){ const g=GERAL_GRUPOS[id]; if(g&&g.chaves.length) abrirChaves(g.chaves,g.rotulo); }
+function renderGeral(){
+  const el=document.getElementById('geral'); if(!el) return; GERAL_GRUPOS={};
+  const base=ITENS.filter(it=>!it.saldo&&passaTipo(it));
+  if(!base.length){ el.innerHTML='<div class="vazio">Sem esquadrias para este filtro.</div>'; return; }
+  const ch=l=>l.map(it=>it.chave);
+  const clk=(l,rot,html)=>l.length?`<a href="#" class="lk" onclick="abrirGeral('${gid(ch(l),rot)}');return false;">${html}</a>`:html;
+  // 1) situação
+  const S={atr:[],ate:[],dia:[],ok:[]}; base.forEach(it=>S[it.c.sit].push(it));
+  const tot=base.length, pct=n=>Math.round(100*n/tot);
+  const etTot=base.reduce((s,it)=>s+etapasDe(it).filter(e=>!e.previsto).length,0), etFeitas=base.reduce((s,it)=>s+etapasDe(it).filter(e=>!e.previsto&&(it.status||{})[e.k]).length,0);
+  const corS={atr:'#D92D20',ate:'#F79009',dia:'#12B76A',ok:'#2E6BC6'}, nomeS={atr:'Atrasadas',ate:'Atenção',dia:'Em dia',ok:'Concluídas'};
+  const barraSit=`<div class="stack">${['atr','ate','dia','ok'].map(k=>S[k].length?`<i style="width:${100*S[k].length/tot}%;background:${corS[k]}" title="${nomeS[k]}: ${S[k].length}"></i>`:'').join('')}</div>
+    <div class="stack-leg">${['atr','ate','dia','ok'].map(k=>`<span><i style="background:${corS[k]}"></i>${clk(S[k],'Visão geral: '+nomeS[k],`<b>${S[k].length}</b> ${nomeS[k].toLowerCase()} <span class="muted">(${pct(S[k].length)}%)</span>`)}</span>`).join('')}</div>`;
+  // 2) funil por etapa
+  const funil=(lista,defs,titulo)=>{
+    if(!lista.length) return '';
+    const linhas=defs.map(d=>{ const its=lista.filter(d.f); return {...d,its,atr:its.filter(it=>it.c.sit==='atr')}; });
+    const ativos=linhas.filter(l=>!l.fim);
+    const garg=ativos.reduce((m,l)=>(!m||l.atr.length>m.atr.length||(l.atr.length===m.atr.length&&l.its.length>m.its.length))?l:m,null);
+    const max=Math.max(1,...linhas.map(l=>l.its.length));
+    return `<div class="cardg"><div class="h3">${titulo} <span class="muted">· ${lista.length}</span></div>
+      ${linhas.map(l=>{ const eg=garg&&l===garg&&l.atr.length>0;
+        return `<div class="fun ${eg?'garg':''}"><div class="fun-n">${l.nome}${eg?' <span class="tag-garg">gargalo</span>':''}</div>
+          <div class="fun-b"><i class="t" style="width:${100*l.its.length/max}%"></i><i class="a" style="width:${100*l.atr.length/max}%"></i></div>
+          <div class="fun-v">${clk(l.its,titulo+': '+l.nome,`<b>${l.its.length}</b>`)}${l.atr.length?` <span class="v-atr">${clk(l.atr,titulo+': '+l.nome+' (atrasadas)',l.atr.length+' atras.')}</span>`:''}</div></div>`; }).join('')}</div>`;
+  };
+  const pk=(k)=>it=>it.c.prox&&it.c.prox.k===k;
+  const jan=base.filter(it=>!ehPorta(it.codigo)), por=base.filter(it=>ehPorta(it.codigo));
+  const fJan=funil(jan,[{nome:'Falta pedir chaparia',f:pk('solicitada')},{nome:'Aguardando chaparia',f:pk('recebida')},{nome:'A montar',f:pk('montada')},{nome:'A enviar p/ pintura',f:pk('env_pintura')},{nome:'Na pintura',f:pk('pintada')},{nome:'Concluídas',f:it=>!it.c.prox,fim:true}],'Janelas — onde estão');
+  const fPor=funil(por,[{nome:'Falta solicitação de compra',f:pk('solicitada')},{nome:'Falta OC aprovada',f:pk('recebida')},{nome:'Aguardando entrega',f:pk('env_pintura')},{nome:'Recebidas',f:it=>!it.c.prox,fim:true}],'Portas — onde estão');
+  // 3) próximos 10 du
+  const lim=addUteis(HOJE,10); const prox={}, venc={};
+  base.forEach(it=>{ const p=it.c.prox; if(!p||!it.d1) return; const d=it.c.prazos[p.k]; const nome=(ehPorta(it.codigo)?'Porta: ':'')+p.nome;
+    if(d<HOJE) (venc[nome]=venc[nome]||[]).push(it); else if(d<=lim) (prox[nome]=prox[nome]||[]).push(it); });
+  const linhasProx=Object.keys({...venc,...prox}).sort((a,b)=>((venc[b]||[]).length-(venc[a]||[]).length)||((prox[b]||[]).length-(prox[a]||[]).length))
+    .map(n=>`<tr><td>${n}</td><td class="num v-atr">${(venc[n]||[]).length?clk(venc[n],'Vencidas: '+n,(venc[n]||[]).length):'·'}</td><td class="num">${(prox[n]||[]).length?clk(prox[n],'Próximos 10 du: '+n,(prox[n]||[]).length):'·'}</td></tr>`).join('');
+  const cProx=`<div class="cardg"><div class="h3">Prazos de etapa</div>
+    ${linhasProx?`<table class="tg"><tr><th>Próxima etapa</th><th>Vencidas</th><th>Até ${BR(lim)}</th></tr>${linhasProx}</table>`:'<div class="muted">Nada vencido nem vencendo nos próximos 10 dias úteis.</div>'}</div>`;
+  // 4) módulos em risco
+  const gm={}; base.forEach(it=>{ if(it.c.sit==='ok') return; const k=it.modulo+'§'+(it.d1||''); (gm[k]=gm[k]||{mod:it.modulo,d1:it.d1,its:[]}).its.push(it); });
+  const risco=Object.values(gm).map(g=>({...g,atraso:Math.max(0,...g.its.map(i=>i.c.atrasoFim||0)),atr:g.its.filter(i=>i.c.sit==='atr').length}))
+    .filter(g=>g.atraso>0||g.atr>0).sort((a,b)=>b.atraso-a.atraso||(a.d1<b.d1?-1:1)).slice(0,8);
+  const cRisco=`<div class="cardg"><div class="h3">Módulos em risco <span class="muted">· termina depois da Data 1</span></div>
+    ${risco.length?`<table class="tg"><tr><th>Módulo</th><th>Data 1</th><th>Atrasadas</th><th>Previsão</th></tr>${risco.map(g=>`<tr><td>${clk(g.its,'Módulo em risco: '+g.mod,`<b>${g.mod}</b>`)}</td><td>${BRc(g.d1)}</td><td class="num">${g.atr}/${g.its.length}</td><td class="v-atr">${g.atraso?'+'+g.atraso+' du':'—'}</td></tr>`).join('')}</table>`:'<div class="muted">Nenhum módulo com previsão depois da Data 1. 👍</div>'}</div>`;
+  // 5) fornecedor: entrega prevista vencida e não recebida
+  const forn={}; base.forEach(it=>{ const st=it.status||{}; const porta=ehPorta(it.codigo);
+    const prev=porta?(st.montada||st.entrega_prev):st.entrega_prev; const recebido=porta?st.env_pintura:st.recebida;
+    if(st.oc&&prev&&prev<HOJE&&!recebido){ (forn[st.oc]=forn[st.oc]||{oc:st.oc,prev,its:[]}).its.push(it); if(prev<forn[st.oc].prev) forn[st.oc].prev=prev; } });
+  const lf=Object.values(forn).sort((a,b)=>a.prev<b.prev?-1:1);
+  const cForn=`<div class="cardg"><div class="h3">Entregas de fornecedor atrasadas</div>
+    ${lf.length?`<table class="tg"><tr><th>OC</th><th>Entrega prevista</th><th>Itens não recebidos</th><th>Atraso</th></tr>${lf.map(f=>`<tr><td><b>${f.oc}</b></td><td>${BRc(f.prev)}</td><td class="num">${clk(f.its,'OC '+f.oc+': não recebidos',f.its.length)}</td><td class="v-atr">${difUteis(f.prev,HOJE)} du</td></tr>`).join('')}</table>`:'<div class="muted">Nenhuma OC com entrega vencida em aberto.</div>'}</div>`;
+  // saldo
+  const nSaldo=ITENS.filter(it=>it.saldo&&passaTipo(it)).length;
+  el.innerHTML=`<div class="cardg topo-g">
+      <div><div class="h3">Situação geral</div>${barraSit}</div>
+      <div class="prog"><div class="h3">Avanço das etapas</div><div class="big">${Math.round(100*etFeitas/Math.max(1,etTot))}%</div><div class="muted small">${etFeitas} de ${etTot} etapas apontadas${nSaldo?` · ${nSaldo} un. em saldo de OC`:''}</div></div>
+    </div>
+    <div class="grid-g">${fJan}${fPor}${cProx}${cRisco}${cForn}</div>`;
+}
+
 /* ===== carga semanal ===== */
 function renderCarga(){
   const incl=document.getElementById('c-concl').checked;
@@ -572,10 +662,16 @@ function renderCarga(){
   document.getElementById('carga').innerHTML=h;
 }
 let CARGA={}; let FILTRO_CHAVES=null;
+function abrirChaves(chaves,rotulo){
+  FILTRO_CHAVES={set:new Set(chaves), rotulo};
+  document.getElementById('f-etapa').value=''; FILTRO_SIT='';
+  if(chaves.some(c=>{ const it=ITENS.find(x=>x.chave===c); return it&&it.c.sit==='ok'; })) document.getElementById('f-concl').checked=true;
+  trocarAba('lista'); render(); window.scrollTo({top:0,behavior:'smooth'});
+}
 function abrirCarga(k,sem,nome){
   const semAtual=segunda(HOJE);
   const ch=sem==='atr'?((CARGA[k]||{}).atr||[]):(((CARGA[k]||{})[sem]||[]).concat(sem===semAtual?((CARGA[k]||{}).atr||[]):[]));
-  FILTRO_CHAVES={set:new Set(ch), rotulo:`${nome} · ${sem==='atr'?'atrasadas':'semana de '+BR(sem)+(sem===semAtual?' (inclui atrasadas)':'')}`};
+  FILTRO_CHAVES={set:new Set(ch), rotulo:`Carga semanal: ${nome} · ${sem==='atr'?'atrasadas':'semana de '+BR(sem)+(sem===semAtual?' (inclui atrasadas)':'')}`};
   document.getElementById('f-etapa').value=''; FILTRO_SIT='';
   if([...FILTRO_CHAVES.set].some(c=>{ const it=ITENS.find(x=>x.chave===c); return it&&it.c.sit==='ok'; })) document.getElementById('f-concl').checked=true;
   trocarAba('lista'); render();
@@ -609,8 +705,8 @@ function renderSaldo(){
 function salvarCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>localStorage.setItem('esq_'+id,document.getElementById(id).value)); }catch(_){} }
 function lerCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>{ const v=localStorage.getItem('esq_'+id); if(v) document.getElementById(id).value=v; }); }catch(_){} }
 function trocarAba(a){ ABA=a; document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
-  ['lista','carga','saldo'].forEach(x=>document.getElementById('pg-'+x).style.display=a===x?'block':'none');
-  if(a==='carga') renderCarga(); if(a==='saldo') renderSaldo(); atualizarBarra(); }
+  ['geral','lista','carga','saldo'].forEach(x=>document.getElementById('pg-'+x).style.display=a===x?'block':'none');
+  if(a==='carga') renderCarga(); if(a==='saldo') renderSaldo(); if(a==='geral') renderGeral(); atualizarBarra(); }
 
 /* ===== seleção e apontamento ===== */
 function sel(ch,on){ on?SEL.add(ch):SEL.delete(ch); atualizarBarra(); }
@@ -665,7 +761,7 @@ async function gravar(chaves,k,data){
     if(data){ it.status[k]=data; for(let j=0;j<i;j++) if(!it.status[ETAPAS[j].k]) it.status[ETAPAS[j].k]=data; }
     else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0||(i===1&&ehPorta(it.codigo))){ delete it.status.oc; delete it.status.entrega_prev; } }
     it.c=calcular(it); });
-  render(); renderCarga(); renderSaldo(); return true;
+  render(); renderCarga(); renderSaldo(); renderGeral(); return true;
 }
 
 
@@ -702,6 +798,49 @@ function pvIr(d){ if(!PV.doc) return; PV.pag=Math.min(PV.doc.numPages,Math.max(1
 function pvZoom(d){ PV.zoom=Math.min(4,Math.max(0.5,PV.zoom+d)); pvDesenhar(); }
 
 const COMPLEMENTOS={"PF175E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF250D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF257":[["policarbonato","Policarbonato 4mm","POLICARBONATO CRISTAL 4mm"]],"PF151D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF151E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF152D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF152E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF153D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF153E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF158D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF158E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF159D":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF159E":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF160E":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF268D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"POF250":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF477E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF160D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"GLF459":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"GLF461":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"GPF453":[["policarbonato","Policarbonato 4mm c/ película insulfilm","POLICARBONATO 4mm C/ PELÍCULA INSULFIM"]],"JPF350":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF352":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF354":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF355":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JVF303":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JPF356":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"GLF462":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"JVF301":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF302":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF304":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF307":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"TE05":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUITEIRO DE AÇO GALVANIZADO #14 FIO"]],"TE09":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUETEIRO DE AÇO GALVANIZADO #14"]],"TE10":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUETEIRO DE AÇO GALVANIZADO #14"]],"VBF451":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF457":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF458":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF459":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VPF452":[["policarbonato","Policarbonato translúcido 12mm","POLICARBONATO TRANSLÚCIDO (e=12mm)"]],"POF151D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF151E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF159E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF159D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF256":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF452D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF473D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF473E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF475D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF475E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]]};
+
+/* ===== Exportar itens sem pedido/OC para o setor de compras (Excel, 2 abas) ===== */
+const XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+function carregarXlsx(){ return new Promise((res,rej)=>{ if(window.XLSX) return res(window.XLSX);
+  const sc=document.createElement('script'); sc.src=XLSX_URL; sc.onload=()=>res(window.XLSX); sc.onerror=()=>rej(new Error('Não foi possível carregar o gerador de Excel (sem internet?)')); document.head.appendChild(sc); }); }
+function itensSemPedido(){
+  return ITENS.filter(it=>!it.saldo && passaTipo(it) && !(it.status||{})[pedidoK(it)])
+    .sort((a,b)=>(a.c.prazos.solicitada||'9')<(b.c.prazos.solicitada||'9')?-1:(a.c.prazos.solicitada||'9')>(b.c.prazos.solicitada||'9')?1:a.modulo.localeCompare(b.modulo));
+}
+async function baixarSemPedido(){
+  const lista=itensSemPedido();
+  if(!lista.length){ alert('Nenhuma esquadria sem pedido para este filtro.'); return; }
+  const btn=document.getElementById('btn-sem-pedido'); const txt=btn.textContent; btn.textContent='Gerando...'; btn.disabled=true;
+  try{
+    const X=await carregarXlsx();
+    const cod=it=>chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
+    const comp=it=>complementos(it.codigo).map(([t,r])=>r).join(' + ');
+    const sit=it=>{ const f=it.d1?difUteis(HOJE,it.c.prazos.solicitada):null; return f===null?'sem Data 1':(f<0?`vencido há ${-f} du`:(f<=ALERTA_PEDIDO_DU?`vence em ${f} du`:`faltam ${f} du`)); };
+    const dt=s=>s?BRc(s):'';
+    // aba 1: resumo por código
+    const g={};
+    lista.forEach(it=>{ const k=cod(it); const x=g[k]=g[k]||{k,tipo:ehPorta(it.codigo)?'Porta':'Janela',desc:(PROJETOS[k]||[])[1]||'',qtd:0,mods:{},prazo:'',comp:comp(it)};
+      x.qtd++; x.mods[it.modulo]=(x.mods[it.modulo]||0)+1; const p=it.c.prazos.solicitada; if(p&&(!x.prazo||p<x.prazo)) x.prazo=p; });
+    const resumo=[['Código','Tipo','Descrição (caderno)','Qtd. total','Para os módulos','Prazo do pedido mais cedo','Complemento a comprar']]
+      .concat(Object.values(g).sort((a,b)=>(a.prazo||'9')<(b.prazo||'9')?-1:1).map(x=>[x.k,x.tipo,x.desc,x.qtd,Object.entries(x.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', '),dt(x.prazo),x.comp]));
+    resumo.push([]); resumo.push(['TOTAL','','',lista.length]);
+    // aba 2: por módulo
+    const gm={};
+    lista.forEach(it=>{ const k=it.modulo+'§'+(it.d1||'')+'§'+cod(it); const x=gm[k]=gm[k]||{it,qtd:0}; x.qtd++; });
+    const pormod=[['Módulo','Data 1','Código','Tipo','Qtd.','Prazo do pedido (SC/chaparia)','Prazo de recebimento','Situação do pedido','Observação','Complemento a comprar']]
+      .concat(Object.values(gm).map(({it,qtd})=>{ const porta=ehPorta(it.codigo);
+        return [it.modulo,dt(it.d1),cod(it),porta?'Porta':'Janela',qtd,dt(it.c.prazos.solicitada),dt(porta?it.c.prazos.env_pintura:it.c.prazos.recebida),sit(it),(it.status||{}).solicitada&&porta?'SC já emitida em '+dt(it.status.solicitada):'',comp(it)]; }));
+    const wb=X.utils.book_new();
+    const ws1=X.utils.aoa_to_sheet(resumo); ws1['!cols']=[{wch:11},{wch:8},{wch:52},{wch:9},{wch:60},{wch:14},{wch:46}];
+    const ws2=X.utils.aoa_to_sheet(pormod); ws2['!cols']=[{wch:12},{wch:11},{wch:11},{wch:8},{wch:6},{wch:16},{wch:16},{wch:18},{wch:24},{wch:46}];
+    ws1['!autofilter']={ref:'A1:G1'}; ws2['!autofilter']={ref:'A1:J1'};
+    X.utils.book_append_sheet(wb,ws1,'Resumo por código'); X.utils.book_append_sheet(wb,ws2,'Por módulo');
+    const tipo=FILTRO_TIPO==='porta'?'portas':FILTRO_TIPO==='janela'?'janelas':'esquadrias';
+    X.writeFile(wb,`${tipo}_sem_pedido_${HOJE}.xlsx`);
+  }catch(err){ alert('Não foi possível gerar o Excel: '+err.message); }
+  btn.textContent=txt; btn.disabled=false;
+}
+
 /* ===== Complementos (revestimento conforme caderno R02): comprar à parte da chaparia ===== */
 const ICONE_COMP={policarbonato:'🔷',vidro:'🪟',vidro_blindado:'🛡️',tela:'▦'};
 function complementos(cod){ const k=chaveProjeto(cod)||(String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'')); return COMPLEMENTOS[k]||COMPLEMENTOS[k.replace(/[DE]$/,'')]||[]; }
@@ -923,7 +1062,7 @@ async function entrar(){
 }
 
 document.getElementById('b-data').value=HOJE;
-lerCap(); mostrarUser(); montarOpcoesEtapa(); document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===FILTRO_TIPO));
+lerCap(); mostrarUser(); montarOpcoesEtapa(); { const bsp=document.getElementById('btn-sem-pedido'); if(bsp) bsp.textContent=FILTRO_TIPO==='porta'?'📥 Baixar portas sem OC (Excel)':FILTRO_TIPO==='janela'?'📥 Baixar chaparias sem pedido (Excel)':'📥 Baixar itens sem pedido (Excel)'; } document.querySelectorAll('#f-tipo button').forEach(b=>b.classList.toggle('on',b.dataset.t===FILTRO_TIPO));
 if(sessionStorage.getItem('esq_user')){ document.getElementById('tela-login').style.display='none'; carregar(); } else mostrarTelaLogin();
 </script>
 </body>
