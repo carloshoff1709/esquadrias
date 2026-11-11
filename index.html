@@ -279,6 +279,30 @@ a.lk{color:inherit;text-decoration:none;border-bottom:1px dotted #98A2B3;} a.lk:
   .tm td.ch{grid-area:ch;} .tm td.st{grid-area:st;text-align:right;font-size:11.5px;}
   .tm tr.corte{display:block;padding:0;} .tm tr.corte td{padding:6px;}
 }
+/* complemento com estado + janela de conferência */
+button.comp{font-family:inherit;cursor:pointer;text-align:left;} button.comp:disabled{cursor:default;}
+button.comp:not(:disabled):hover{text-decoration:underline;color:#185FA5!important;}
+.comp.rec{color:#067647!important;font-weight:600;}
+.modal.vf{max-width:1040px;width:100%;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+.vf-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 20px 12px;border-bottom:1px solid var(--line);}
+.vf-res{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:4px;}
+.vf-x{border:none;background:#F2F4F7;border-radius:8px;width:32px;height:32px;font-size:15px;cursor:pointer;color:#475467;flex:0 0 auto;}
+.vf-x:hover{background:#E4E7EC;}
+.vf-corpo{overflow:auto;padding:4px 20px;flex:1;}
+.vf-pe{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--line);}
+.vt{width:100%;border-collapse:collapse;font-size:12.5px;}
+.vt th{position:sticky;top:0;background:#fff;font-size:10px;color:#98A2B3;text-transform:uppercase;text-align:left;font-weight:600;padding:8px 6px 5px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1;}
+.vt td{padding:7px 6px;border-bottom:1px solid #F2F4F7;vertical-align:top;} .vt td.d1{white-space:nowrap;} .vt td.md{white-space:nowrap;} .vt td.si{white-space:nowrap;text-align:right;}
+.vt td.px{min-width:170px;} .vt .muted{font-size:11.5px;}
+.ve{display:inline-block;font-size:10.5px;font-weight:600;border-radius:5px;padding:1px 6px;margin:1px 3px 2px 0;background:#F2F4F7;color:#667085;white-space:nowrap;}
+.ve.feito{background:#ECFDF3;color:#067647;} .ve.atr{background:#FEF3F2;color:#B42318;} .ve.ate{background:#FFFAEB;color:#B54708;}
+@media (max-width:720px){
+  .overlay{padding:8px;} .vf-top{padding:12px 14px 10px;} .vf-corpo{padding:0 12px;} .vf-pe{padding:10px 12px;}
+  .vt,.vt tbody{display:block;} .vt tr:first-child{display:none;}
+  .vt tr{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"md d1 si" "es es es" "et et et" "px px px";column-gap:8px;row-gap:4px;padding:10px 0;border-bottom:1px solid #F2F4F7;}
+  .vt td{display:block;border:none;padding:0;} .vt td.md{grid-area:md;} .vt td.d1{grid-area:d1;color:var(--mut);font-size:12px;align-self:center;} .vt td.d1::before{content:'Data 1 ';}
+  .vt td.si{grid-area:si;} .vt td.es{grid-area:es;} .vt td.et2{grid-area:et;} .vt td.px{grid-area:px;min-width:0;font-size:12px;}
+}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -371,6 +395,7 @@ a.lk{color:inherit;text-decoration:none;border-bottom:1px dotted #98A2B3;} a.lk:
     <option value="montada">Montagem feita · porta: recebimento previsto</option>
     <option value="env_pintura">Enviada p/ pintura · porta: recebida</option>
     <option value="pintada">Pintura concluída (só janelas)</option>
+    <option value="complemento">Complemento recebido (vidro/policarbonato/tela)</option>
   </select>
   <input type="date" id="b-data">
   <button class="btn" onclick="aplicarLote(false)">Apontar</button>
@@ -515,8 +540,8 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-10.3'; const av0=document.getElementById('aviso-versao');
-  if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
+  const VERSAO_MIN='2026-11-11.1'; const av0=document.getElementById('aviso-versao');
+  if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC, complemento recebido e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
   (r.feriados||[]).forEach(f=>FERIADOS.add(f));
@@ -605,7 +630,7 @@ function linhaHTML(it,pode){
         const st=(it.status||{})[e.k]; const est=estadoEtapa(it,c,e);
         const txt=st?(e.previsto?`<b>prev. ${BR(st)}</b>`:`<b>✓ ${BR(st)}</b>`):(e.previsto?'<b>a informar</b>':(c.prazos[e.k]?`<b>até ${BR(c.prazos[e.k])}</b>`:'<b>—</b>'));
         const btn=`<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&(it.status||{}).oc?' · OC '+it.status.oc:''}"><span class="et-rot">${e.curto}</span>${txt}</button>`;
-        return e.k==='solicitada' ? `<div class="et-sol">${btn}${seloComplemento(it.codigo)}</div>` : btn;
+        return e.k==='solicitada' ? `<div class="et-sol">${btn}${seloCompIt(it,pode)}</div>` : btn;
       }).join('')+(porta?'<span class="et-vazio"></span>':'');
       let prox;
       if(it.saldo){ const st0=it.status||{}; prox=`<span class="p-saldo">Em saldo · OC ${it.oc}</span><div class="p2">${c.prox?'Próxima etapa: '+c.prox.nome:(ehPorta(it.codigo)?'Recebida':'Pronta (pintada)')} · vai para o próximo módulo com ${chaveProjeto(it.codigo)||it.codigo}${st0.entrega_prev&&!st0.recebida?' · entrega prev. '+BR(st0.entrega_prev):''}</div>`; }
@@ -626,7 +651,7 @@ function linhaHTML(it,pode){
 
 
 /* ===== Visão geral: painel estilo BI (anéis, barras empilhadas, colunas por semana, tabelas) =====
-   Cada marca (fatia, segmento, coluna, linha da legenda) mostra tooltip e, ao clicar, abre o Apontamento só com aquelas esquadrias. */
+   Cada marca (fatia, segmento, coluna, linha da legenda) mostra tooltip e, ao clicar, abre a janela de conferência (abrirVerif). */
 const COR_SIT={atr:'#d03b3b',ate:'#fab219',dia:'#0ca30c',ok:'#2a78d6'};
 const NOME_SIT={atr:'Atrasadas',ate:'Atenção',dia:'Em dia',ok:'Concluídas'};
 const SITS=['atr','ate','dia','ok'];
@@ -635,7 +660,34 @@ const SERIES_CARGA=[{k:'recebida',nome:'Chaparia a receber',cor:'#86b6ef'},{k:'m
 let GERAL_GRUPOS={}, GERAL_TT=[];
 const escH=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function gid(chaves,rotulo){ const id='g'+Object.keys(GERAL_GRUPOS).length; GERAL_GRUPOS[id]={chaves,rotulo}; return id; }
-function abrirGeral(id){ const g=GERAL_GRUPOS[id]; if(g&&g.chaves.length) abrirChaves(g.chaves,g.rotulo); }
+function abrirGeral(id){ const g=GERAL_GRUPOS[id]; if(g&&g.chaves.length) abrirVerif(g.chaves,g.rotulo); }
+/* janela de conferência (só leitura) aberta pelos cliques da Visão geral */
+const SIT1={atr:'Atrasada',ate:'Atenção',dia:'Em dia',ok:'Concluída'};
+let VF=null;
+function abrirVerif(chaves,rotulo){
+  fecharOv('ov-vf'); VF={chaves,rotulo};
+  const its=chaves.map(c=>ITENS.find(x=>x.chave===c)).filter(Boolean)
+    .sort((a,b)=>((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.modulo.localeCompare(b.modulo)||a.codigo.localeCompare(b.codigo)||((a.un||0)-(b.un||0)));
+  const cont={atr:0,ate:0,dia:0,ok:0}; its.forEach(it=>cont[it.c.sit]++);
+  const linhas=its.map(it=>{ const c=it.c, st=it.status||{};
+    const ets=etapasDe(it).map(e=>{ const est=estadoEtapa(it,c,e), f=st[e.k];
+      return `<span class="ve ${est}" title="${e.nome}: ${f?(e.previsto?'previsto ':'feito ')+BRc(f):(e.previsto?'a informar':'prazo '+BRc(c.prazos[e.k]))}">${f&&!e.previsto?'✓ ':''}${e.curto}</span>`; }).join('');
+    const prox=c.sit==='ok'?'<span class="muted">Concluída</span>':(c.prox?`${c.prox.nome} até <b>${BR(c.prazos[c.prox.k])}</b>${c.atrasoFim>0?`<div class="v-atr">+${c.atrasoFim} du após a Data 1${c.motivo?' · '+c.motivo:''}</div>`:''}`:'—');
+    const oc=st.oc?`<div class="muted">OC ${escH(st.oc)}${st.entrega_prev&&!st[pedidoK(it)==='recebida'?'env_pintura':'recebida']?' · entrega prev. '+BR(st.entrega_prev):''}</div>`:'';
+    const sc=seloCompIt(it,false);
+    return `<tr><td class="md"><b>${escH(it.modulo)}</b></td><td class="d1">${it.saldo?'saldo':BR(it.d1)}</td>
+      <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${sc?`<div>${sc}</div>`:''}</td>
+      <td class="et2">${ets}</td><td class="px">${prox}${oc}</td><td class="si"><span class="sit s-${c.sit}">${SIT1[c.sit]}</span></td></tr>`; }).join('');
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-vf'; ov.onclick=e=>{ if(e.target===ov) fecharOv('ov-vf'); };
+  ov.innerHTML=`<div class="modal vf" role="dialog" aria-modal="true" aria-label="${escH(rotulo)}">
+    <div class="vf-top"><div><h2>${escH(rotulo)}</h2><div class="vf-res">${its.length} esquadria(s) ${SITS.filter(k=>cont[k]).map(k=>`<span class="sit s-${k}">${cont[k]} ${SIT1[k].toLowerCase()}</span>`).join(' ')}</div></div>
+      <button class="vf-x" onclick="fecharOv('ov-vf')" aria-label="Fechar">✕</button></div>
+    <div class="vf-corpo"><table class="vt"><tr><th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Etapas</th><th>Próximo passo</th><th>Situação</th></tr>${linhas}</table></div>
+    <div class="vf-pe"><button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div>`;
+  document.body.appendChild(ov); const bx=ov.querySelector('.vf-x'); if(bx) bx.focus();
+}
+function verifNoApontamento(){ const v=VF; fecharOv('ov-vf'); if(v) abrirChaves(v.chaves,v.rotulo); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('ov-vf')&&!document.getElementById('ov-et')&&!document.getElementById('ov-proj')) fecharOv('ov-vf'); });
 function ttReg(titulo,linhas,rodape){ GERAL_TT.push({titulo,linhas,rodape}); return GERAL_TT.length-1; }
 /* atributos de uma marca interativa: tooltip (data-tt) + clique (data-g). foco=false nas fatias do SVG (a legenda já é focável) */
 function marcaAttr(lista,rotulo,tt,foco){
@@ -672,7 +724,7 @@ function anelProgresso(p,centroL){
 function cartaoAnel(titulo,sub,grupos,centroV,centroL,rot){
   const tot=SITS.reduce((s,k)=>s+grupos[k].n,0);
   const segs=SITS.map(k=>{ const g=grupos[k];
-    const tt=ttReg(titulo,[[COR_SIT[k],g.n,NOME_SIT[k]+' · '+pctDe(g.n,tot)+'%']],g.n?'Clique para ver na lista':'');
+    const tt=ttReg(titulo,[[COR_SIT[k],g.n,NOME_SIT[k]+' · '+pctDe(g.n,tot)+'%']],g.n?'Clique para conferir':'');
     return {k,v:g.n,cor:COR_SIT[k],attr:marcaAttr(g.its,rot+': '+NOME_SIT[k],tt,false),attrL:marcaAttr(g.its,rot+': '+NOME_SIT[k],tt)}; });
   return `<div class="cardg"><div class="ct"><div><h3>${titulo}</h3><div class="sub">${sub}</div></div></div>
     <div class="anel-w">${anelSVG(segs,centroV,centroL)}
@@ -689,9 +741,9 @@ function cartaoFunil(titulo,lista,defs,classe){
   const temG=garg&&garg.by.atr.length>0, max=Math.max(1,...linhas.map(l=>l.its.length));
   const rows=linhas.map(l=>{ const eg=temG&&l===garg;
     const segs=SITS.filter(k=>l.by[k].length).map(k=>{ const n=l.by[k].length;
-      const tt=ttReg(titulo+' · '+l.nome,SITS.filter(x=>l.by[x].length).map(x=>[COR_SIT[x],l.by[x].length,NOME_SIT[x]]),'Clique para ver as '+NOME_SIT[k].toLowerCase());
+      const tt=ttReg(titulo+' · '+l.nome,SITS.filter(x=>l.by[x].length).map(x=>[COR_SIT[x],l.by[x].length,NOME_SIT[x]]),'Clique para conferir as '+NOME_SIT[k].toLowerCase());
       return `<i class="sg" style="width:calc(${(100*n/max).toFixed(2)}% - 2px);background:${COR_SIT[k]}"${marcaAttr(l.by[k],titulo+': '+l.nome+' ('+NOME_SIT[k].toLowerCase()+')',tt)}></i>`; }).join('');
-    const ttRow=ttReg(titulo+' · '+l.nome,[['#98A2B3',l.its.length,'no total']],l.its.length?'Clique para ver na lista':'');
+    const ttRow=ttReg(titulo+' · '+l.nome,[['#98A2B3',l.its.length,'no total']],l.its.length?'Clique para conferir':'');
     return `<div class="fn${eg?' garg':''}"><div class="fn-n">${l.nome}${eg?'<span class="tag-garg">gargalo</span>':''}</div>
       <div class="fn-b">${segs||'<span class="fn-0"></span>'}</div>
       <div class="fn-v"><span class="fn-t"${marcaAttr(l.its,titulo+': '+l.nome,ttRow)}>${l.its.length}</span>${l.by.atr.length?`<span class="v-atr">${l.by.atr.length} atras.</span>`:''}</div></div>`; }).join('');
@@ -708,9 +760,9 @@ function cartaoColunas(titulo,sub,buckets,series,classe){
   let y='', gl='';
   for(let i=0;i<=n;i++){ const b=Math.round(H*i/n); y+=`<span style="bottom:${b}px">${st*i}</span>`; if(i) gl+=`<i class="gl" style="bottom:${b}px"></i>`; }
   const cols=buckets.map((b,bi)=>{ const tot=tots[bi]; const linhasTT=series.map(se=>[se.cor,(b.vals[se.k]||[]).length,se.nome]).filter(x=>x[1]).reverse();
-    const ttCol=ttReg(b.titulo,linhasTT.length?linhasTT:[['#98A2B3',0,'nada nesta semana']],tot?'Clique num segmento para ver na lista':'');
+    const ttCol=ttReg(b.titulo,linhasTT.length?linhasTT:[['#98A2B3',0,'nada nesta semana']],tot?'Clique num segmento para conferir':'');
     const segs=series.filter(se=>(b.vals[se.k]||[]).length).map(se=>{ const its=b.vals[se.k];
-      return `<i style="flex:${its.length} 1 0;background:${se.cor}"${marcaAttr(its,titulo+': '+se.nome+' · '+b.titulo,ttReg(b.titulo,linhasTT,'Clique para ver: '+se.nome.toLowerCase()))}></i>`; }).join('');
+      return `<i style="flex:${its.length} 1 0;background:${se.cor}"${marcaAttr(its,titulo+': '+se.nome+' · '+b.titulo,ttReg(b.titulo,linhasTT,'Clique para conferir: '+se.nome.toLowerCase()))}></i>`; }).join('');
     return `<div class="cc-s${b.hl?' hl':''}" data-tt="${ttCol}"><div class="cc-t">${tot||''}</div>${tot?`<div class="cc-b" style="height:${Math.max(3,Math.round(H*tot/max))}px">${segs}</div>`:''}</div>`; }).join('');
   const xs=buckets.map(b=>`<div><b>${b.rot}</b>${b.sub||'&nbsp;'}</div>`).join('');
   const tab=`<table class="tg tvw"><tr><th>Série</th>${buckets.map(b=>`<th>${b.rot}${b.sub?' '+b.sub:''}</th>`).join('')}</tr>
@@ -804,7 +856,7 @@ function renderGeral(){
     ${lf.length?`<table class="tg"><tr><th>OC</th><th>Entrega prev.</th><th>Itens</th><th>Atraso</th></tr>${lf.map(f=>`<tr><td><b>${escH(f.oc)}</b></td><td>${BRc(f.prev)}</td><td class="num">${clk(f.its,'OC '+f.oc+': não recebidos',f.its.length)}</td><td class="v-atr">${difUteis(f.prev,HOJE)} du</td></tr>`).join('')}</table>`:'<div class="muted">Nenhuma OC com entrega vencida em aberto.</div>'}</div>`;
 
   el.innerHTML=`<div class="bi">${cSit}${cMod}${cAv}${cartaoMontagem()}${fJan}${fPor}${cD1}${cCarga}${cProx}${cRisco}${cForn}</div>
-    <div class="muted small" style="margin:10px 2px 0">Passe o mouse para ver os números; clique em qualquer fatia, barra ou coluna para abrir o Apontamento só com aquelas esquadrias.</div>`;
+    <div class="muted small" style="margin:10px 2px 0">Passe o mouse para ver os números; clique em qualquer fatia, barra, coluna ou número para conferir aquelas esquadrias.</div>`;
 }
 /* tooltip único + clique/teclado do painel (delegação de eventos; textos via textContent) */
 (function(){
@@ -849,6 +901,10 @@ function infoChaparia(it){ const st=it.status||{}, p=it.c.prazos.montada, oc=st.
     return {pronta:false,txt:'Pedida '+BR(st.solicitada)+oc+' · sem previsão',cls:'ate'}; }
   return {pronta:false,txt:'Sem pedido',cls:'atr'};
 }
+function infoMaterial(it){ const st=it.status||{}, ch=infoChaparia(it), precisa=complementos(it.codigo).length>0;
+  const falta=[st.recebida?'':'chaparia',(precisa&&!st.complemento)?'complemento':''].filter(Boolean);
+  return {...ch,lib:!falta.length,falta}; }
+const txtFalta=m=>'Falta '+m.falta.join(' + ');
 function prazoMontagemTxt(it){ const p=it.c.prazos.montada;
   if(p<HOJE) return {txt:`${diaSem(p)} ${BR(p)} · venceu há ${difUteis(p,HOJE)} du`,cls:'atr'};
   if(p===HOJE) return {txt:'hoje',cls:'ate'};
@@ -860,8 +916,8 @@ function dadosMontagem(){
     .filter(it=>{ const p=it.c.prazos.montada; return (P.atrasadas&&p<HOJE)||(p>=P.ini&&p<P.fimEx); })
     .sort((a,b)=>(a.d1<b.d1?-1:a.d1>b.d1?1:0)||(a.c.prazos.montada<b.c.prazos.montada?-1:a.c.prazos.montada>b.c.prazos.montada?1:0)
       ||a.modulo.localeCompare(b.modulo)||a.codigo.localeCompare(b.codigo)||((a.un||0)-(b.un||0)));
-  todos.forEach(it=>{ it._ch=infoChaparia(it); });
-  const its=MONT_PRONTAS?todos.filter(it=>it._ch.pronta):todos;
+  todos.forEach(it=>{ it._ch=infoMaterial(it); });
+  const its=MONT_PRONTAS?todos.filter(it=>it._ch.lib):todos;
   const cap=capMontagem(), lim=cap?(P.v==='hoje'?Math.ceil(cap/5):cap):0;
   return {P,todos,its,cap,lim};
 }
@@ -876,25 +932,25 @@ function abrirMontagem(){ const {P,its}=dadosMontagem(); if(its.length) abrirCha
 function cartaoMontagem(){
   if(FILTRO_TIPO==='porta') return '';
   const {P,todos,its,cap,lim}=dadosMontagem();
-  const atr=todos.filter(it=>it.c.prazos.montada<HOJE), prontas=todos.filter(it=>it._ch.pronta), bloq=todos.filter(it=>!it._ch.pronta);
+  const atr=todos.filter(it=>it.c.prazos.montada<HOJE), prontas=todos.filter(it=>it._ch.lib), bloq=todos.filter(it=>!it._ch.lib);
   // blocos por dia
   const dias=[]; { let s=P.ini; while(s<P.fimEx){ if(util(s)) dias.push(s); s=somaDias(s,1); } }
   const blocos=[...(P.atrasadas?[{rot:'Atrasadas',sub:'prazo vencido',its:atr,cls:'atr'}]:[]),
     ...dias.map(s=>({rot:diaSem(s)+' '+BR(s),sub:s===HOJE?'hoje':'',its:todos.filter(it=>it.c.prazos.montada===s),cls:s===HOJE?'hj':''}))];
-  const tiles=blocos.map(b=>{ const np=b.its.filter(it=>it._ch.pronta).length;
-    const tt=ttReg('Montagem · '+b.rot,[['#0ca30c',np,'prontas p/ montar'],['#98A2B3',b.its.length-np,'aguardando chaparia']],b.its.length?'Clique para ver na lista':'');
-    return `<div class="mtile ${b.cls}"${marcaAttr(b.its,'Montagem · '+b.rot,tt)}><span>${b.rot}${b.sub?` <em>${b.sub}</em>`:''}</span><b>${b.its.length}</b><small>${np} pronta(s)</small></div>`; }).join('');
+  const tiles=blocos.map(b=>{ const np=b.its.filter(it=>it._ch.lib).length;
+    const tt=ttReg('Montagem · '+b.rot,[['#0ca30c',np,'liberadas'],['#98A2B3',b.its.length-np,'aguardando material']],b.its.length?'Clique para conferir':'');
+    return `<div class="mtile ${b.cls}"${marcaAttr(b.its,'Montagem · '+b.rot,tt)}><span>${b.rot}${b.sub?` <em>${b.sub}</em>`:''}</span><b>${b.its.length}</b><small>${np} liberada(s)</small></div>`; }).join('');
   // tabela em sequência
   const mostra=MONT_TODAS?its:its.slice(0,15);
   let linhas='';
   mostra.forEach((it,i)=>{ const pz=prazoMontagemTxt(it), ch=it._ch;
-    linhas+=`<tr class="${ch.pronta?'':'bloq'}"><td class="sq">${i+1}</td>
-      <td class="md"><a href="#" class="lk" onclick="abrirChaves(['${esc(it.chave)}'],'Montagem: ${esc(it.modulo)} ${esc(it.codigo)}');return false;"><b>${escH(it.modulo)}</b></a></td>
+    linhas+=`<tr class="${ch.lib?'':'bloq'}"><td class="sq">${i+1}</td>
+      <td class="md"><a href="#" class="lk" onclick="abrirVerif(['${esc(it.chave)}'],'Montagem: ${esc(it.modulo)} ${esc(it.codigo)}');return false;"><b>${escH(it.modulo)}</b></a></td>
       <td class="d1">${BR(it.d1)}</td>
-      <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${seloComplemento(it.codigo)?`<div>${seloComplemento(it.codigo)}</div>`:''}</td>
+      <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${seloCompIt(it,false)?`<div>${seloCompIt(it,false)}</div>`:''}</td>
       <td class="pz ${pz.cls}">${pz.txt}</td>
       <td class="ch"><span class="chip-ch ${ch.cls}">${escH(ch.txt)}</span></td>
-      <td class="st">${ch.pronta?'<span class="pr">● Pronta</span>':'<span class="bl">○ Aguardando chaparia</span>'}</td></tr>`;
+      <td class="st">${ch.lib?'<span class="pr">● Liberada</span>':`<span class="bl">○ ${txtFalta(ch)}</span>`}</td></tr>`;
     if(lim&&i+1===lim&&its.length>lim) linhas+=`<tr class="corte"><td colspan="7">▲ capacidade ${P.v==='hoje'?'do dia':'da semana'}: ${lim} — daqui para baixo passa da capacidade</td></tr>`;
   });
   const vis=[['hoje','Hoje'],['semana','Esta semana'],['prox','Próxima semana']];
@@ -902,21 +958,21 @@ function cartaoMontagem(){
     :` · <a href="#" class="lk" onclick="trocarAba('carga');return false;">informe a capacidade de montagem</a> na Carga semanal para ver o corte`;
   return `<div class="cardg c12 mont"><div class="ct"><div><h3>Programa de montagem</h3><div class="sub">${P.rot} · ${P.atrasadas?'atrasadas + ':''}prazo de montagem no período, em sequência pela Data 1 (entrega)</div></div>
       <div class="mont-ctl"><div class="seg">${vis.map(([k,n])=>`<button class="${P.v===k?'on':''}" onclick="setMont('vista','${k}')">${n}</button>`).join('')}</div>
-        <label class="chk"><input type="checkbox" ${MONT_PRONTAS?'checked':''} onchange="setMont('prontas',this.checked)"> só prontas</label>
+        <label class="chk"><input type="checkbox" ${MONT_PRONTAS?'checked':''} onchange="setMont('prontas',this.checked)"> só liberadas</label>
         <button class="btn sec sm" onclick="abrirMontagem()" ${its.length?'':'disabled'}>Abrir no Apontamento</button>
         <button class="btn sec sm" id="btn-mont-xls" onclick="baixarMontagem()" ${its.length?'':'disabled'}>📥 Excel</button>
         <button class="btn sec sm" onclick="imprimirMontagem()" ${its.length?'':'disabled'}>🖨 Imprimir</button></div></div>
-    <div class="mont-res"><b>${todos.length}</b> janela(s)${P.atrasadas?` · <span class="${atr.length?'v-atr':''}">${atr.length} atrasada(s)</span>`:''} · <b>${prontas.length}</b> pronta(s) p/ montar · ${bloq.length} aguardando chaparia${capTxt}</div>
+    <div class="mont-res"><b>${todos.length}</b> janela(s)${P.atrasadas?` · <span class="${atr.length?'v-atr':''}">${atr.length} atrasada(s)</span>`:''} · <b>${prontas.length}</b> liberada(s) · ${bloq.length} aguardando material${capTxt}</div>
     <div class="mtiles">${tiles}</div>
     ${its.length?`<div class="tm-w"><table class="tm"><tr><th>#</th><th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Prazo montagem</th><th>Chaparia</th><th>Situação</th></tr>${linhas}</table></div>
       ${its.length>15?`<div class="mont-mais"><a href="#" class="lk" onclick="setMont('todas');return false;">${MONT_TODAS?'Mostrar só as 15 primeiras':'Mostrar todas ('+its.length+')'}</a></div>`:''}`
-      :`<div class="muted" style="padding:6px 0">${MONT_PRONTAS&&todos.length?'Nenhuma pronta para montar no período (todas aguardam chaparia).':'Nada a montar neste período.'}</div>`}
+      :`<div class="muted" style="padding:6px 0">${MONT_PRONTAS&&todos.length?'Nenhuma liberada no período (todas aguardam material).':'Nada a montar neste período.'}</div>`}
   </div>`;
 }
 function linhasMontagem(its){
   return its.map((it,i)=>{ const pz=prazoMontagemTxt(it), k=chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
     return {seq:i+1,modulo:it.modulo,d1:BRc(it.d1),cod:it.codigo+(it.un>1?' #'+it.un:''),desc:(PROJETOS[k]||[])[1]||'',prazo:BRc(it.c.prazos.montada),sit:pz.cls==='atr'?'Atrasada ('+difUteis(it.c.prazos.montada,HOJE)+' du)':(pz.cls==='ate'?'Vence hoje':'No prazo'),
-      ch:it._ch.txt,pronta:it._ch.pronta?'Pronta':'Aguardando chaparia',comp:complementos(it.codigo).map(([t,r])=>r).join(' + '),obs:(it.status||{}).obs||''}; });
+      ch:it._ch.txt,lib:it._ch.lib?'Liberada':txtFalta(it._ch),comp:complementos(it.codigo).map(([t,r])=>r).join(' + ')+((it.status||{}).complemento?' (recebido '+BR(it.status.complemento)+')':''),obs:(it.status||{}).obs||''}; });
 }
 async function baixarMontagem(){
   const {P,its,lim}=dadosMontagem(); if(!its.length) return;
@@ -924,8 +980,8 @@ async function baixarMontagem(){
   try{
     const X=await carregarXlsx(); const L=linhasMontagem(its);
     const aoa=[['Programa de montagem — '+P.rot],['Gerado em '+BRc(HOJE)+' · sequência pela Data 1'+(lim?' · capacidade '+lim:'')],[],
-      ['Seq.','Módulo','Data 1 (entrega)','Esquadria','Descrição (caderno)','Prazo montagem','Situação do prazo','Chaparia','Pronta?','Complemento','Obs.','Montada (✓)']]
-      .concat(L.map(r=>[r.seq,r.modulo,r.d1,r.cod,r.desc,r.prazo,r.sit,r.ch,r.pronta,r.comp,r.obs,'']));
+      ['Seq.','Módulo','Data 1 (entrega)','Esquadria','Descrição (caderno)','Prazo montagem','Situação do prazo','Chaparia','Material','Complemento','Obs.','Montada (✓)']]
+      .concat(L.map(r=>[r.seq,r.modulo,r.d1,r.cod,r.desc,r.prazo,r.sit,r.ch,r.lib,r.comp,r.obs,'']));
     const ws=X.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:12},{wch:12},{wch:12},{wch:44},{wch:13},{wch:16},{wch:26},{wch:18},{wch:34},{wch:24},{wch:11}];
     ws['!autofilter']={ref:'A4:L4'};
     const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Montagem');
@@ -935,7 +991,7 @@ async function baixarMontagem(){
 }
 function htmlImpressaoMontagem(){
   const {P,its,lim}=dadosMontagem(); const L=linhasMontagem(its);
-  let corpo=''; L.forEach((r,i)=>{ corpo+=`<tr class="${r.pronta==='Pronta'?'':'b'}"><td>${r.seq}</td><td><b>${escH(r.modulo)}</b></td><td>${r.d1}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.desc)}</span></td><td class="${r.sit.startsWith('Atras')?'a':''}">${r.prazo}<br><span class="d">${r.sit}</span></td><td>${escH(r.ch)}</td><td>${escH(r.comp)}</td><td class="ok">☐</td><td class="obs">${escH(r.obs)}</td></tr>`;
+  let corpo=''; L.forEach((r,i)=>{ corpo+=`<tr class="${r.lib==='Liberada'?'':'b'}"><td>${r.seq}</td><td><b>${escH(r.modulo)}</b></td><td>${r.d1}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.desc)}</span></td><td class="${r.sit.startsWith('Atras')?'a':''}">${r.prazo}<br><span class="d">${r.sit}</span></td><td>${escH(r.ch)}${r.lib==='Liberada'?'':'<br><span class="d">'+escH(r.lib)+'</span>'}</td><td>${escH(r.comp)}</td><td class="ok">☐</td><td class="obs">${escH(r.obs)}</td></tr>`;
     if(lim&&i+1===lim&&L.length>lim) corpo+=`<tr class="c"><td colspan="9">▲ capacidade: ${lim} — abaixo desta linha passa da capacidade</td></tr>`; });
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Programa de montagem — ${escH(P.rot)}</title><style>
     @page{size:A4 landscape;margin:10mm} body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;margin:0}
@@ -944,7 +1000,7 @@ function htmlImpressaoMontagem(){
     .d{color:#666;font-size:9.5px} .a{color:#b42318;font-weight:bold} .ok{width:46px;text-align:center;font-size:16px} .obs{width:110px}
     tr{page-break-inside:avoid} tr.b td{color:#555;background:#f6f6f6} tr.c td{background:#fff4e5;font-weight:bold;text-align:center;color:#b54708}
   </style></head><body><h1>Programa de montagem — ${escH(P.rot)}</h1>
-    <p class="s">${its.length} janela(s) em sequência pela Data 1 · ${its.filter(i=>i._ch.pronta).length} pronta(s) · linhas em cinza aguardam chaparia · impresso em ${BRc(HOJE)}</p>
+    <p class="s">${its.length} janela(s) em sequência pela Data 1 · ${its.filter(i=>i._ch.lib).length} liberada(s) · linhas em cinza aguardam material · impresso em ${BRc(HOJE)}</p>
     <table><tr><th>#</th><th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Prazo montagem</th><th>Chaparia</th><th>Complemento</th><th>Montada</th><th>Obs.</th></tr>${corpo}</table></body></html>`;
 }
 function imprimirMontagem(){
@@ -978,7 +1034,7 @@ function renderCarga(){
   linhas.forEach(l=>{
     const cap=l.cap?(+document.getElementById(l.cap).value||0):0;
     const atr=(CARGA[l.k]||{}).atr||[]; const spA=semPedido(atr);
-    h+=`<tr><td class="rot">${l.nome}</td><td class="cel clic ${atr.length?'atr':'zero'}" ${atr.length?`onclick="abrirCarga('${l.k}','atr','${l.nome}')"`:''} title="${atr.length?'Clique para ver na lista':''}"><span>${atr.length||'·'}</span>${spA?`<small class="sp">${spA} s/ pedido</small>`:''}</td>`;
+    h+=`<tr><td class="rot">${l.nome}</td><td class="cel clic ${atr.length?'atr':'zero'}" ${atr.length?`onclick="abrirCarga('${l.k}','atr','${l.nome}')"`:''} title="${atr.length?'Clique para conferir':''}"><span>${atr.length||'·'}</span>${spA?`<small class="sp">${spA} s/ pedido</small>`:''}</td>`;
     lista.forEach(s=>{
       const a=cel(l.k,s), tot=a.length, sp=semPedido(a), over=cap>0&&tot>cap;
       h+=`<td class="cel clic ${over?'over':''} ${tot?'':'zero'}" ${tot?`onclick="abrirCarga('${l.k}','${s}','${l.nome}')"`:''} title="${tot?`${tot} esquadria(s)${s===semAtual&&atr.length?' (inclui '+atr.length+' atrasadas)':''}${sp?' · '+sp+' ainda sem pedido':''}${cap?' · capacidade '+cap:''} — clique para ver`:''}"><i class="bar" style="height:${Math.round(22*tot/maxV)}px"></i><span>${tot||'·'}</span>${sp?`<small class="sp">${sp} s/ pedido</small>`:''}</td>`;
@@ -1044,12 +1100,13 @@ function atualizarBarra(){ document.getElementById('b-n').textContent=SEL.size+'
 
 function abrirEtapa(chave,k){
   if(!podeApontar()){ abrirLogin(()=>abrirEtapa(chave,k)); return; }
-  const it=ITENS.find(x=>x.chave===chave); const e=etapasDe(it).find(x=>x.k===k); const feito=(it.status||{})[k];
+  const it=ITENS.find(x=>x.chave===chave); const comp=k==='complemento';
+  const e=comp?{k,nome:'Complemento recebido'}:etapasDe(it).find(x=>x.k===k); const feito=(it.status||{})[k];
   const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-et';
   ov.innerHTML=`<div class="modal"><h2>${e.nome}</h2>
-    <p><b>${it.modulo}</b> · ${it.codigo}${it.un>1?' #'+it.un:''}<br>${it.saldo?'Unidade em saldo (sem módulo)':'Data 1: '+BRc(it.d1)+' · prazo desta etapa: '+BRc(it.c.prazos[k])}${feito?'<br>Apontado em '+BRc(feito):''}</p>
+    <p><b>${it.modulo}</b> · ${it.codigo}${it.un>1?' #'+it.un:''}<br>${it.saldo?'Unidade em saldo (sem módulo)':'Data 1: '+BRc(it.d1)+(comp?' · necessário até a montagem: '+BRc(it.c.prazos.montada):' · prazo desta etapa: '+BRc(it.c.prazos[k]))}${comp?'<br>'+complementos(it.codigo).map(x=>x[1]).join(' + '):''}${feito?'<br>Apontado em '+BRc(feito):''}</p>
     <label>${e.previsto?'Data de recebimento previsto (informada pelo fornecedor)':'Data do apontamento'}</label><input type="date" id="et-data" value="${feito||(e.previsto?((it.status||{}).entrega_prev||HOJE):HOJE)}">
-    <label><input type="checkbox" id="et-mod" style="width:auto;margin-right:6px;">${it.saldo?'aplicar a todas as unidades de saldo deste código nesta OC':'aplicar a todas as esquadrias deste módulo com a mesma Data 1'}</label>
+    <label><input type="checkbox" id="et-mod" style="width:auto;margin-right:6px;">${it.saldo?'aplicar a todas as unidades de saldo deste código nesta OC':(comp?'aplicar a todas deste módulo (mesma Data 1) que têm complemento':'aplicar a todas as esquadrias deste módulo com a mesma Data 1')}</label>
     <div class="mbtns">
       ${feito&&!(it.saldo&&(k==='solicitada'||(ehPorta(it.codigo)&&k==='recebida')))?`<button class="btn del" onclick="confirmarEtapa('${esc(chave)}','${k}',true)">Desfazer</button>`:''}
       <button class="btn sec" onclick="fecharOv('ov-et')">Cancelar</button>
@@ -1061,7 +1118,7 @@ async function confirmarEtapa(chave,k,desfazer){
   const it=ITENS.find(x=>x.chave===chave);
   const data=desfazer?'':document.getElementById('et-data').value;
   if(!desfazer&&!data){ document.getElementById('et-erro').textContent='Escolha a data.'; return; }
-  const chaves=document.getElementById('et-mod').checked?ITENS.filter(x=>it.saldo?(x.saldo&&x.oc===it.oc&&x.codigo===it.codigo):(!x.saldo&&x.modulo===it.modulo&&x.d1===it.d1)).map(x=>x.chave):[chave];
+  const chaves=document.getElementById('et-mod').checked?ITENS.filter(x=>(it.saldo?(x.saldo&&x.oc===it.oc&&x.codigo===it.codigo):(!x.saldo&&x.modulo===it.modulo&&x.d1===it.d1))&&(k!=='complemento'||complementos(x.codigo).length)).map(x=>x.chave):[chave];
   document.getElementById('et-erro').textContent='Salvando...';
   const ok=await gravar(chaves,k,data);
   if(ok) fecharOv('ov-et'); else document.getElementById('et-erro').textContent='Falha ao salvar. Tente de novo.';
@@ -1069,9 +1126,11 @@ async function confirmarEtapa(chave,k,desfazer){
 async function aplicarLote(desfazer){
   if(!podeApontar()){ abrirLogin(()=>aplicarLote(desfazer)); return; }
   const k=document.getElementById('b-etapa').value; const data=desfazer?'':(document.getElementById('b-data').value||HOJE);
-  const e=ETAPAS.find(x=>x.k===k);
-  if(desfazer && !confirm('Desfazer "'+e.nome+'" (e as etapas seguintes) em '+SEL.size+' esquadria(s)?')) return;
-  const ok=await gravar([...SEL],k,data);
+  const comp=k==='complemento'; const e=comp?{nome:'Complemento recebido'}:ETAPAS.find(x=>x.k===k);
+  const alvo=comp?[...SEL].filter(c=>{ const it=ITENS.find(x=>x.chave===c); return it&&complementos(it.codigo).length; }):[...SEL];
+  if(!alvo.length){ alert('Nenhuma das selecionadas tem complemento (vidro/policarbonato/tela).'); return; }
+  if(desfazer && !confirm('Desfazer "'+e.nome+'"'+(comp?'':' (e as etapas seguintes)')+' em '+alvo.length+' esquadria(s)?')) return;
+  const ok=await gravar(alvo,k,data);
   if(ok){ SEL.clear(); render(); } else alert('Falha ao salvar. Tente de novo.');
 }
 async function gravar(chaves,k,data){
@@ -1084,11 +1143,12 @@ async function gravar(chaves,k,data){
   if(!r||!r.ok) return false;
   // atualiza a tela sem recarregar tudo (mesma regra do servidor)
   chaves.forEach(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return; it.status=it.status||{};
+    if(k==='complemento'){ if(data) it.status.complemento=data; else delete it.status.complemento; it.c=calcular(it); return; }
     const ETAPAS=['solicitada','recebida','montada','env_pintura','pintada'].map(k=>({k})); const i=ETAPAS.findIndex(x=>x.k===k);
     if(data){ it.status[k]=data; for(let j=0;j<i;j++) if(!it.status[ETAPAS[j].k]) it.status[ETAPAS[j].k]=data; }
     else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0||(i===1&&ehPorta(it.codigo))){ delete it.status.oc; delete it.status.entrega_prev; } }
     it.c=calcular(it); });
-  render(); renderCarga(); renderSaldo(); renderGeral(); return true;
+  render(); renderCarga(); renderSaldo(); renderGeral(); if(VF&&document.getElementById('ov-vf')) abrirVerif(VF.chaves,VF.rotulo); return true;
 }
 
 
@@ -1171,6 +1231,8 @@ async function baixarSemPedido(){
 /* ===== Complementos (revestimento conforme caderno R02): comprar à parte da chaparia ===== */
 const ICONE_COMP={policarbonato:'🔷',vidro:'🪟',vidro_blindado:'🛡️',tela:'▦'};
 function complementos(cod){ const k=chaveProjeto(cod)||(String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'')); return COMPLEMENTOS[k]||COMPLEMENTOS[k.replace(/[DE]$/,'')]||[]; }
+function seloCompIt(it,pode){ const cs=complementos(it.codigo); if(!cs.length) return ''; const rec=(it.status||{}).complemento;
+  return cs.map(([t,r,sp])=>`<button type="button" class="comp comp-${t}${rec?' rec':''}" ${pode?`onclick="event.stopPropagation();abrirEtapa('${esc(it.chave)}','complemento')"`:'disabled'} title="${rec?'Complemento recebido em '+BRc(rec):'Complemento: comprar à parte da chaparia'} — caderno: ${sp.replace(/"/g,'&quot;')}${pode?' · clique para apontar':''}">${rec?'✓':(ICONE_COMP[t]||'')} ${r}${rec?' · '+BR(rec):''}</button>`).join(''); }
 function seloComplemento(cod){ return complementos(cod).map(([t,r,sp])=>`<span class="comp comp-${t}" title="Comprar à parte da chaparia — caderno: ${sp.replace(/"/g,'&quot;')}">${ICONE_COMP[t]||''} ${r}</span>`).join(''); }
 // resumo: rótulo -> {tipo, codigos:{COD:qtd}}
 function resumoComplementos(lista){ const g={}; lista.forEach(([cod,q])=>complementos(cod).forEach(([t,r])=>{ const x=g[r]=g[r]||{t,cods:{}}; const k=chaveProjeto(cod)||cod; x.cods[k]=(x.cods[k]||0)+q; })); return g; }

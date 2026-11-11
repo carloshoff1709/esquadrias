@@ -68,6 +68,15 @@ Prazos em `LEAD_PORTA` no `index.html` (aprovação 5 du, entrega 30 du).
 Ao importar uma OC, as portas recebem *OC aprovada* (data do pedido) e *Recebimento previsto* (data de entrega da OC);
 uma *Solicitação de compra* marcada antes é mantida. Saldo de portas funciona igual ao das janelas.
 
+## Complemento recebido (vidro / policarbonato / tela)
+
+Os códigos que, pelo caderno R02, levam complemento comprado à parte mostram um selo abaixo de *Chaparia solicitada*.
+
+- **Para apontar:** no Apontamento, clique no selo e escolha a data. Para várias de uma vez, selecione as esquadrias e escolha **Complemento recebido** na barra de baixo; as que não levam complemento são ignoradas.
+- **Selo:** fica verde com ✓ e a data quando o complemento é recebido.
+- **Etapas:** o complemento não altera as etapas nem os prazos. Fica na coluna `complemento` da Status_Esquadrias, criada sozinha na primeira listagem depois de publicar o Code.gs novo.
+- **Montagem:** uma janela só aparece como **Liberada** no Programa de montagem com chaparia **e** complemento recebidos.
+
 ## Filtro Portas / Janelas
 
 Botões **Todas · Portas · Janelas** ao lado das abas. Vale para indicadores, alerta, lista, carga semanal e saldo, e fica lembrado no navegador.
@@ -150,12 +159,13 @@ Painel no estilo BI, sem biblioteca externa (SVG/HTML no próprio `index.html`):
 O cartão lista as **janelas ainda não montadas** com prazo de montagem (Data 1 − 7 du) vencido ou dentro do período. A sequência segue a **Data 1** (entrega); empates vão pelo prazo de montagem e depois pelo módulo.
 
 - **Períodos:** *Hoje* (atrasadas + prazo hoje), *Esta semana* (atrasadas + prazo até sexta) e *Próxima semana* (só o prazo da semana seguinte).
-- **Blocos por dia:** atrasadas e cada dia útil, com quantas estão prontas. Feriados ficam de fora.
-- **Situação de cada linha:** *Pronta* (chaparia recebida) ou *Aguardando chaparia*, com a entrega prevista da OC ou "sem pedido". "Só prontas" esconde as que aguardam.
+- **Blocos por dia:** atrasadas e cada dia útil, com quantas estão liberadas. Feriados ficam de fora.
+- **Situação de cada linha:** **● Liberada** quando a chaparia foi recebida e, se o código leva complemento, ele também. Caso contrário aparece **○ Falta chaparia**, **○ Falta complemento** ou **○ Falta chaparia + complemento**. "Só liberadas" esconde as demais.
 - **Corte de capacidade:** se a capacidade de montagem estiver preenchida na aba Carga semanal, aparece uma linha de corte. Por semana vale a capacidade semanal; por dia, cerca de 1/5 dela.
 - **Ações:** *Abrir no Apontamento* (para marcar "montada" em lote), *Excel* (com a coluna "Montada ✓") e *Imprimir* (A4 deitado, com caixa de seleção).
 
-Passar o mouse mostra os números. Clicar em qualquer fatia, segmento, coluna ou número sublinhado abre o Apontamento só com aquelas esquadrias.
+Passar o mouse mostra os números. Clicar em qualquer fatia, segmento, coluna, bloco ou número sublinhado abre uma **janela de conferência** sobre a tela, sem trocar de aba. Ela mostra cada esquadria com o estado das etapas, o próximo passo, a OC e a situação; fecha com ✕, Esc ou clique fora.
+Para apontar, use o botão **Abrir no Apontamento** da própria janela ou do Programa de montagem.
 Todo o painel respeita o filtro Todas/Portas/Janelas.
 
 ### Como a situação de cada esquadria é calculada
