@@ -142,6 +142,16 @@ de janelas e de portas com a etapa **gargalo** destacada (a que tem mais atrasad
 10 dias úteis), **módulos em risco** (previsão depois da Data 1) e **entregas de fornecedor atrasadas** por OC.
 Todo número sublinhado abre a lista do Apontamento só com aquelas esquadrias. Respeita o filtro Todas/Portas/Janelas.
 
+### Como a situação de cada esquadria é calculada
+
+Cada etapa tem um prazo = Data 1 menos os dias úteis das etapas seguintes. Exemplo de janela: montagem até D1−7, chaparia recebida até D1−14.
+Olha-se só a **próxima etapa pendente**:
+
+- **Atrasada** — o prazo dessa etapa já passou, **ou** a data do fornecedor (entrega prevista da OC de chaparia; recebimento previsto da porta) cai depois desse prazo.
+- **Atenção** — o prazo vence nos próximos 2 dias úteis (pedido de chaparia: 3).
+- **Em dia** — ainda dentro do prazo da etapa. Por exemplo, uma janela com chaparia recebida e montagem até 18/11 está em dia hoje (11/11), mesmo que montagem e pintura somem 14 du.
+- **Previsão de término** — Data 1 mais os dias úteis que a etapa atual já estourou. O atraso empurra a Data 1, e o motivo aparece ao lado.
+
 ## Carga semanal
 
 Cada célula conta as esquadrias com prazo daquela etapa na semana (a semana atual soma as atrasadas).

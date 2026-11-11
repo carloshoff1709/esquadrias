@@ -410,31 +410,30 @@ let ABA='geral';
 
 /* ===== cálculo por esquadria ===== */
 function calcular(it){
-  const st=it.status||{}; const d1=it.d1; const ets=etapasDe(it);
+  /* Regra: a esquadria está ATRASADA só quando o prazo da etapa em que ela está já venceu,
+     ou quando a data informada pelo fornecedor cai depois desse prazo.
+     Se a etapa atual está dentro do prazo, assume-se o plano (previsão = Data 1).
+     Atraso projetado = dias úteis que a etapa atual vai passar do prazo; ele empurra a Data 1. */
+  const st=it.status||{}; const d1=it.d1; const ets=etapasDe(it); const porta=ehPorta(it.codigo);
   const prazos={}; ets.forEach(e=>prazos[e.k]=d1?addUteis(d1,-e.antes):'');
   const prox=ets.find(e=>!st[e.k]&&!e.previsto);   // recebimento previsto é informação, não etapa com prazo
-  let fim;
-  if(ehPorta(it.codigo)){
-    if(!prox) fim=st.env_pintura;
-    else if(st.montada)    fim=maxS(st.montada,HOJE);                                   // recebimento previsto informado
-    else if(st.recebida)   fim=maxS(addUteis(st.recebida,LEAD_PORTA.entrega),HOJE);     // OC aprovada
-    else if(st.solicitada) fim=addUteis(maxS(addUteis(st.solicitada,LEAD_PORTA.aprovacao),HOJE),LEAD_PORTA.entrega);
-    else                   fim=addUteis(HOJE,LEAD_PORTA.aprovacao+LEAD_PORTA.entrega);
-  }
-  else if(!prox) fim=st.pintada;
-  else if(st.env_pintura) fim=maxS(addUteis(st.env_pintura,LEAD.pintura),HOJE);
-  else if(st.montada)     fim=addUteis(maxS(st.montada,HOJE),LEAD.pintura);
-  else if(st.recebida)    fim=addUteis(maxS(st.recebida,HOJE),LEAD.montagem+LEAD.pintura);
-  else if(st.solicitada)  fim=addUteis(maxS(st.entrega_prev||addUteis(st.solicitada,LEAD.chaparia),HOJE),LEAD.montagem+LEAD.pintura);
-  else                    fim=addUteis(HOJE,LEAD.chaparia+LEAD.montagem+LEAD.pintura);
-  const atrasoFim=d1?difUteis(d1,fim):0;           // >0 = termina depois da Data 1
-  let sit='dia', folga=null;
-  if(!prox) sit='ok';
-  else if(d1){
-    folga=difUteis(HOJE,prazos[prox.k]);            // du até o prazo da próxima etapa
+  let fim='', atrasoFim=0, sit='dia', folga=null, motivo='';
+  if(!prox){
+    sit='ok'; fim=porta?st.env_pintura:st.pintada;
+    atrasoFim=(d1&&fim)?Math.max(0,difUteis(d1,fim)):0;
+  } else if(d1){
+    const ref=prazos[prox.k];
+    folga=difUteis(HOJE,ref);                       // du até o prazo da etapa atual (negativo = vencido)
+    let esperado=ref;
+    if(ref<HOJE){ esperado=HOJE; motivo='prazo da etapa vencido'; }
+    // data do fornecedor: janela aguardando chaparia (entrega da OC) / porta aguardando entrega (recebimento previsto)
+    const forn = (!porta&&prox.k==='recebida') ? st.entrega_prev : (porta&&prox.k==='env_pintura' ? (st.montada||st.entrega_prev) : '');
+    if(forn){ const f=forn<HOJE?HOJE:forn; if(f>esperado){ esperado=f; motivo=forn<HOJE?'entrega do fornecedor vencida':'entrega do fornecedor depois do prazo'; } }
+    atrasoFim=Math.max(0,difUteis(ref,esperado));
+    fim=atrasoFim?addUteis(d1,atrasoFim):d1;
     if(folga<0||atrasoFim>0) sit='atr'; else if(folga<=limiteAtencao(prox.k)) sit='ate';
   }
-  return {prazos,prox,fim,atrasoFim,sit,folga,ets};
+  return {prazos,prox,fim,atrasoFim,sit,folga,ets,motivo};
 }
 function estadoEtapa(it,c,e){
   const st=it.status||{};
@@ -551,7 +550,7 @@ function linhaHTML(it,pode){
         const f=c.folga;
         const quando=f===null?'sem Data 1':(f<0?`<b style="color:#B71C1C">${-f} du atrasado</b>`:(f===0?'<b>vence hoje</b>':`faltam ${f} du`));
         const st0=it.status||{}; const ocTxt=st0.oc?` · OC ${st0.oc}${st0.entrega_prev?' (entrega prev. '+BR(st0.entrega_prev)+')':''}`:'';
-        prox=`${c.prox.nome} até ${BR(c.prazos[c.prox.k])} · ${quando}<div class="p2">Previsão de término: ${BRc(c.fim)}${ocTxt}${c.atrasoFim>0?` <b style="color:#B71C1C">(+${c.atrasoFim} du após a Data 1)</b>`:''}</div>`;
+        prox=`${c.prox.nome} até ${BR(c.prazos[c.prox.k])} · ${quando}<div class="p2">Previsão de término: ${BRc(c.fim)}${ocTxt}${c.atrasoFim>0?` <b style="color:#B71C1C">(+${c.atrasoFim} du após a Data 1${c.motivo?' · '+c.motivo:''})</b>`:''}</div>`;
       }
       return `<div class="linha${it.saldo?' saldo':''}${porta?' porta':''}">
         <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
