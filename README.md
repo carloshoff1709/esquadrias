@@ -77,6 +77,23 @@ Os códigos que, pelo caderno R02, levam complemento comprado à parte mostram u
 - **Etapas:** o complemento não altera as etapas nem os prazos. Fica na coluna `complemento` da Status_Esquadrias, criada sozinha na primeira listagem depois de publicar o Code.gs novo.
 - **Montagem:** uma janela só aparece como **Liberada** no Programa de montagem com chaparia **e** complemento recebidos.
 
+## Lista do Apontamento
+
+Cada **módulo** (módulo + Data 1) é um cartão com borda na cor da pior situação: vermelho = atrasado, amarelo = atenção, verde = em dia, azul = concluído. O cabeçalho mostra:
+
+- **Nome e quantidade:** nome do módulo e quantas janelas/portas tem.
+- **Data 1** com o dia da semana.
+- **Trilha de etapas:** ✓ verde quando todas as esquadrias fizeram a etapa; "2/3" quando está parcial; vermelho ou amarelo quando a etapa está vencida ou vencendo.
+- **Próximo prazo do módulo**, com etiqueta *x du atrasado*, *vence hoje* ou *faltam x du*.
+
+Cada **esquadria** é uma linha com:
+- um ponto na cor da sua situação;
+- o código, o link do projeto e o selo do complemento;
+- as etapas, cada uma com o nome dentro da caixa (clique para apontar);
+- o próximo passo, com o término previsto e a OC.
+
+A Data 1 não se repete nas linhas, porque já está no cabeçalho. Módulos concluídos ficam recolhidos; clique no cabeçalho para abrir ou fechar.
+
 ## Filtro Portas / Janelas
 
 Botões **Todas · Portas · Janelas** ao lado das abas. Vale para indicadores, alerta, lista, carga semanal e saldo, e fica lembrado no navegador.

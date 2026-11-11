@@ -303,6 +303,45 @@ button.comp:not(:disabled):hover{text-decoration:underline;color:#185FA5!importa
   .vt td{display:block;border:none;padding:0;} .vt td.md{grid-area:md;} .vt td.d1{grid-area:d1;color:var(--mut);font-size:12px;align-self:center;} .vt td.d1::before{content:'Data 1 ';}
   .vt td.si{grid-area:si;} .vt td.es{grid-area:es;} .vt td.et2{grid-area:et;} .vt td.px{grid-area:px;min-width:0;font-size:12px;}
 }
+/* lista do Apontamento — leitura rápida */
+.mod{border-left:4px solid #D0D5DD;}
+.mod.m-atr{border-left-color:#d03b3b;} .mod.m-ate{border-left-color:#fab219;} .mod.m-dia{border-left-color:#0ca30c;} .mod.m-ok{border-left-color:#2a78d6;}
+.mod-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;}
+.mod-head:hover{background:#FAFBFC;}
+.mh-nome{display:flex;flex-direction:column;min-width:92px;line-height:1.2;} .mh-nome b{font-size:15px;font-weight:800;color:var(--txt);} .mh-nome small{font-size:11px;color:var(--mut);}
+.mh-d1{display:flex;flex-direction:column;min-width:58px;line-height:1.2;padding-left:14px;border-left:1px solid var(--line);}
+.mh-d1 small,.mh-prox small{font-size:9.5px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.3px;}
+.mh-d1 b{font-size:14.5px;color:var(--txt);} .mh-d1 em{font-style:normal;font-size:11px;color:var(--mut);}
+.mh-pipe{display:flex;flex-direction:column;gap:4px;flex:1 1 320px;min-width:0;}
+.pp-row{display:flex;align-items:center;flex-wrap:wrap;row-gap:3px;}
+.pp-t{font-size:9.5px;font-weight:700;color:#98A2B3;text-transform:uppercase;width:36px;flex:0 0 auto;}
+.pp{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#F2F4F7;color:#667085;white-space:nowrap;border:1px solid transparent;line-height:1.35;}
+.pp small{font-size:10px;font-weight:700;}
+.pp.ok{background:#ECFDF3;color:#067647;} .pp.parc{background:#fff;color:#067647;border:1px dashed #6CE9A6;}
+.pp.atr{background:#FEF3F2;color:#B42318;border-color:#FDA29B;} .pp.ate{background:#FFFAEB;color:#B54708;border-color:#FEC84B;}
+.pp-l{display:block;width:8px;height:1px;background:#D0D5DD;flex:0 0 auto;}
+.mh-prox{display:flex;flex-direction:column;align-items:flex-start;font-size:12.5px;line-height:1.35;min-width:220px;color:#344054;}
+.mh-ch{color:#98A2B3;font-size:13px;width:10px;}
+.q{display:inline-block;font-size:11px;font-weight:600;padding:0 7px;border-radius:999px;background:#F2F4F7;color:#475467;margin-left:3px;white-space:nowrap;line-height:1.6;}
+.q.atr{background:#FEF3F2;color:#B42318;} .q.ate{background:#FFFAEB;color:#B54708;} .q.ok{background:#EFF4FB;color:#1F4E8C;margin-left:0;}
+.linha.cab{display:none;}
+.linha{grid-template-columns:28px minmax(150px,1.25fr) repeat(5,minmax(80px,1fr)) minmax(220px,1.7fr);padding:8px 14px;column-gap:6px;}
+.linha .cod{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.cod1{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700;font-size:13.5px;} .cod1 small{font-weight:500;color:#98A2B3;font-size:11px;}
+.cod1 .btn-proj{margin-left:0;padding:0;} .cod2{line-height:1.2;} .cod2 .comp{margin-top:0;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
+.linha .et{min-height:38px;padding:4px 6px;} .linha .et .et-rot{display:block!important;font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.2px;margin-bottom:1px;}
+.linha .et.feito .et-rot{color:#3A9B6B;} .linha .et.atr .et-rot{color:#D9534F;} .linha .et.ate .et-rot{color:#C27C0E;}
+.prox .p1{font-size:12.5px;color:#101828;line-height:1.4;} .prox .p2{font-size:11px;color:#667085;margin-top:1px;}
+.sep-porta{padding:5px 14px;font-size:10px;font-weight:700;color:#7A5AF8;text-transform:uppercase;letter-spacing:.3px;background:#FAFAFB;border-top:1px dashed var(--line);border-bottom:1px solid #F2F4F7;}
+@media (max-width:900px){
+  .linha{grid-template-columns:24px 1fr;row-gap:6px;} .linha .cod{grid-column:2/3;}
+  .linha .et-wrap{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;} .linha .prox{grid-column:1/-1;}
+  .linha .et{padding:3px 4px;} .linha .et b{font-size:11px;}
+  .mod-head{gap:10px;} .mod-head .sit{margin-left:auto;}
+  .mh-pipe{order:5;flex:1 1 100%;} .mh-prox{order:6;flex:1 1 100%;min-width:0;}
+  .pp-row{gap:3px;} .pp{font-size:10px;padding:1px 5px;} .pp-l,.pp-t{display:none;}
+}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -526,6 +565,7 @@ function calcular(it){
 }
 function estadoEtapa(it,c,e){
   const st=it.status||{};
+  if(e.previsto && st.env_pintura) return 'feito';                                  // porta já recebida: previsão não importa mais
   if(st[e.k]) return (e.previsto && it.d1 && st[e.k]>it.d1) ? 'atr' : 'feito';   // previsão depois da Data 1 = vermelho
   if(e.previsto) return '';
   if(!c.prazos[e.k]) return '';
@@ -584,8 +624,9 @@ function passaFiltro(it){
   return true;
 }
 const ROT_SIT={atr:'Atrasado',ate:'Atenção',dia:'Em dia',ok:'Concluído'};
-const CAB_JANELA=`<div class="linha cab"><span></span><span>Esquadria</span><span>Data 1</span>${ETAPAS.map(e=>`<span>${e.nome}</span>`).join('')}<span>Próximo passo</span></div>`;
-const CAB_PORTA=`<div class="linha cab cab-porta"><span></span><span>Porta</span><span>Data 1 (entrega)</span>${ETAPAS_PORTA.map(e=>`<span>${e.nome}</span>`).join('')}<span></span><span>Próximo passo</span></div>`;
+const CAB_JANELA='';   // rótulos das etapas ficam dentro de cada caixa
+const CAB_PORTA='';
+const SEP_PORTA='<div class="sep-porta">Portas · fornecedor externo</div>';
 const ORDEM_SIT={atr:0,ate:1,dia:2,ok:3};
 function render(){
   renderKpis(); renderAlertaPedido();
@@ -600,53 +641,67 @@ function render(){
     const id=g.mod+'§'+(g.d1||'');
     const jan=g.itens.filter(it=>!ehPorta(it.codigo)), por=g.itens.filter(it=>ehPorta(it.codigo));
     const pior=g.itens.reduce((p,it)=>ORDEM_SIT[it.c.sit]<ORDEM_SIT[p]?it.c.sit:p,'ok');
-    const feitas=g.itens.reduce((s,it)=>s+etapasDe(it).filter(e=>(it.status||{})[e.k]).length,0);
-    const pct=Math.round(100*feitas/g.itens.reduce((s,it)=>s+etapasDe(it).length,0));
     const padrao=pior==='atr'||pior==='ate'||!!document.getElementById('f-busca').value;
     const aberto=(id in ABRIR)?ABRIR[id]:padrao; ESTADO_ABERTO[id]=aberto;
     const chaves=g.itens.map(it=>it.chave);
     const todas=chaves.every(c=>SEL.has(c));
+    const qt=[jan.length?jan.length+(jan.length>1?' janelas':' janela'):'',por.length?por.length+(por.length>1?' portas':' porta'):''].filter(Boolean).join(' · ');
+    const px=g.itens.filter(it=>it.c.prox&&it.c.sit!=='ok').sort((a,b)=>(a.c.prazos[a.c.prox.k]||'9')<(b.c.prazos[b.c.prox.k]||'9')?-1:1)[0];
+    const pxTxt=px?`<small>Próximo prazo</small><span>${ehPorta(px.codigo)&&jan.length?'Porta: ':''}${px.c.prox.nome} até <b>${BR(px.c.prazos[px.c.prox.k])}</b> ${quandoTag(px.c.folga)}</span>`:'<small>Próximo prazo</small><span class="q ok">tudo concluído</span>';
+    const d1Txt=g.d1?`<b>${BR(g.d1)}${g.d1.slice(0,4)!==HOJE.slice(0,4)?'/'+g.d1.slice(2,4):''}</b><em>${diaSem(g.d1)}</em>`:'<b>—</b>';
     const cab=`<div class="mod-head" onclick="abrir('${esc(id)}')">
       ${pode?`<input type="checkbox" ${todas?'checked':''} onclick="event.stopPropagation();selGrupo(${esc(JSON.stringify(chaves))},this.checked)">`:''}
-      <span class="nome">${g.mod}</span>
-      <span class="meta">Data 1: <b>${BRc(g.d1)}</b> · ${g.itens.length} esquadria(s) · ${jan.length?'pedir chaparia até '+BR(g.d1?addUteis(g.d1,-ETAPAS[0].antes):''):''}${jan.length&&por.length?' · ':''}${por.length?'emitir SC das portas até '+BR(g.d1?addUteis(g.d1,-ETAPAS_PORTA[0].antes):''):''}</span>
-      <span class="barra" title="${pct}% das etapas apontadas"><i style="width:${pct}%"></i></span>
+      <span class="mh-nome"><b>${escH(g.mod)}</b><small>${qt}</small></span>
+      <span class="mh-d1"><small>Data 1</small>${d1Txt}</span>
+      <span class="mh-pipe">${jan.length?`<span class="pp-row">${por.length?'<span class="pp-t">Jan.</span>':''}${trilha(jan,false)}</span>`:''}${por.length?`<span class="pp-row">${jan.length?'<span class="pp-t">Port.</span>':''}${trilha(por,true)}</span>`:''}</span>
+      <span class="mh-prox">${pxTxt}</span>
       <span class="sit s-${pior}">${ROT_SIT[pior]}</span>
-      <span class="meta">${aberto?'▼':'▶'}</span></div>`;
-    if(!aberto) return `<div class="mod">${cab}</div>`;
-    const linhas=jan.map(it=>linhaHTML(it,pode)).join('')+(por.length?`${jan.length?CAB_PORTA:''}`+por.map(it=>linhaHTML(it,pode)).join(''):'');
-    return `<div class="mod">${cab}${jan.length?CAB_JANELA:CAB_PORTA}${linhas}</div>`;
+      <span class="mh-ch">${aberto?'▾':'▸'}</span></div>`;
+    if(!aberto) return `<div class="mod m-${pior}">${cab}</div>`;
+    const linhas=jan.map(it=>linhaHTML(it,pode)).join('')+(por.length?(jan.length?SEP_PORTA:'')+por.map(it=>linhaHTML(it,pode)).join(''):'');
+    return `<div class="mod m-${pior}">${cab}${linhas}</div>`;
   }).join('');
   atualizarBarra();
 }
 function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 const ESTADO_ABERTO={};
+/* trilha de etapas do módulo: cada etapa mostra quantas esquadrias já fizeram (verde), parcial, ou se está vencida/vencendo */
+function trilha(itens,porta){
+  const ets=porta?ETAPAS_PORTA:ETAPAS, n=itens.length;
+  return ets.map(e=>{ const f=itens.filter(it=>(it.status||{})[e.k]).length;
+    let cls=''; if(f===n) cls='ok'; else { const es=itens.filter(it=>!(it.status||{})[e.k]).map(it=>estadoEtapa(it,it.c,e)); cls=es.includes('atr')?'atr':es.includes('ate')?'ate':(f?'parc':''); }
+    const prazo=itens[0]&&itens[0].c.prazos[e.k];
+    return `<span class="pp ${cls}" title="${e.nome}: ${f} de ${n}${prazo?' · prazo '+BRc(prazo):''}">${f===n?'✓ ':''}${e.curto}${n>1&&f<n?` <small>${f}/${n}</small>`:''}</span>`; }).join('<i class="pp-l"></i>');
+}
 function abrir(id){ ABRIR[id]=!ESTADO_ABERTO[id]; render(); }
 
+function quandoTag(f){
+  if(f===null||f===undefined) return '<span class="q">sem Data 1</span>';
+  if(f<0) return `<span class="q atr">${-f} du atrasado</span>`;
+  if(f===0) return '<span class="q ate">vence hoje</span>';
+  return `<span class="q${f<=2?' ate':''}">faltam ${f} du</span>`;
+}
 function linhaHTML(it,pode){
-      const c=it.c;
-      const etsDef=etapasDe(it); const porta=ehPorta(it.codigo);
-      const ets=etsDef.map(e=>{
-        const st=(it.status||{})[e.k]; const est=estadoEtapa(it,c,e);
-        const txt=st?(e.previsto?`<b>prev. ${BR(st)}</b>`:`<b>✓ ${BR(st)}</b>`):(e.previsto?'<b>a informar</b>':(c.prazos[e.k]?`<b>até ${BR(c.prazos[e.k])}</b>`:'<b>—</b>'));
-        const btn=`<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&(it.status||{}).oc?' · OC '+it.status.oc:''}"><span class="et-rot">${e.curto}</span>${txt}</button>`;
-        return e.k==='solicitada' ? `<div class="et-sol">${btn}${seloCompIt(it,pode)}</div>` : btn;
-      }).join('')+(porta?'<span class="et-vazio"></span>':'');
-      let prox;
-      if(it.saldo){ const st0=it.status||{}; prox=`<span class="p-saldo">Em saldo · OC ${it.oc}</span><div class="p2">${c.prox?'Próxima etapa: '+c.prox.nome:(ehPorta(it.codigo)?'Recebida':'Pronta (pintada)')} · vai para o próximo módulo com ${chaveProjeto(it.codigo)||it.codigo}${st0.entrega_prev&&!st0.recebida?' · entrega prev. '+BR(st0.entrega_prev):''}</div>`; }
-      else if(c.sit==='ok') prox=`<span style="color:#185FA5;font-weight:700;">Concluída</span>`;
-      else{
-        const f=c.folga;
-        const quando=f===null?'sem Data 1':(f<0?`<b style="color:#B71C1C">${-f} du atrasado</b>`:(f===0?'<b>vence hoje</b>':`faltam ${f} du`));
-        const st0=it.status||{}; const ocTxt=st0.oc?` · OC ${st0.oc}${st0.entrega_prev?' (entrega prev. '+BR(st0.entrega_prev)+')':''}`:'';
-        prox=`${c.prox.nome} até ${BR(c.prazos[c.prox.k])} · ${quando}<div class="p2">Previsão de término: ${BRc(c.fim)}${ocTxt}${c.atrasoFim>0?` <b style="color:#B71C1C">(+${c.atrasoFim} du após a Data 1${c.motivo?' · '+c.motivo:''})</b>`:''}</div>`;
-      }
-      return `<div class="linha${it.saldo?' saldo':''}${porta?' porta':''}">
-        <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
-        <span class="cod">${it.codigo}${it.un>1?`<small>#${it.un}</small>`:''}${botaoProjeto(it.codigo)}</span>
-        <span class="d1">${it.saldo?'<span class="tag-saldo">saldo</span>':BRc(it.d1)}</span>
-        <span class="et-wrap">${ets}</span>
-        <span class="prox">${prox}</span></div>`;
+  const c=it.c, porta=ehPorta(it.codigo), st0=it.status||{};
+  const ets=etapasDe(it).map(e=>{
+    const st=st0[e.k], est=estadoEtapa(it,c,e);
+    const txt=st?(e.previsto?`prev. ${BR(st)}`:`✓ ${BR(st)}`):(e.previsto?'a informar':(c.prazos[e.k]?`até ${BR(c.prazos[e.k])}`:'—'));
+    return `<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&st0.oc?' · OC '+st0.oc:''}"><span class="et-rot">${e.curto}</span><b>${txt}</b></button>`;
+  }).join('')+(porta?'<span class="et-vazio"></span>':'');
+  let prox;
+  if(it.saldo){ prox=`<div class="p1"><span class="p-saldo">Em saldo · OC ${escH(it.oc)}</span></div><div class="p2">${c.prox?'Próxima etapa: '+c.prox.nome:(porta?'Recebida':'Pronta (pintada)')} · vai para o próximo módulo com ${chaveProjeto(it.codigo)||escH(it.codigo)}${st0.entrega_prev&&!st0.recebida?' · entrega '+BR(st0.entrega_prev):''}</div>`; }
+  else if(c.sit==='ok'){ const fim=porta?st0.env_pintura:st0.pintada; prox=`<div class="p1"><span class="q ok">${porta?'Recebida':'Concluída'}${fim?' em '+BR(fim):''}</span></div>`; }
+  else{
+    const recebido=porta?st0.env_pintura:st0.recebida;
+    prox=`<div class="p1"><b>${c.prox.nome}</b> até ${BR(c.prazos[c.prox.k])} ${quandoTag(c.folga)}</div>
+      <div class="p2">${c.atrasoFim>0?`<span class="v-atr">Término prev. ${BR(c.fim)} · +${c.atrasoFim} du${c.motivo?' ('+c.motivo+')':''}</span>`:'Término prev. '+BR(c.fim)}${st0.oc?' · OC '+escH(st0.oc):''}${st0.entrega_prev&&!recebido?' · entrega '+BR(st0.entrega_prev):''}</div>`;
+  }
+  const sc=seloCompIt(it,pode);
+  return `<div class="linha${it.saldo?' saldo':''}${porta?' porta':''}">
+    <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
+    <span class="cod"><span class="cod1">${it.saldo?'':`<i class="dot" style="background:${COR_SIT[c.sit]}" title="${SIT1[c.sit]}"></i>`}${escH(it.codigo)}${it.un>1?`<small>#${it.un}</small>`:''}${it.saldo?' <span class="tag-saldo">saldo</span>':''}${botaoProjeto(it.codigo)}</span>${sc?`<span class="cod2">${sc}</span>`:''}</span>
+    <span class="et-wrap">${ets}</span>
+    <span class="prox">${prox}</span></div>`;
 }
 
 
