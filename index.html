@@ -357,6 +357,20 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
   .vt.pode td.ck{grid-area:ck;align-self:start;padding-top:2px;} .vt tr.sel{background:#F0F6FF;border-radius:8px;} .vt tr.sel td{background:none;}
   .vf-lote select{max-width:100%;flex:1 1 100%;} .vf-bt{width:100%;justify-content:flex-end;}
 }
+.cc-t[data-g]{cursor:pointer;border-bottom:1px dotted #98A2B3;} .cc-t[data-g]:hover{color:#1F4E8C;}
+.cardg.st .cc-x div{font-size:10.5px;} .cardg.st .cc-x b{font-weight:600;font-size:10.5px;line-height:1.25;}
+/* romaneio para pintura */
+.modal.rom{max-width:860px;}
+.rom-lista{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px;margin:6px 0 10px;}
+.modal .rom-g{display:grid;grid-template-columns:22px 110px 1fr auto auto;gap:10px;align-items:center;padding:8px 12px;margin:0;border-bottom:1px solid #F2F4F7;cursor:pointer;font-size:12.5px;font-weight:400;color:var(--txt);}
+.modal .rom-g:last-child{border-bottom:none;} .modal .rom-g:hover{background:#FAFBFC;} .modal .rom-g input{width:16px;height:16px;margin:0;}
+.rom-m{display:flex;flex-direction:column;line-height:1.2;} .rom-m small{color:var(--mut);font-size:11px;}
+.rom-c{display:flex;flex-wrap:wrap;gap:3px;} .rom-c span{font-size:11px;font-weight:600;background:#F2F4F7;border-radius:5px;padding:1px 6px;}
+.rom-p{white-space:nowrap;} .rom-a{white-space:nowrap;color:var(--mut);font-size:11.5px;text-align:right;}
+.rom-pe{display:flex;flex-direction:column;gap:8px;font-size:12.5px;} .rom-tot{background:#F5F7FA;border-radius:8px;padding:8px 10px;}
+.rom-dt{display:flex;align-items:center;gap:8px;font-weight:600;} .rom-dt input{width:auto!important;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-family:inherit;}
+.modal .rom-mk{display:flex;align-items:center;gap:8px;margin:0;font-weight:400;} .modal .rom-mk input{width:16px;height:16px;margin:0;} .modal .rom-dt{margin:0;}
+@media (max-width:720px){ .modal .rom-g{grid-template-columns:22px 1fr auto;grid-template-areas:"ck m a" "ck c c" "ck p p";} .modal .rom-g input{grid-area:ck;} .rom-m{grid-area:m;} .rom-c{grid-area:c;} .rom-p{grid-area:p;white-space:normal;} .rom-a{grid-area:a;} }
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -430,6 +444,7 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
         <label>Recebimento de chaparia <input type="number" min="0" id="cap-rec" oninput="salvarCap();renderCarga()" placeholder="—"></label>
         <label><input type="checkbox" id="c-concl" onchange="renderCarga()"> incluir o que já foi feito</label>
         <button class="btn" style="margin-left:auto" onclick="baixarSemPedido()" id="btn-sem-pedido">📥 Baixar itens sem pedido (Excel)</button>
+        <button class="btn" onclick="abrirRomaneio()">🎨 Romaneio p/ pintura (Excel)</button>
       </div>
       <div id="carga"></div>
       <div class="nota">
@@ -540,7 +555,8 @@ function passaEtapa(it,et){
   if(et==='pedido') return !st.solicitada;
   const [t,k]=et.split(':');
   if((t==='p')!==porta) return false;
-  if(t==='p'&&k==='montada') return !!st.recebida && !st.montada && !st.env_pintura;   // OC aprovada sem data prevista
+  if(t==='p'&&k==='montada') return prox==='env_pintura' && !(st.montada||st.entrega_prev);   // OC aprovada sem data prevista
+  if(t==='p'&&k==='env_pintura') return prox==='env_pintura' && !!(st.montada||st.entrega_prev);   // com data prevista, aguardando a porta
   return prox===k;
 }
 function filtrarTipo(t){ FILTRO_TIPO=t; FILTRO_CHAVES=null; const bsp=document.getElementById('btn-sem-pedido'); if(bsp) bsp.textContent=t==='porta'?'📥 Baixar portas sem OC (Excel)':t==='janela'?'📥 Baixar chaparias sem pedido (Excel)':'📥 Baixar itens sem pedido (Excel)'; try{ localStorage.setItem('esq_tipo',t); }catch(_){}
@@ -814,7 +830,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 function ttReg(titulo,linhas,rodape){ GERAL_TT.push({titulo,linhas,rodape}); return GERAL_TT.length-1; }
 /* atributos de uma marca interativa: tooltip (data-tt) + clique (data-g). foco=false nas fatias do SVG (a legenda já é focável) */
 function marcaAttr(lista,rotulo,tt,foco){
-  const ch=lista.map(it=>it.chave); let a=` data-tt="${tt}"`;
+  const ch=[...new Set(lista.map(it=>it.chave))]; let a=` data-tt="${tt}"`;
   if(ch.length){ a+=` data-g="${gid(ch,rotulo)}"`; if(foco!==false) a+=` tabindex="0" role="button" aria-label="${escH(rotulo)}: ${ch.length}"`; }
   return a;
 }
@@ -883,10 +899,11 @@ function cartaoColunas(titulo,sub,buckets,series,classe){
   let y='', gl='';
   for(let i=0;i<=n;i++){ const b=Math.round(H*i/n); y+=`<span style="bottom:${b}px">${st*i}</span>`; if(i) gl+=`<i class="gl" style="bottom:${b}px"></i>`; }
   const cols=buckets.map((b,bi)=>{ const tot=tots[bi]; const linhasTT=series.map(se=>[se.cor,(b.vals[se.k]||[]).length,se.nome]).filter(x=>x[1]).reverse();
-    const ttCol=ttReg(b.titulo,linhasTT.length?linhasTT:[['#98A2B3',0,'nada nesta semana']],tot?'Clique num segmento para conferir':'');
+    const ttCol=ttReg(b.titulo,linhasTT.length?linhasTT:[['#98A2B3',0,'nenhuma esquadria']],tot?'Clique no número ou num segmento para conferir':'');
+    const todos=series.flatMap(se=>b.vals[se.k]||[]);
     const segs=series.filter(se=>(b.vals[se.k]||[]).length).map(se=>{ const its=b.vals[se.k];
       return `<i style="flex:${its.length} 1 0;background:${se.cor}"${marcaAttr(its,titulo+': '+se.nome+' · '+b.titulo,ttReg(b.titulo,linhasTT,'Clique para conferir: '+se.nome.toLowerCase()))}></i>`; }).join('');
-    return `<div class="cc-s${b.hl?' hl':''}" data-tt="${ttCol}"><div class="cc-t">${tot||''}</div>${tot?`<div class="cc-b" style="height:${Math.max(3,Math.round(H*tot/max))}px">${segs}</div>`:''}</div>`; }).join('');
+    return `<div class="cc-s${b.hl?' hl':''}" data-tt="${ttCol}"><div class="cc-t"${tot?marcaAttr(todos,titulo+': '+b.titulo,ttCol):''}>${tot||''}</div>${tot?`<div class="cc-b" style="height:${Math.max(3,Math.round(H*tot/max))}px">${segs}</div>`:''}</div>`; }).join('');
   const xs=buckets.map(b=>`<div><b>${b.rot}</b>${b.sub||'&nbsp;'}</div>`).join('');
   const tab=`<table class="tg tvw"><tr><th>Série</th>${buckets.map(b=>`<th>${b.rot}${b.sub?' '+b.sub:''}</th>`).join('')}</tr>
     ${series.map(se=>`<tr><td><i class="sw" style="background:${se.cor}"></i>${se.nome}</td>${buckets.map(b=>`<td>${(b.vals[se.k]||[]).length||'·'}</td>`).join('')}</tr>`).join('')}
@@ -901,6 +918,31 @@ function cartaoColunas(titulo,sub,buckets,series,classe){
     <div class="tvw-w">${tab}</div></div>`;
 }
 
+/* colunas por status: categorias iguais às do filtro "Próxima etapa"; cada coluna dividida pela situação */
+const SERIES_SIT=[{k:'atr',nome:'Atrasadas',cor:COR_SIT.atr},{k:'ate',nome:'Atenção',cor:COR_SIT.ate},{k:'dia',nome:'Em dia',cor:COR_SIT.dia},{k:'ok',nome:'Concluídas',cor:COR_SIT.ok}];
+const prevPorta=it=>{ const s=it.status||{}; return s.montada||s.entrega_prev||''; };
+const STATUS_JANELA=[
+  {rot:'Falta pedir chaparia',f:it=>it.c.prox&&it.c.prox.k==='solicitada'},
+  {rot:'Já pedida, falta receber chaparia',f:it=>it.c.prox&&it.c.prox.k==='recebida'},
+  {rot:'Falta montar',f:it=>it.c.prox&&it.c.prox.k==='montada'},
+  {rot:'Falta enviar p/ pintura',f:it=>it.c.prox&&it.c.prox.k==='env_pintura'},
+  {rot:'Na pintura',f:it=>it.c.prox&&it.c.prox.k==='pintada'},
+  {rot:'Pintadas',f:it=>!it.c.prox,fim:true}];
+const STATUS_PORTA=[
+  {rot:'Falta emitir solicitação de compra',f:it=>it.c.prox&&it.c.prox.k==='solicitada'},
+  {rot:'Falta OC aprovada',f:it=>it.c.prox&&it.c.prox.k==='recebida'},
+  {rot:'Falta recebimento previsto',f:it=>it.c.prox&&it.c.prox.k==='env_pintura'&&!prevPorta(it)},
+  {rot:'Aguardando recebimento da porta',f:it=>it.c.prox&&it.c.prox.k==='env_pintura'&&!!prevPorta(it)},
+  {rot:'Recebidas',f:it=>!it.c.prox,fim:true}];
+function cartaoStatus(titulo,lista,defs,classe){
+  if(!lista.length) return '';
+  const bk=defs.map(d=>{ const its=lista.filter(d.f), vals={}; its.forEach(it=>(vals[it.c.sit]=vals[it.c.sit]||[]).push(it));
+    return {rot:d.rot,sub:'',titulo:d.rot,vals,atr:(vals.atr||[]).length,fim:d.fim}; });
+  const g=bk.filter(b=>!b.fim).reduce((m,b)=>(!m||b.atr>m.atr)?b:m,null);
+  if(g&&g.atr) g.hl=true;
+  const sub=`${lista.length} ${titulo.split(' ')[0].toLowerCase()} · mesmos status do filtro "Próxima etapa"`+(g&&g.atr?` · <span class="tag-garg">gargalo</span> <b>${g.rot}</b> (${g.atr} atrasada${g.atr>1?'s':''})`:'');
+  return cartaoColunas(titulo,sub,bk,SERIES_SIT,classe+' st');
+}
 function renderGeral(){
   const el=document.getElementById('geral'); if(!el) return; GERAL_GRUPOS={}; GERAL_TT=[];
   const base=ITENS.filter(it=>!it.saldo&&passaTipo(it));
@@ -934,8 +976,8 @@ function renderGeral(){
   // 4) onde estão (barras empilhadas por etapa)
   const pk=k=>it=>it.c.prox&&it.c.prox.k===k;
   const larg=(jan.length&&por.length)?'c6':'c12';
-  const fJan=cartaoFunil('Janelas — onde estão',jan,[{nome:'Falta pedir chaparia',f:pk('solicitada')},{nome:'Aguardando chaparia',f:pk('recebida')},{nome:'A montar',f:pk('montada')},{nome:'A enviar p/ pintura',f:pk('env_pintura')},{nome:'Na pintura',f:pk('pintada')},{nome:'Concluídas',f:it=>!it.c.prox,fim:true}],larg);
-  const fPor=cartaoFunil('Portas — onde estão',por,[{nome:'Falta solicitação de compra',f:pk('solicitada')},{nome:'Falta OC aprovada',f:pk('recebida')},{nome:'Aguardando entrega',f:pk('env_pintura')},{nome:'Recebidas',f:it=>!it.c.prox,fim:true}],larg);
+  const fJan=cartaoStatus('Janelas por status',jan,STATUS_JANELA,larg);
+  const fPor=cartaoStatus('Portas por status',por,STATUS_PORTA,larg);
 
   // 5) semanas: atual + 7 seguintes
   const semAtual=segunda(HOJE), sems=[]; { const d=D(semAtual); for(let i=0;i<8;i++){ sems.push(S(d)); d.setDate(d.getDate()+7); } }
@@ -978,7 +1020,7 @@ function renderGeral(){
   const cForn=`<div class="cardg"><div class="ct"><div><h3>Entregas de fornecedor atrasadas</h3><div class="sub">OCs com entrega prevista vencida e itens não recebidos</div></div></div>
     ${lf.length?`<table class="tg"><tr><th>OC</th><th>Entrega prev.</th><th>Itens</th><th>Atraso</th></tr>${lf.map(f=>`<tr><td><b>${escH(f.oc)}</b></td><td>${BRc(f.prev)}</td><td class="num">${clk(f.its,'OC '+f.oc+': não recebidos',f.its.length)}</td><td class="v-atr">${difUteis(f.prev,HOJE)} du</td></tr>`).join('')}</table>`:'<div class="muted">Nenhuma OC com entrega vencida em aberto.</div>'}</div>`;
 
-  el.innerHTML=`<div class="bi">${cSit}${cMod}${cAv}${cartaoMontagem()}${fJan}${fPor}${cD1}${cCarga}${cProx}${cRisco}${cForn}</div>
+  el.innerHTML=`<div class="bi">${cSit}${cMod}${cAv}${fJan}${fPor}${cartaoMontagem()}${cD1}${cCarga}${cProx}${cRisco}${cForn}</div>
     <div class="muted small" style="margin:10px 2px 0">Passe o mouse para ver os números; clique em qualquer fatia, barra, coluna ou número para conferir aquelas esquadrias.</div>`;
 }
 /* tooltip único + clique/teclado do painel (delegação de eventos; textos via textContent) */
@@ -1083,6 +1125,7 @@ function cartaoMontagem(){
       <div class="mont-ctl"><div class="seg">${vis.map(([k,n])=>`<button class="${P.v===k?'on':''}" onclick="setMont('vista','${k}')">${n}</button>`).join('')}</div>
         <label class="chk"><input type="checkbox" ${MONT_PRONTAS?'checked':''} onchange="setMont('prontas',this.checked)"> só liberadas</label>
         <button class="btn sec sm" onclick="abrirMontagem()" ${its.length?'':'disabled'}>Abrir no Apontamento</button>
+        <button class="btn sm" onclick="abrirRomaneio()" title="Janelas montadas aguardando envio para a pintura">🎨 Romaneio p/ pintura</button>
         <button class="btn sec sm" id="btn-mont-xls" onclick="baixarMontagem()" ${its.length?'':'disabled'}>📥 Excel</button>
         <button class="btn sec sm" onclick="imprimirMontagem()" ${its.length?'':'disabled'}>🖨 Imprimir</button></div></div>
     <div class="mont-res"><b>${todos.length}</b> janela(s)${P.atrasadas?` · <span class="${atr.length?'v-atr':''}">${atr.length} atrasada(s)</span>`:''} · <b>${prontas.length}</b> liberada(s) · ${bloq.length} aguardando material${capTxt}</div>
@@ -1130,6 +1173,101 @@ function imprimirMontagem(){
   const f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
   document.body.appendChild(f); const doc=f.contentDocument; doc.open(); doc.write(htmlImpressaoMontagem()); doc.close();
   setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(_){} setTimeout(()=>f.remove(),1500); },250);
+}
+
+/* ===== Romaneio de envio para a pintura =====
+   Janelas com "Montagem feita" e ainda sem "Enviada p/ pintura", por módulo, na ordem do prazo de envio.
+   Medidas e nome vêm do caderno R02 (por código); o peso é a média do caderno para o código (varia com o marco). */
+const DIM_CAD={"GF450":[200,60,null,"GRADE FIXA"],"GF455":[100,100,57.1,"GRADE DO CONTROLE DO SOLÁRIO"],"GLF459":[200,120,144.1,"GRADE FIXA COM VIDRO LAMINADO"],"GLF461":[90,120,74.0,"GRADE FIXA COM VIDRO LAMINADO"],"GLF462":[100,100,69.5,"GRADE FIXA COM VIDRO LAMINADO"],"GPF453":[100,100,62.0,"GRADE FIXA COM POLICARBONATO"],"JPF350":[200,60,85.3,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E POLICARBONATO 4mm"],"JPF352":[200,60,83.3,"JANELA METÁLICA BASCULANTE FIXA 45° COM GRADE EXTERNA E POLICARBONATO 4mm"],"JPF354":[200,120,140.5,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E POLICARBONATO 4mm"],"JPF355":[90,60,41.6,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E POLICARBONATO 4mm"],"JPF356":[200,120,140.0,"JANELA METÁLICA BASCULANTE FIXO 45° COM GRADE EXTERNA E POLICARBONATO 4mm"],"JVF301":[200,120,189.7,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E VIDRO COMUM 6mm"],"JVF302":[200,60,94.1,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E VIDRO COMUM 6mm"],"JVF303":[90,60,47.7,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E VIDRO COMUM 6mm"],"JVF304":[60,60,33.5,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E VIDRO COMUM 6mm"],"JVF307":[90,120,97.3,"JANELA METÁLICA BASCULANTE COM GRADE EXTERNA E VIDRO COMUM 6mm"],"PC151D":[100,220,219.6,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO DIREITO"],"PC151E":[100,220,219.6,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO ESQUERDO"],"PC161D":[80,224,206.8,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO DIREITO"],"PC161E":[80,224,206.8,"PORTA DE CORRER EM CHAPA DE AÇO - LADO ESQUERDO"],"PC162D":[100,224,215.0,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO DIREITO"],"PC162E":[100,224,214.7,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO ESQUERDO"],"PC163D":[100,220,231.7,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO DIREITO"],"PC163E":[100,220,230.6,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR - LADO ESQUERDO"],"PC165D":[120,224,213.9,"PORTA DE CORRER EM CHAPA DE AÇO - CONTROLE SUPERIOR LADO DIREITO"],"PC166D":[80,224,205.6,"PORTA DE CORRER EM CHAPA DE AÇO CONTROLE SUPERIOR LADO DIREITO"],"PF150D":[90,220,67.5,"PORTA METÁLICA DE ABRIR (DIREITA)"],"PF150E":[90,220,69.6,"PORTA METÁLICA DE ABRIR (ESQUERDA)"],"PF151D":[90,220,64.9,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR COM VISOR DE POLICARBONATO"],"PF151E":[90,220,64.9,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR COM VISOR DE POLICARBONATO"],"PF152D":[90,220,64.3,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR COM VISOR DE POLICARBONATO"],"PF152E":[90,220,64.3,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR COM VISOR DE POLICARBONATO"],"PF153D":[90,220,64.8,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR PcD COM VISOR DE POLICARBONATO"],"PF153E":[90,220,64.8,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR PcD COM VISOR DE POLICARBONATO"],"PF155E":[100,220,69.2,"PORTA METÁLICA DE CHAPA REFORÇADA DE ABRIR"],"PF158D":[100,220,null,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO"],"PF158E":[100,220,null,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO"],"PF159D":[100,220,91.0,"PORTA METÁLICA DE ABRIR + GRADE + VENEZIANA + VIDRO LAMINADO"],"PF159E":[100,220,91.0,"PORTA METÁLICA DE ABRIR + GRADE + VENEZIANA + VIDRO LAMINADO"],"PF160E":[100,240,null,"PORTA METÁLICA VENEZIANADA DE ABRIR"],"PF163D":[100,100,null,"PORTA METÁLICA VENEZIANADA DE ABRIR"],"PF164D":[100,240,101.7,"PORTA METÁLICA CHAPA DUPLA REFORÇADA DE ABRIR C/BANDEIRA FIXA"],"PF164E":[100,240,90.1,"PORTA METÁLICA CHAPA DUPLA REFORÇADA DE ABRIR C/BANDEIRA FIXA"],"PF168D":[90,180,39.6,"PORTA METÁLICA DE ABRIR PcD (SANITÁRIOS)"],"PF168E":[90,180,39.6,"PORTA METÁLICA DE ABRIR PcD (SANITÁRIOS)"],"PF172E":[90,240,89.8,"PORTA METÁLICA CHAPA DUPLA REFORÇADA DE ABRIR C/BANDEIRA FIXA"],"PF175E":[100,240,78.7,"PORTA METÁLICA DE CHAPA DUPLA REFORÇADA DE ABRIR"],"PF250D":[120,220,82.3,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO 2 FOLHAS"],"PF255":[250,225,145.6,"PORTA METÁLICA CHAPA REFORÇADA DE ABRIR - 2 FOLHAS"],"PF257":[200,240,null,"PORTA METÁLICA DE ABRIR + GRADE + VENEZIANA + POLICARBONATO 4mm"],"PF260":[180,240,null,"PORTA METÁLICA CHAPA REFORÇADA DE ABRIR - 2 FOLHAS"],"PF266":[200,240,133.9,"PORTA METÁLICA COM CHAPA REFORÇADA DE ABRIR - 2 FOLHAS"],"PF268D":[120,220,null,"PORTA METÁLICA DE ABRIR C/ VISOR E POLICARBONATO - 2 FOLHAS"],"PGF152D":[279,272,279.3,"PORTA DE GRADE DE ABRIR - 1 FOLHA"],"PGF251":[200,220,null,"PORTA DE GRADE DE ABRIR - 2 FOLHAS"],"PGF450D":[245,294,278.7,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF450E":[245,294,278.7,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF451D":[248,285,274.6,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF459D":[150,287.5,229.2,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF459E":[150,287.5,229.2,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF460E":[279.5,272.5,null,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF462D":[272,273.5,287.8,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF463D":[120,224,197.2,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF463E":[120,224,197.2,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF465D":[120,220,null,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF467D":[248,285,274.6,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF467E":[248,285,274.6,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF468E":[150,289.7,229.8,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF469D":[150,273.5,225.4,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF469E":[150,273.5,225.4,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF470D":[209,272,298.5,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"PGF470E":[209,272,304.6,"GRADE COM PORTA DE CORRER - CONTROLE SUPERIOR"],"POF151D":[100,230,null,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF151E":[100,230,null,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF159D":[90,240,null,"PORTÃO METÁLICO DE ABRIR DE TELA"],"POF159E":[90,240,null,"PORTÃO METÁLICO DE ABRIR DE TELA"],"POF160D":[131,266,107.0,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF250":[500,579,681.6,"PORTÃO METÁLICO DE ABRIR CEGO COM TELA DE ACESSO A VEÍCULOS E PEDESTRES"],"POF256":[160,300,null,"PORTÃO METÁLICO DE ABRIR DE TELA - PEDESTRES"],"POF450D":[300,300,316.5,"PORTÃO METÁLICO DE CORRER EM CHAPA METÁLICA DE ACESSO DE VEÍCULOS E PEDESTRES"],"POF450E":[300,300,316.5,"PORTÃO METÁLICO DE CORRER EM CHAPA METÁLICA DE ACESSO DE VEÍCULOS E PEDESTRES"],"POF452D":[400,300,null,"PORTÃO METÁLICO DE CORRER COM TELA, DE ACESSO PARA VEÍCULOS - ÁREA EXTERNA - CONTROLE ELETROMECÂNICO"],"POF454E":[300,300,382.9,"PORTÃO METÁLICO DE CORRER EM CHAPA METÁLICA DE ACESSO DE VEÍCULOS E PEDESTRES"],"POF473D":[430,400,null,"PORTÃO METÁLICO DE CORRER COM TELA, DE ACESSO PARA VEÍCULOS - ÁREA EXTERNA - CONTROLE ELETROMECÂNICO"],"POF473E":[430,400,null,"PORTÃO METÁLICO DE CORRER COM TELA, DE ACESSO PARA VEÍCULOS - ÁREA EXTERNA - CONTROLE ELETROMECÂNICO"],"POF474D":[430,500,null,"PORTÃO METÁLICO DE CORRER EM CHAPA METÁLICA DE ACESSO DE VEÍCULOS"],"POF474E":[430,500,null,"PORTÃO METÁLICO DE CORRER EM CHAPA METÁLICA DE ACESSO DE VEÍCULOS"],"POF475D":[430,300,null,"PORTÃO METÁLICO DE CORRER COM TELA, DE ACESSO PARA VEÍCULOS - ÁREA EXTERNA - CONTROLE ELETROMECÂNICO"],"POF475E":[430,300,null,"PORTÃO METÁLICO DE CORRER COM TELA, DE ACESSO PARA VEÍCULOS - ÁREA EXTERNA - CONTROLE ELETROMECÂNICO"],"POF477E":[210,120,62.9,"PORTÃO METÁLICO DE CORRER DE VEÍCULOS"],"TE05":[90,60,6.8,"TELA FIXA METÁLICA TIPO MOSQUITEIRO"],"TE09":[200,60,12.0,"TELA FIXA METÁLICA TIPO MOSQUITEIRO"],"TE10":[200,120,null,"TELA FIXA METÁLICA TIPO MOSQUITEIRO"],"VBF451":[200,120,240.9,"VISOR FIXO EM AÇO COM VIDRO BLINDADO C/ PORTINHOLA"],"VBF457":[200,120,273.1,"VISOR FIXO EM AÇO COM VIDRO BLINDADO"],"VBF458":[90,120,113.7,"VISOR FIXO EM AÇO COM VIDRO BLINDADO"],"VBF459":[200,120,238.9,"VISOR FIXO EM AÇO COM VIDRO BLINDADO C/ PORTINHOLA"],"VPF452":[60,90,38.0,"VISOR FIXO EM AÇO COM GRADE E POLICARBONATO"]};   // chave do caderno -> [largura cm, altura cm, peso médio kg/un ou null, nome da folha de detalhe]
+const TINTA_CAD=[['Fundo/primer','Tinta W-POXI CVP 315 R Cinza Padrão WEG · Diluente Orgânico Epóxi 3005 · Catalisador W-POXI 3001 (CVP 315)'],
+                 ['Acabamento','Clear PU HPA 501 Cinza RAL 7033 · Diluente Orgânico PU 5003 · Catalisador W-THASE 5058 (PU HPA)']];
+function dimCad(cod){ const k=chaveProjeto(cod)||(String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'')); return DIM_CAD[k]||DIM_CAD[k.replace(/[DE]$/,'')]||null; }
+function itensParaPintura(){
+  return ITENS.filter(it=>!it.saldo&&it.d1&&!ehPorta(it.codigo)&&(it.status||{}).montada&&!(it.status||{}).env_pintura)
+    .sort((a,b)=>(a.c.prazos.env_pintura||'9')<(b.c.prazos.env_pintura||'9')?-1:(a.c.prazos.env_pintura||'9')>(b.c.prazos.env_pintura||'9')?1:(a.d1<b.d1?-1:a.d1>b.d1?1:a.modulo.localeCompare(b.modulo)));
+}
+let ROM_GRUPOS=[];
+function abrirRomaneio(){
+  fecharOv('ov-rom');
+  const its=itensParaPintura(), g={};
+  its.forEach(it=>{ const k=it.modulo+'§'+it.d1; (g[k]=g[k]||{mod:it.modulo,d1:it.d1,its:[]}).its.push(it); });
+  ROM_GRUPOS=Object.values(g);
+  const pode=podeApontar();
+  const area=l=>l.reduce((s,it)=>{ const d=dimCad(it.codigo); return s+(d?d[0]*d[1]/10000:0); },0);
+  const linhas=ROM_GRUPOS.map((gr,i)=>{ const cods={}; gr.its.forEach(it=>cods[it.codigo]=(cods[it.codigo]||0)+1);
+    const pz=gr.its[0].c.prazos.env_pintura, f=difUteis(HOJE,pz);
+    return `<label class="rom-g"><input type="checkbox" checked data-i="${i}" onchange="romResumo()">
+      <span class="rom-m"><b>${escH(gr.mod)}</b><small>Data 1 ${BR(gr.d1)}</small></span>
+      <span class="rom-c">${Object.entries(cods).map(([k,n])=>`<span>${n>1?n+'× ':''}${escH(k)}</span>`).join('')}</span>
+      <span class="rom-p">enviar até <b>${BR(pz)}</b> ${quandoTag(f)}</span>
+      <span class="rom-a">${gr.its.length} un. · ${area(gr.its).toFixed(2).replace('.',',')} m²</span></label>`; }).join('');
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-rom'; ov.onclick=e=>{ if(e.target===ov) fecharOv('ov-rom'); };
+  ov.innerHTML=`<div class="modal larga rom" role="dialog" aria-modal="true" aria-label="Romaneio para pintura">
+    <h2>🎨 Romaneio de envio para a pintura</h2>
+    ${ROM_GRUPOS.length?`<p>Janelas com <b>montagem feita</b> que ainda não foram enviadas para a pintura, na ordem do prazo de envio. Desmarque os módulos que não vão nesta carga.</p>
+      <div class="rom-lista">${linhas}</div>
+      <div class="rom-pe"><div class="rom-tot" id="rom-tot"></div>
+        <label class="rom-dt">Data de envio <input type="date" id="rom-data" value="${HOJE}"></label>
+        ${pode?`<label class="rom-mk"><input type="checkbox" id="rom-marcar"> marcar as selecionadas como <b>Enviada p/ pintura</b> nesta data</label>`:''}</div>
+      <div class="mbtns"><button class="btn sec" onclick="fecharOv('ov-rom')">Cancelar</button><button class="btn" id="rom-ok" onclick="gerarRomaneio()">📥 Baixar romaneio (Excel)</button></div>
+      <div class="erro" id="rom-erro"></div>`
+    :`<p>Nenhuma janela com montagem feita aguardando envio para a pintura.</p><div class="mbtns"><button class="btn" onclick="fecharOv('ov-rom')">Fechar</button></div>`}</div>`;
+  document.body.appendChild(ov); romResumo();
+}
+function romSelecionados(){ return [...document.querySelectorAll('#ov-rom .rom-g input:checked')].flatMap(cb=>ROM_GRUPOS[+cb.dataset.i].its); }
+function romResumo(){ const el=document.getElementById('rom-tot'); if(!el) return; const its=romSelecionados();
+  let a=0,p=0,semp=0; its.forEach(it=>{ const d=dimCad(it.codigo); if(d){ a+=d[0]*d[1]/10000; if(d[2]) p+=d[2]; else semp++; } else semp++; });
+  const nm=new Set(its.map(it=>it.modulo+'§'+it.d1)).size;
+  el.innerHTML=`<b>${its.length}</b> janela(s) em <b>${nm}</b> módulo(s) · <b>${a.toFixed(2).replace('.',',')}</b> m² · ≈ <b>${p.toLocaleString('pt-BR',{maximumFractionDigits:1})}</b> kg${semp?` <span class="muted">(${semp} sem peso no caderno)</span>`:''}`;
+  const b=document.getElementById('rom-ok'); if(b) b.disabled=!its.length; }
+async function gerarRomaneio(){
+  const its=romSelecionados(), data=document.getElementById('rom-data').value||HOJE, err=document.getElementById('rom-erro'), btn=document.getElementById('rom-ok');
+  if(!its.length) return;
+  const marcar=!!(document.getElementById('rom-marcar')||{}).checked;
+  btn.disabled=true; const txt=btn.textContent; btn.textContent='Gerando...'; err.textContent='';
+  try{
+    const X=await carregarXlsx();
+    const usu=sessionStorage.getItem('esq_nome')||sessionStorage.getItem('esq_user')||'';
+    const cod=it=>chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
+    const comp=it=>complementos(it.codigo).map(([t,r])=>r).join(' + ');
+    const r2=v=>Math.round(v*100)/100, r1=v=>Math.round(v*10)/10;
+    // linhas por módulo + código (quantidade somada)
+    const lin=[], idx={};
+    its.forEach(it=>{ const k=it.modulo+'§'+it.d1+'§'+it.codigo; let x=idx[k];
+      if(!x){ const d=dimCad(it.codigo)||[null,null,null,'']; x=idx[k]={it,d,q:0,mont:''}; lin.push(x); }
+      x.q++; const m=(it.status||{}).montada; if(m&&(!x.mont||m>x.mont)) x.mont=m; });
+    let qt=0,at=0,pt=0;
+    const corpo=lin.map(x=>{ const [L,A,P,nome]=x.d, au=L&&A?r2(L*A/10000):null, ar=au!=null?r2(au*x.q):null, pr=P?r1(P*x.q):null;
+      qt+=x.q; at+=ar||0; pt+=pr||0; at=r2(at); pt=r1(pt);
+      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.d1),cod(x.it),nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
+    const cab=['Módulo','Data 1 (entrega)','Pintura pronta até','Esquadria','Descrição (caderno R02)','Qtd.','Largura (cm)','Altura (cm)','Área un. (m²)','Área total (m²)','Peso un. estimado (kg)','Peso total estimado (kg)','Montada em','Complemento (vidro/policarbonato/tela)','Conferido (✓)'];
+    const topo=[['ROMANEIO DE ENVIO PARA PINTURA — ESQUADRIAS'],[],
+      ['Data de envio',BRc(data)],['Gerado em',BRc(HOJE)+(usu?' por '+usu:'')],['Janelas',qt],['Módulos',new Set(its.map(it=>it.modulo+'§'+it.d1)).size],
+      ['Área total (m²)',r2(at)],['Peso total estimado (kg)',pt],[],
+      ['Especificação de pintura (caderno de esquadrias R02)'],...TINTA_CAD,[],cab];
+    const linhaCab=topo.length;   // índice (0) da linha de cabeçalho da tabela
+    const aoa=topo.concat(corpo,[[],['TOTAL','','','','',qt,'','','',r2(at),'',pt]],[[],
+      ['Observações'],['Pintura pronta até = Data 1 do módulo (prazo da etapa "Pintura concluída").'],
+      ['Medidas e peso por código do caderno de esquadrias R02. O peso é a média do caderno para o código e varia com a espessura do batente/marco — use como estimativa.']]);
+    const ws=X.utils.aoa_to_sheet(aoa);
+    ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:11},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}}];
+    ws['!autofilter']={ref:X.utils.encode_range({s:{r:linhaCab,c:0},e:{r:linhaCab+corpo.length,c:cab.length-1}})};
+    // resumo por código
+    const rc={}; lin.forEach(x=>{ const k=cod(x.it); const y=rc[k]=rc[k]||{k,nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}}; y.q+=x.q; y.a+=x.d[0]&&x.d[1]?x.d[0]*x.d[1]/10000*x.q:0; y.p+=x.d[2]?x.d[2]*x.q:0; y.mods[x.it.modulo]=(y.mods[x.it.modulo]||0)+x.q; });
+    const res=[['Código','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']]
+      .concat(Object.values(rc).sort((a,b)=>a.k.localeCompare(b.k)).map(y=>[y.k,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]))
+      .concat([[],['TOTAL','',qt,r2(at),pt]]);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:11},{wch:48},{wch:6},{wch:12},{wch:14},{wch:60}];
+    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Romaneio'); X.utils.book_append_sheet(wb,ws2,'Resumo por código');
+    X.writeFile(wb,`romaneio_pintura_${data}.xlsx`);
+    if(marcar){
+      btn.textContent='Marcando como enviadas...';
+      const ok=await gravar(its.map(it=>it.chave),'env_pintura',data);
+      if(!ok){ err.textContent='O Excel foi gerado, mas não foi possível marcar como enviadas. Tente de novo pelo Apontamento.'; btn.textContent=txt; btn.disabled=false; return; }
+    }
+    fecharOv('ov-rom');
+  }catch(e){ err.textContent='Não foi possível gerar o Excel: '+e.message; btn.textContent=txt; btn.disabled=false; }
 }
 
 /* ===== carga semanal ===== */

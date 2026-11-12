@@ -100,6 +100,7 @@ Botões **Todas · Portas · Janelas** ao lado das abas. Vale para indicadores, 
 O filtro **Próxima etapa** acompanha o tipo: em **Janelas** só as etapas de chaparia/montagem/pintura; em **Portas** só
 *Falta emitir solicitação de compra · Falta OC aprovada · Falta recebimento previsto · Aguardando recebimento*; em **Todas**, os dois grupos
 e *Falta pedido (chaparia ou SC de porta)*.
+Nas portas, *Falta recebimento previsto* = OC aprovada ainda sem data prevista; *Aguardando recebimento* = já tem data prevista e a porta não chegou. Uma porta nunca aparece nos dois.
 Classificação como nas tabelas do caderno: **portas** = códigos que começam com P (PF, PC, PGF, POF, PM); **janelas** = demais (JPF, JVF, VPF, GLF, GF, GPF, VBF, TE).
 
 ## Projeto de cada esquadria
@@ -166,7 +167,10 @@ Teste rápido: abra a URL `/exec` no navegador — aparece `{"ok":true,"app":"Es
 Painel no estilo BI, sem biblioteca externa (SVG/HTML no próprio `index.html`):
 
 - **Anéis:** esquadrias por situação; módulos por situação (cada módulo/lote assume a pior situação entre as suas esquadrias); avanço das etapas (% apontado, com medidores de janelas e portas).
-- **Onde estão:** barras empilhadas por etapa, para janelas e para portas, com os segmentos atrasadas / atenção / em dia. A etapa com mais atrasadas recebe o selo **gargalo**.
+- **Janelas por status / Portas por status:** gráficos de colunas com os mesmos status do filtro "Próxima etapa", e o número de cada coluna é o mesmo que o filtro mostra no Apontamento.
+  - **Janelas:** Falta pedir chaparia → Já pedida, falta receber chaparia → Falta montar → Falta enviar p/ pintura → Na pintura → Pintadas.
+  - **Portas:** Falta emitir SC → Falta OC aprovada → Falta recebimento previsto → Aguardando recebimento da porta → Recebidas.
+  - **Leitura:** cada coluna é dividida em atrasadas, atenção e em dia, e a coluna com mais atrasadas recebe o selo **gargalo**. Clique no número ou num segmento para abrir a janela de conferência.
 - **Data 1 por semana:** colunas pela semana da Data 1 (8 semanas), coloridas pela situação atual. "Venc." agrupa as pendentes com Data 1 já passada.
 - **Carga semanal de prazos:** etapas pendentes pela semana do prazo, pela mesma regra da aba Carga semanal. Há um botão **Tabela** para ver os números.
 - **Tabelas:** prazos de etapa (vencidas e próximos 10 du), módulos em risco (barra de du após a Data 1) e entregas de fornecedor atrasadas.
@@ -198,6 +202,18 @@ Olha-se só a **próxima etapa pendente**:
 - **Atenção** — o prazo vence nos próximos 2 dias úteis (pedido de chaparia: 3).
 - **Em dia** — ainda dentro do prazo da etapa. Por exemplo, uma janela com chaparia recebida e montagem até 18/11 está em dia hoje (11/11), mesmo que montagem e pintura somem 14 du.
 - **Previsão de término** — Data 1 mais os dias úteis que a etapa atual já estourou. O atraso empurra a Data 1, e o motivo aparece ao lado.
+
+## Romaneio para pintura (Excel)
+
+Botão **🎨 Romaneio p/ pintura** no Programa de montagem (Visão geral) e na aba Carga semanal. A janela lista as janelas com **Montagem feita** e ainda sem **Enviada p/ pintura**, por módulo e na ordem do prazo de envio, com quantidade, área e peso.
+
+- **Seleção e data:** desmarque os módulos que não vão nesta carga e escolha a data de envio.
+- **Marcar como enviadas** (apontador/admin): opcional. Grava *Enviada p/ pintura* nas selecionadas, com a data escolhida, logo depois de gerar o Excel.
+- **Aba "Romaneio" do Excel:**
+  - **Cabeçalho:** data de envio, quantidade, área total, peso estimado e a especificação de pintura do caderno R02 (primer W-POXI CVP 315 · acabamento PU HPA 501 RAL 7033).
+  - **Tabela por módulo e código:** Data 1, *pintura pronta até* (= Data 1), descrição, medidas, área, peso, data da montagem, complemento e uma coluna *Conferido (✓)*.
+- **Aba "Resumo por código":** quantidade, área e peso por código, com os módulos.
+- **Medidas e peso:** vêm do caderno R02 por código. O peso é a média do caderno para o código e varia com a espessura do marco, por isso aparece como estimado.
 
 ## Carga semanal
 
