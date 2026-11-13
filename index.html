@@ -611,7 +611,7 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-11.1'; const av0=document.getElementById('aviso-versao');
+  const VERSAO_MIN='2026-11-13.1'; const av0=document.getElementById('aviso-versao');
   if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC, complemento recebido e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
@@ -1137,7 +1137,7 @@ function cartaoMontagem(){
 }
 function linhasMontagem(its){
   return its.map((it,i)=>{ const pz=prazoMontagemTxt(it), k=chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
-    return {seq:i+1,modulo:it.modulo,d1:BRc(it.d1),cod:it.codigo+(it.un>1?' #'+it.un:''),desc:(PROJETOS[k]||[])[1]||'',prazo:BRc(it.c.prazos.montada),sit:pz.cls==='atr'?'Atrasada ('+difUteis(it.c.prazos.montada,HOJE)+' du)':(pz.cls==='ate'?'Vence hoje':'No prazo'),
+    return {seq:i+1,modulo:it.modulo,d1:BRc(it.d1),cod:it.codigo+(it.un>1?' #'+it.un:''),desc:((DIM_CAD[k]||[])[3])||(PROJETOS[k]||[])[1]||'',prazo:BRc(it.c.prazos.montada),sit:pz.cls==='atr'?'Atrasada ('+difUteis(it.c.prazos.montada,HOJE)+' du)':(pz.cls==='ate'?'Vence hoje':'No prazo'),
       ch:it._ch.txt,lib:it._ch.lib?'Liberada':txtFalta(it._ch),comp:complementos(it.codigo).map(([t,r])=>r).join(' + ')+((it.status||{}).complemento?' (recebido '+BR(it.status.complemento)+')':''),obs:(it.status||{}).obs||''}; });
 }
 async function baixarMontagem(){
@@ -1253,13 +1253,21 @@ async function gerarRomaneio(){
     ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:11},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
     ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}}];
     ws['!autofilter']={ref:X.utils.encode_range({s:{r:linhaCab,c:0},e:{r:linhaCab+corpo.length,c:cab.length-1}})};
-    // resumo por código
-    const rc={}; lin.forEach(x=>{ const k=cod(x.it); const y=rc[k]=rc[k]||{k,nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}}; y.q+=x.q; y.a+=x.d[0]&&x.d[1]?x.d[0]*x.d[1]/10000*x.q:0; y.p+=x.d[2]?x.d[2]*x.q:0; y.mods[x.it.modulo]=(y.mods[x.it.modulo]||0)+x.q; });
-    const res=[['Código','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']]
-      .concat(Object.values(rc).sort((a,b)=>a.k.localeCompare(b.k)).map(y=>[y.k,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]))
-      .concat([[],['TOTAL','',qt,r2(at),pt]]);
-    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:11},{wch:48},{wch:6},{wch:12},{wch:14},{wch:60}];
-    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Romaneio'); X.utils.book_append_sheet(wb,ws2,'Resumo por código');
+    // total por tipo de esquadria (família) e, dentro dele, por código — com subtotais e total geral
+    const FAM=[['Janela',/^J[A-Z]*\d/],['Grade fixa',/^G[A-Z]*\d/],['Visor',/^V[A-Z]*\d/],['Tela',/^TE\d/]];
+    const famDe=c=>{ const f=FAM.find(([,re])=>re.test(c)); return f?f[0]:'Outros'; };
+    const ORD=FAM.map(f=>f[0]).concat('Outros');
+    const rc={}; lin.forEach(x=>{ const k=cod(x.it); const y=rc[k]=rc[k]||{k,fam:famDe(k),nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}};
+      y.q+=x.q; y.a+=x.d[0]&&x.d[1]?x.d[0]*x.d[1]/10000*x.q:0; y.p+=x.d[2]?x.d[2]*x.q:0; y.mods[x.it.modulo]=(y.mods[x.it.modulo]||0)+x.q; });
+    const res=[['TOTAL POR TIPO DE ESQUADRIA — romaneio de envio para pintura de '+BRc(data)],[],
+      ['Tipo','Código','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']];
+    ORD.forEach(f=>{ const ys=Object.values(rc).filter(y=>y.fam===f).sort((a,b)=>a.k.localeCompare(b.k)); if(!ys.length) return;
+      ys.forEach(y=>res.push([f,y.k,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]));
+      res.push(['Subtotal '+f,'','',ys.reduce((s,y)=>s+y.q,0),r2(ys.reduce((s,y)=>s+(y.dim?y.a:0),0)),r1(ys.reduce((s,y)=>s+y.p,0))||null,'']); res.push([]); });
+    res.push(['TOTAL GERAL','','',qt,r2(at),pt,'']);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:18},{wch:11},{wch:48},{wch:6},{wch:12},{wch:14},{wch:50}];
+    ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:6}}];
+    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Romaneio'); X.utils.book_append_sheet(wb,ws2,'Total por tipo');
     X.writeFile(wb,`romaneio_pintura_${data}.xlsx`);
     if(marcar){
       btn.textContent='Marcando como enviadas...';
@@ -1467,7 +1475,7 @@ async function baixarSemPedido(){
     const dt=s=>s?BRc(s):'';
     // aba 1: resumo por código
     const g={};
-    lista.forEach(it=>{ const k=cod(it); const x=g[k]=g[k]||{k,tipo:ehPorta(it.codigo)?'Porta':'Janela',desc:(PROJETOS[k]||[])[1]||'',qtd:0,mods:{},prazo:'',comp:comp(it)};
+    lista.forEach(it=>{ const k=cod(it); const x=g[k]=g[k]||{k,tipo:ehPorta(it.codigo)?'Porta':'Janela',desc:((DIM_CAD[k]||[])[3])||(PROJETOS[k]||[])[1]||'',qtd:0,mods:{},prazo:'',comp:comp(it)};
       x.qtd++; x.mods[it.modulo]=(x.mods[it.modulo]||0)+1; const p=it.c.prazos.solicitada; if(p&&(!x.prazo||p<x.prazo)) x.prazo=p; });
     const resumo=[['Código','Tipo','Descrição (caderno)','Qtd. total','Para os módulos','Prazo do pedido mais cedo','Complemento a comprar']]
       .concat(Object.values(g).sort((a,b)=>(a.prazo||'9')<(b.prazo||'9')?-1:1).map(x=>[x.k,x.tipo,x.desc,x.qtd,Object.entries(x.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', '),dt(x.prazo),x.comp]));

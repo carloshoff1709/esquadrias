@@ -155,6 +155,27 @@ O Apps Script informa a versão (`ESQ_VERSAO` no Code.gs). Se o dashboard mostra
 cole o Code.gs novo e publique uma **Nova versão** (Implantar → Gerenciar implantações → lápis).
 Teste rápido: abra a URL `/exec` no navegador — aparece `{"ok":true,"app":"Esquadrias","versao":"..."}`.
 
+## Como a coluna Esquadria é lida
+
+- **Separação:** esquadrias separadas por vírgula ou ponto e vírgula. Quantidade no fim: `- 2pç`, `2 PÇ`, `2un`, `2X`, `2 x` ou `x2`. Repetir o código também conta: `JPF352,JPF352` = 2.
+- **Escrita padronizada:** `JPF 354` vira `JPF354` e `PF153-E` vira `PF153-e`.
+- **Avisos da planilha:**
+  - linha com trecho que não parece código de esquadria;
+  - **módulo repetido com esquadrias diferentes** entre as linhas (cada linha é um lote, e o mesmo módulo deve ter as mesmas esquadrias em todos).
+- **Migração do "2X" (versão 2026-11-12.1):** até a versão anterior, "2X" não era entendido (contava 1 unidade, com o código "PM152-d 2X"). Na primeira leitura depois de publicar o Code.gs novo, os apontamentos feitos nesses itens passam para a 1ª unidade do lote e um aviso informa quantos foram migrados. A 2ª unidade fica sem apontamento e precisa de pedido.
+
+## Unidade de OC "perdida" (órfã)
+
+Toda linha da Status_Esquadrias com OC é uma unidade física pedida. Se a chave dessa linha deixa de existir na programação, a unidade fica órfã. Isso acontece quando a linha do módulo é apagada ou alterada, a escrita muda (como no caso do "2X") ou a mesma chave aparece duas vezes.
+
+Na leitura seguinte, o app trata a unidade órfã nesta ordem:
+1. **Vincula** a uma esquadria do mesmo código que foi apontada **sem OC** e já recebida (de preferência do mesmo módulo), porque é a mesma peça física. Ela ganha a OC e mantém as próprias datas.
+2. Se não houver, **devolve ao saldo da OC** com as etapas que já tinha. A unidade aparece na aba **Saldo de OCs** e é consumida pela próxima esquadria do mesmo código sem pedido.
+
+Um aviso em "Avisos da planilha" informa a OC, o código, a chave de onde a unidade saiu e o destino dela.
+
+Apontamentos sem OC não são mexidos.
+
 ## Observações
 
 - O apontamento fica ligado a **módulo + código da esquadria**. Reordenar linhas na programação não perde nada; trocar o código ou o nome do módulo faz a esquadria aparecer sem apontamentos.
@@ -212,7 +233,7 @@ Botão **🎨 Romaneio p/ pintura** no Programa de montagem (Visão geral) e na 
 - **Aba "Romaneio" do Excel:**
   - **Cabeçalho:** data de envio, quantidade, área total, peso estimado e a especificação de pintura do caderno R02 (primer W-POXI CVP 315 · acabamento PU HPA 501 RAL 7033).
   - **Tabela por módulo e código:** Data 1, *pintura pronta até* (= Data 1), descrição, medidas, área, peso, data da montagem, complemento e uma coluna *Conferido (✓)*.
-- **Aba "Resumo por código":** quantidade, área e peso por código, com os módulos.
+- **Aba "Total por tipo":** soma por tipo de esquadria (janela, grade fixa, visor, tela). Dentro de cada tipo, a quantidade, a área e o peso por código, com subtotal por tipo e total geral.
 - **Medidas e peso:** vêm do caderno R02 por código. O peso é a média do caderno para o código e varia com a espessura do marco, por isso aparece como estimado.
 
 ## Carga semanal
