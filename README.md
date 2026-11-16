@@ -51,6 +51,7 @@ As senhas ficam em texto na planilha — use senhas próprias deste sistema e re
 - **Programação de Esquadrias** — só leitura. O script procura o cabeçalho (Módulo, Esquadria, Data 1) nas 15 primeiras linhas. Esquadrias separadas por vírgula; "- 2pç" vira duas linhas.
 - **Status_Esquadrias** — apontamentos (criada sozinha). Não renomeie as colunas.
 - **Usuarios** — logins.
+- **Base_Programacao** — criada e ocultada sozinha. Guarda a programação já em andamento (linha a linha, com as chaves de cada esquadria). Não edite à mão.
 - **Feriados** (opcional) — datas na coluna A, somadas aos feriados nacionais e ao 20/09 já previstos.
 
 ## Portas (fornecedor externo)
@@ -176,9 +177,35 @@ Um aviso em "Avisos da planilha" informa a OC, o código, a chave de onde a unid
 
 Apontamentos sem OC não são mexidos.
 
+## Alterações na programação já em andamento
+
+A programação que já está na planilha é a **base** (aba oculta Base_Programacao). Ela é criada na primeira vez que o app abre depois de publicar o Code.gs da versão 2026-11-16.1, **sem alerta**: as linhas que existem naquele momento (hoje, 4 a 256) viram a referência.
+
+| O que acontece na planilha | Resultado no app |
+|---|---|
+| Linha nova **abaixo** da última linha já programada | Normal, sem alerta. A linha entra no fluxo. |
+| Linha nova **entre** linhas já programadas (ex.: inserir a linha 112) | Alerta vermelho no topo: *inserida no meio* |
+| Linha apagada | Alerta: *apagada*, com quantas esquadrias da linha já tinham apontamento |
+| Linha recortada e colada em outro lugar | Alerta: *mudou de posição* (mostra a linha antiga) |
+| Esquadrias trocadas numa linha que já existia | Alerta: *esquadrias trocadas* (mostra como era antes) |
+| Só a Data 1 mudou | Sem alerta; os prazos são recalculados. |
+
+**Os apontamentos ficam com a linha.** Cada linha guarda as chaves das suas esquadrias. Inserir, apagar ou mover linhas não troca apontamentos de lugar, e uma linha nova sempre recebe chaves novas.
+
+Antes desta versão, a chave era `MÓDULO|CÓDIGO|nº`, numerada pela posição na planilha. Como o mesmo módulo aparece em vários lotes (por exemplo, MI-1-07 três vezes), inserir um lote desse módulo no meio passava o apontamento de um lote para outro sem aviso.
+
+**O alerta fica até alguém dar ciente:**
+- Clique no nome do módulo para conferir as esquadrias da linha.
+- Um **apontador ou admin** clica em **✓ Ciente — aceitar a nova programação**. As alterações viram a nova base e o alerta sai.
+- O ciente vale só para o que estava na tela. Uma alteração feita depois continua em alerta.
+
+**Linha apagada:** enquanto ninguém der ciente, as esquadrias com OC dessa linha **não** voltam para o saldo. Se a linha for colada de volta, o alerta some sozinho e os apontamentos voltam. Depois do ciente, as unidades com OC seguem a regra de "Unidade de OC perdida": vínculo com uma esquadria sem OC ou volta ao saldo.
+
+Uma linha inserida no meio e apagada antes do ciente simplesmente some do alerta.
+
 ## Observações
 
-- O apontamento fica ligado a **módulo + código da esquadria**. Reordenar linhas na programação não perde nada; trocar o código ou o nome do módulo faz a esquadria aparecer sem apontamentos.
+- O apontamento fica ligado à **linha da programação** (veja "Alterações na programação já em andamento"). Inserir, apagar ou mover linhas não troca apontamentos de lugar. Trocar o nome do módulo conta como linha apagada + linha nova (alerta), e a linha nova aparece sem apontamentos.
 - Marcar uma etapa preenche as anteriores vazias com a mesma data; desfazer uma etapa limpa as seguintes.
 - Datas sem ano digitadas na planilha podem ficar com o ano errado — o dashboard avisa quando a Data 1 cai muito no passado.
 - Ao mudar o `Code.gs`: **Implantar → Gerenciar implantações → lápis → Nova versão**. A URL continua a mesma.

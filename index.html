@@ -378,6 +378,10 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
 .modal .seq-oc input{width:15px;height:15px;margin:0;}
 .seq-prev{border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-height:46vh;overflow:auto;}
 .seq-tot{font-size:12.5px;margin-bottom:6px;} .seq-t td,.seq-t th{text-align:left!important;} .seq-t tr.venc td{background:#FEF3F2;}
+#alerta-prog .ap-l{margin-top:6px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;line-height:1.45;}
+#alerta-prog .ap-tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:0 8px;margin-right:6px;background:#fff;border:1px solid #F3A6A6;}
+#alerta-prog .ap-pe{margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;}
+#alerta-prog .ap-pe button{margin-left:0;} #alerta-prog a{color:inherit;font-weight:700;text-decoration:underline;}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -415,6 +419,7 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
   </div>
   <div class="alerta-pedido" id="alerta-pedido"></div>
   <div class="alerta-pedido verm" id="aviso-versao" style="display:none"></div>
+  <div class="alerta-pedido verm" id="alerta-prog" style="display:none" role="alert"></div>
   <div class="avisos" id="avisos"></div>
 
   <div id="pg-geral"><div id="geral"></div></div>
@@ -619,7 +624,7 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-13.1'; const av0=document.getElementById('aviso-versao');
+  const VERSAO_MIN='2026-11-16.1'; const av0=document.getElementById('aviso-versao');
   if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC, complemento recebido e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
@@ -633,8 +638,35 @@ async function carregar(){
   const av=document.getElementById('avisos');
   if(r.avisos&&r.avisos.length){ av.style.display='block'; av.innerHTML='<details class="det-al"><summary><b>Avisos da planilha ('+r.avisos.length+')</b> — linhas sem esquadria ou sem Data 1</summary><div class="cods">'+r.avisos.join('<br>')+'</div></details>'; }
   else av.style.display='none';
+  renderAlertaProg(r);
   document.getElementById('sub').textContent='Aba "'+r.aba+'" · lida em '+r.lido_em+' · prazos em dias úteis antes da Data 1 (chaparia '+LEAD.chaparia+' + montagem '+LEAD.montagem+' + pintura '+LEAD.pintura+')';
   render(); renderCarga(); renderSaldo(); renderGeral();
+}
+
+/* ===== alerta: programação já em andamento foi alterada =====
+   O servidor guarda a programação como base (aba oculta Base_Programacao). Linha nova no fim = normal;
+   linha inserida no meio, apagada, movida ou com esquadrias trocadas = alerta até um apontador dar "Ciente". */
+let ALT_PROG=[], PROG_ATE=0;
+const TIPO_ALT={inserida:'inserida no meio',removida:'apagada',movida:'mudou de posição',alterada:'esquadrias trocadas'};
+function renderAlertaProg(r){
+  const el=document.getElementById('alerta-prog'); ALT_PROG=r.alteracoes||[]; PROG_ATE=r.agora_ms||0;
+  if(!ALT_PROG.length){ el.style.display='none'; el.innerHTML=''; return; }
+  const pode=podeApontar(), temRem=ALT_PROG.some(a=>a.tipo==='removida'&&a.apontadas);
+  el.style.display='block';
+  el.innerHTML=`<b class="t">⚠ A programação já em andamento foi alterada</b> — ${ALT_PROG.length} linha(s). Isso muda o fluxo já programado: confira antes de seguir.
+    <div class="ap-l">${ALT_PROG.map((a,i)=>`<div><span class="ap-tag">${TIPO_ALT[a.tipo]||a.tipo}</span><b>${a.tipo==='removida'?'Era a linha':'Linha'} ${a.linha}</b> · ${a.chaves&&a.chaves.length?`<a href="#" onclick="return abrirAltProg(${i})">${escH(a.modulo)}</a>`:escH(a.modulo)} · Data 1 ${a.d1?BR(a.d1):'—'} · ${escH(esqTxt(a.esquadrias))}${a.detalhe?` <span class="muted">(${escH(esqTxt(a.detalhe))})</span>`:''}${a.tipo==='removida'&&a.apontadas?` · <b>${a.apontadas} esquadria(s) já apontada(s)</b>`:''}<span class="muted"> · desde ${escH(a.desde)}</span></div>`).join('')}</div>
+    <div class="ap-pe"><span>Os apontamentos das linhas que já existiam continuam nas mesmas esquadrias.${temRem?' Ao dar ciente, as apontadas com OC das linhas apagadas voltam para o saldo da OC.':''}</span>
+      ${pode?'<button class="btn" id="ap-ok" onclick="cienteProg()">✓ Ciente — aceitar a nova programação</button>':'<span>Um <b>apontador</b> ou <b>admin</b> precisa dar ciente para o alerta sair.</span>'}</div>`;
+}
+const esqTxt=s=>String(s||'').replace(/×1(?=,|\)|$)/g,'').replace(/×(\d+)/g,' ×$1');
+function abrirAltProg(i){ const a=ALT_PROG[i]; if(a) abrirVerif(a.chaves,'Linha '+a.linha+' · '+a.modulo+' ('+(TIPO_ALT[a.tipo]||a.tipo)+')'); return false; }
+async function cienteProg(){
+  if(!podeApontar()){ abrirLogin(()=>cienteProg()); return; }
+  const b=document.getElementById('ap-ok'); if(b){ b.disabled=true; b.textContent='Confirmando...'; }
+  const r=await apiPost('action=esq_base_ok&ate='+PROG_ATE+'&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
+  if(!r||!r.ok){ if(b){ b.disabled=false; b.textContent='✓ Ciente — aceitar a nova programação'; }
+    document.getElementById('status').textContent='Não foi possível confirmar: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
+  await carregar(); document.getElementById('status').textContent='✅ '+r.confirmadas+' alteração(ões) da programação confirmada(s) por '+(r.por||'você')+'.';
 }
 
 /* ===== KPIs ===== */
