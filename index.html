@@ -371,6 +371,13 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
 .rom-dt{display:flex;align-items:center;gap:8px;font-weight:600;} .rom-dt input{width:auto!important;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-family:inherit;}
 .modal .rom-mk{display:flex;align-items:center;gap:8px;margin:0;font-weight:400;} .modal .rom-mk input{width:16px;height:16px;margin:0;} .modal .rom-dt{margin:0;}
 @media (max-width:720px){ .modal .rom-g{grid-template-columns:22px 1fr auto;grid-template-areas:"ck m a" "ck c c" "ck p p";} .modal .rom-g input{grid-area:ck;} .rom-m{grid-area:m;} .rom-c{grid-area:c;} .rom-p{grid-area:p;white-space:normal;} .rom-a{grid-area:a;} }
+/* sequência para o fornecedor */
+.modal.seq{max-width:820px;}
+.seq-ocs{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px;}
+.modal .seq-oc{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:400;margin:0;cursor:pointer;background:#fff;}
+.modal .seq-oc input{width:15px;height:15px;margin:0;}
+.seq-prev{border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-height:46vh;overflow:auto;}
+.seq-tot{font-size:12.5px;margin-bottom:6px;} .seq-t td,.seq-t th{text-align:left!important;} .seq-t tr.venc td{background:#FEF3F2;}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -445,6 +452,7 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
         <label><input type="checkbox" id="c-concl" onchange="renderCarga()"> incluir o que já foi feito</label>
         <button class="btn" style="margin-left:auto" onclick="baixarSemPedido()" id="btn-sem-pedido">📥 Baixar itens sem pedido (Excel)</button>
         <button class="btn" onclick="abrirRomaneio()">🎨 Romaneio p/ pintura (Excel)</button>
+        <button class="btn" onclick="abrirSequencia()">🏭 Sequência p/ fornecedor</button>
       </div>
       <div id="carga"></div>
       <div class="nota">
@@ -797,7 +805,7 @@ function abrirVerif(chaves,rotulo,manter){
     <div class="vf-top"><div><h2>${escH(rotulo)}</h2><div class="vf-res">${its.length} esquadria(s) ${SITS.filter(k=>cont[k]).map(k=>`<span class="sit s-${k}">${cont[k]} ${SIT1[k].toLowerCase()}</span>`).join(' ')}${pode?'<span class="muted"> · clique numa etapa para apontar, ou selecione várias e use a barra abaixo</span>':''}</div></div>
       <button class="vf-x" onclick="fecharOv('ov-vf')" aria-label="Fechar">✕</button></div>
     <div class="vf-corpo"><table class="vt${pode?' pode':''}"><tr>${pode?'<th class="ck"><input type="checkbox" id="vf-all" aria-label="Selecionar todas" onchange="vfTodos(this.checked)"></th>':''}<th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Etapas</th><th>Próximo passo</th><th>Situação</th></tr>${linhas}</table></div>
-    <div class="vf-pe">${lote}<div class="vf-bt"><button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div></div>`;
+    <div class="vf-pe">${lote}<div class="vf-bt">${its.some(pendenteChaparia)?`<button class="btn sec" onclick="abrirSequencia(VF.chaves)" title="Janelas desta lista com chaparia pedida e ainda não recebida, em ordem de prazo">🏭 Sequência p/ fornecedor</button>`:''}<button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div></div>`;
   document.body.appendChild(ov);
   const corpo=ov.querySelector('.vf-corpo'); if(corpo&&rolagem) corpo.scrollTop=rolagem;
   vfAtualizarLote();
@@ -1276,6 +1284,99 @@ async function gerarRomaneio(){
     }
     fecharOv('ov-rom');
   }catch(e){ err.textContent='Não foi possível gerar o Excel: '+e.message; btn.textContent=txt; btn.disabled=false; }
+}
+
+/* ===== Sequência de produção da chaparia para o fornecedor =====
+   Janelas com chaparia pedida e ainda não recebida, na ordem do prazo de recebimento na fábrica
+   (Data 1 − 14 du). Unidades de saldo da OC (sem módulo) vão por último. */
+const pendenteChaparia=it=>!ehPorta(it.codigo)&&!!(it.status||{}).solicitada&&!(it.status||{}).recebida;
+let SEQ_BASE=[];
+function abrirSequencia(chaves){
+  fecharOv('ov-seq');
+  const fonte=chaves?chaves.map(c=>ITENS.find(x=>x.chave===c)).filter(Boolean):ITENS;
+  SEQ_BASE=fonte.filter(pendenteChaparia);
+  const ocs={}; SEQ_BASE.forEach(it=>{ const k=(it.status||{}).oc||''; ocs[k]=(ocs[k]||0)+1; });
+  const lista=Object.entries(ocs).sort((a,b)=>(a[0]||'~').localeCompare(b[0]||'~'));
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-seq'; ov.onclick=e=>{ if(e.target===ov) fecharOv('ov-seq'); };
+  ov.innerHTML=`<div class="modal larga seq" role="dialog" aria-modal="true" aria-label="Sequência de produção para o fornecedor">
+    <h2>🏭 Sequência de produção — chaparia pedida</h2>
+    ${SEQ_BASE.length?`<p>Janelas com chaparia <b>pedida e ainda não recebida</b>, numeradas da primeira à última pela data em que precisam chegar na fábrica (Data 1 − ${LEAD.montagem+LEAD.pintura} du). Marque as OCs deste fornecedor.</p>
+      <div class="seq-ocs">${lista.map(([oc,n])=>`<label class="seq-oc"><input type="checkbox" checked data-oc="${escH(oc)}" onchange="seqResumo()"> ${oc?'OC <b>'+escH(oc)+'</b>':'<b>Sem OC</b> (pedido manual)'} <span class="muted">· ${n} un.</span></label>`).join('')}</div>
+      <div class="seq-prev" id="seq-prev"></div>
+      <div class="mbtns"><button class="btn sec" onclick="fecharOv('ov-seq')">Cancelar</button>
+        <button class="btn sec" id="seq-imp" onclick="imprimirSequencia()">🖨 Imprimir / PDF</button>
+        <button class="btn" id="seq-xls" onclick="baixarSequencia()">📥 Baixar Excel</button></div><div class="erro" id="seq-erro"></div>`
+    :`<p>Nenhuma janela com chaparia pedida aguardando recebimento${chaves?' nesta seleção':''}.</p><div class="mbtns"><button class="btn" onclick="fecharOv('ov-seq')">Fechar</button></div>`}</div>`;
+  document.body.appendChild(ov); seqResumo();
+}
+function seqLinhas(){
+  const marcadas=new Set([...document.querySelectorAll('#ov-seq .seq-oc input:checked')].map(cb=>cb.dataset.oc));
+  const its=SEQ_BASE.filter(it=>marcadas.has((it.status||{}).oc||''));
+  const g={}, ordem=[];
+  its.forEach(it=>{ const st=it.status||{}, pz=it.saldo?'':(it.c.prazos.recebida||''), mod=it.saldo?'Saldo da OC (sem módulo)':it.modulo;
+    const k=[pz,mod,it.d1||'',it.codigo.toUpperCase(),st.oc||''].join('§');
+    if(!g[k]){ g[k]={pz,mod,d1:it.d1||'',it,oc:st.oc||'',prev:st.entrega_prev||'',q:0}; ordem.push(g[k]); } g[k].q++; });
+  ordem.sort((a,b)=>((a.pz||'9')<(b.pz||'9')?-1:(a.pz||'9')>(b.pz||'9')?1:0)||((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.mod.localeCompare(b.mod)||a.it.codigo.localeCompare(b.it.codigo));
+  return ordem.map((x,i)=>{ const cod=chaveProjeto(x.it.codigo)||codigoEsq(x.it.codigo)||x.it.codigo.toUpperCase(), d=dimCad(x.it.codigo);
+    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
+      venc:!!x.pz&&x.pz<HOJE,obs:x.pz?(x.pz<HOJE?'PRAZO VENCIDO — prioridade':(x.prev&&x.prev>x.pz?'entrega da OC depois do prazo':'')):'saldo da OC — produzir por último'}; });
+}
+function seqResumo(){ const el=document.getElementById('seq-prev'); if(!el) return; const L=seqLinhas();
+  const q=L.reduce((s,r)=>s+r.q,0), venc=L.filter(r=>r.venc).reduce((s,r)=>s+r.q,0);
+  el.innerHTML=L.length?`<div class="seq-tot"><b>${q}</b> peça(s) em <b>${L.length}</b> linha(s) de sequência${venc?` · <span class="v-atr">${venc} com prazo vencido</span>`:''}</div>
+    <table class="tg seq-t"><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>OC</th></tr>
+    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b></td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td></tr>`).join('')}</table>
+    ${L.length>12?`<div class="muted small" style="margin-top:4px">+ ${L.length-12} linha(s) no arquivo</div>`:''}`:'<div class="muted">Marque ao menos uma OC.</div>';
+  ['seq-xls','seq-imp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!L.length; }); }
+function seqOcsTxt(L){ return [...new Set(L.map(r=>r.oc||'sem OC'))].join(', '); }
+async function baixarSequencia(){
+  const L=seqLinhas(); if(!L.length) return; const btn=document.getElementById('seq-xls'), err=document.getElementById('seq-erro'), txt=btn.textContent;
+  btn.disabled=true; btn.textContent='Gerando...'; err.textContent='';
+  try{
+    const X=await carregarXlsx(); const q=L.reduce((s,r)=>s+r.q,0);
+    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Observação','Produzido (✓)'];
+    const topo=[['SEQUÊNCIA DE PRODUÇÃO — CHAPARIA DE ESQUADRIAS'],[],['Emitido em',BRc(HOJE)],['OC(s)',seqOcsTxt(L)],['Peças',q],[],
+      ['Produzir e entregar na ordem da sequência (Seq. 1 primeiro). "Entregar na Visia até" é a data limite de recebimento na fábrica.'],[],cab];
+    const corpo=L.map(r=>[r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.cod,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.obs,'']);
+    const ws=X.utils.aoa_to_sheet(topo.concat(corpo,[[],['TOTAL','','','','','',q]]));
+    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:11},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:30},{wch:12}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:6,c:0},e:{r:6,c:11}}];
+    ws['!autofilter']={ref:X.utils.encode_range({s:{r:topo.length-1,c:0},e:{r:topo.length-1+corpo.length,c:cab.length-1}})};
+    // resumo por semana e código (para o fornecedor montar os lotes de produção)
+    const sem={}; L.forEach(r=>{ const k=(r.sem||'9999')+'§'+r.cod; const y=sem[k]=sem[k]||{sem:r.sem,cod:r.cod,nome:r.nome,q:0,mods:{}}; y.q+=r.q; y.mods[r.mod]=(y.mods[r.mod]||0)+r.q; });
+    const res=[['RESUMO POR SEMANA DE ENTREGA'],[],['Entregar na semana de','Esquadria','Descrição (caderno R02)','Qtd.','Módulos']];
+    let atual=null, sub=0;
+    Object.values(sem).sort((a,b)=>(a.sem||'9999').localeCompare(b.sem||'9999')||a.cod.localeCompare(b.cod)).forEach(y=>{
+      if(atual!==null&&y.sem!==atual){ res.push(['Subtotal','','',sub,'']); res.push([]); sub=0; }
+      atual=y.sem; sub+=y.q;
+      res.push([y.sem?BR(y.sem)+(y.sem<segunda(HOJE)?' (vencido)':''):'Saldo da OC',y.cod,y.nome,y.q,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]); });
+    if(atual!==null) res.push(['Subtotal','','',sub,'']);
+    res.push([],['TOTAL','','',q,'']);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:20},{wch:11},{wch:48},{wch:6},{wch:60}];
+    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Sequência'); X.utils.book_append_sheet(wb,ws2,'Por semana');
+    X.writeFile(wb,`sequencia_chaparia_${HOJE}.xlsx`);
+  }catch(e){ err.textContent='Não foi possível gerar o Excel: '+e.message; }
+  btn.textContent=txt; btn.disabled=false;
+}
+function htmlSequencia(){
+  const L=seqLinhas(), q=L.reduce((s,r)=>s+r.q,0);
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Sequência de produção — chaparia</title><style>
+    @page{size:A4 landscape;margin:10mm} body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;margin:0}
+    h1{font-size:16px;margin:0 0 2px} .s{color:#444;margin:0 0 8px} table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #bbb;padding:4px 5px;text-align:left;vertical-align:top} th{background:#eee;font-size:9.5px;text-transform:uppercase}
+    td.n{text-align:center;font-weight:bold} .d{color:#666;font-size:9.5px} tr.v td{background:#fdecea} tr.sem td{background:#f3f6fb;font-weight:bold;font-size:10px}
+    .ok{width:46px;text-align:center;font-size:16px} tr{page-break-inside:avoid}
+  </style></head><body><h1>Sequência de produção — chaparia de esquadrias</h1>
+  <p class="s">Emitido em ${BRc(HOJE)} · OC(s): ${escH(seqOcsTxt(L))} · ${q} peça(s). Produzir e entregar na ordem (Seq. 1 primeiro); "Entregar até" = data limite de recebimento na fábrica.</p>
+  <table><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>Medidas (cm)</th><th>OC</th><th>Observação</th><th>Produzido</th></tr>
+  ${(()=>{ let h='', sa=null; L.forEach(r=>{ if(r.sem!==sa){ sa=r.sem; h+=`<tr class="sem"><td colspan="9">${r.sem?'Semana de '+BR(r.sem):'Saldo da OC (sem módulo)'}</td></tr>`; }
+      h+=`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`; }); return h; })()}
+  <tr><td colspan="4"><b>TOTAL</b></td><td class="n">${q}</td><td colspan="4"></td></tr></table></body></html>`;
+}
+function imprimirSequencia(){
+  const f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+  document.body.appendChild(f); const doc=f.contentDocument; doc.open(); doc.write(htmlSequencia()); doc.close();
+  setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(_){} setTimeout(()=>f.remove(),1500); },250);
 }
 
 /* ===== carga semanal ===== */

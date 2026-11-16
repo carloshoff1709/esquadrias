@@ -236,6 +236,21 @@ Botão **🎨 Romaneio p/ pintura** no Programa de montagem (Visão geral) e na 
 - **Aba "Total por tipo":** soma por tipo de esquadria (janela, grade fixa, visor, tela). Dentro de cada tipo, a quantidade, a área e o peso por código, com subtotal por tipo e total geral.
 - **Medidas e peso:** vêm do caderno R02 por código. O peso é a média do caderno para o código e varia com a espessura do marco, por isso aparece como estimado.
 
+## Sequência de produção para o fornecedor de chaparia
+
+**Onde fica:** o botão **🏭 Sequência p/ fornecedor** aparece na janela de conferência sempre que a lista tem janelas com chaparia pedida e não recebida. Por exemplo, ao clicar em *Já pedida, falta receber chaparia* no gráfico Janelas por status. O mesmo botão também está na aba Carga semanal, que traz todas as janelas pendentes, inclusive as unidades de saldo das OCs.
+
+**Como usar:**
+1. Marque as OCs do fornecedor.
+2. Confira a prévia.
+3. Gere o **Excel** ou **Imprima / PDF**.
+
+**Ordem:** pelo prazo de recebimento da chaparia na fábrica (Data 1 − 14 du). A Seq. 1 vem primeiro, e o desempate é pela Data 1 e pelo módulo. Prazos vencidos aparecem como *PRAZO VENCIDO — prioridade*, e as unidades de saldo da OC (sem módulo) vão por último.
+
+**Aba "Sequência" do Excel:** Seq., *Entregar na Visia até*, semana, módulo, esquadria, descrição do caderno, quantidade, medidas, OC, entrega prevista na OC, observação e uma coluna *Produzido (✓)*.
+
+**Aba "Por semana":** quantidade por código em cada semana de entrega, com subtotais, para o fornecedor montar os lotes de produção.
+
 ## Carga semanal
 
 Cada célula conta as esquadrias com prazo daquela etapa na semana (a semana atual soma as atrasadas).
