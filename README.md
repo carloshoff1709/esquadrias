@@ -238,16 +238,23 @@ Botão **🎨 Romaneio p/ pintura** no Programa de montagem (Visão geral) e na 
 
 ## Sequência de produção para o fornecedor de chaparia
 
-**Onde fica:** o botão **🏭 Sequência p/ fornecedor** aparece na janela de conferência sempre que a lista tem janelas com chaparia pedida e não recebida. Por exemplo, ao clicar em *Já pedida, falta receber chaparia* no gráfico Janelas por status. O mesmo botão também está na aba Carga semanal, que traz todas as janelas pendentes, inclusive as unidades de saldo das OCs.
+**Onde fica:** o botão **🏭 Sequência p/ fornecedor** aparece na janela de conferência sempre que a lista tem janelas com chaparia pedida e não recebida. A sequência gerada traz **sempre todas** as chaparias pedidas e não recebidas (atrasadas, atenção e falta receber), mesmo quando aberta por um segmento do gráfico. Por exemplo, ao clicar em *Já pedida, falta receber chaparia* no gráfico Janelas por status. O mesmo botão também está na aba Carga semanal, que traz todas as janelas pendentes, inclusive as unidades de saldo das OCs.
 
 **Como usar:**
 1. Marque as OCs do fornecedor.
 2. Confira a prévia.
 3. Gere o **Excel** ou **Imprima / PDF**.
 
-**Ordem:** pelo prazo de recebimento da chaparia na fábrica (Data 1 − 14 du). A Seq. 1 vem primeiro, e o desempate é pela Data 1 e pelo módulo. Prazos vencidos aparecem como *PRAZO VENCIDO — prioridade*, e as unidades de saldo da OC (sem módulo) vão por último.
+**Três situações, nesta ordem:** o relatório é dividido em blocos, cada um com título e total de peças:
+1. **Atrasadas:** prazo de recebimento vencido, ou entrega prevista na OC depois do prazo.
+2. **Atenção:** prazo vence nos próximos dias.
+3. **Falta receber:** pedida e dentro do prazo.
 
-**Aba "Sequência" do Excel:** Seq., *Entregar na Visia até*, semana, módulo, esquadria, descrição do caderno, quantidade, medidas, OC, entrega prevista na OC, observação e uma coluna *Produzido (✓)*.
+Os três blocos aparecem sempre; um bloco sem peças mostra *Nenhuma peça nesta situação*. As unidades de saldo da OC (sem módulo) vêm num bloco final, só quando existem.
+
+**Ordem dentro de cada bloco:** pelo prazo de recebimento da chaparia na fábrica (Data 1 − 14 du), com desempate pela Data 1 e pelo módulo. A numeração (Seq.) é corrida do primeiro ao último bloco. Prazos vencidos aparecem como *PRAZO VENCIDO — prioridade*.
+
+**Aba "Sequência" do Excel:** o cabeçalho traz o total de peças e quantas são atrasadas, atenção, falta receber e saldo; cada bloco começa com uma linha de título. A tabela tem Seq., *Entregar na Visia até*, semana, módulo, esquadria, descrição do caderno, quantidade, medidas, OC, entrega prevista na OC, **situação**, observação e uma coluna *Produzido (✓)*.
 
 **Aba "Por semana":** quantidade por código em cada semana de entrega, com subtotais, para o fornecedor montar os lotes de produção.
 

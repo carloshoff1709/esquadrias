@@ -805,7 +805,7 @@ function abrirVerif(chaves,rotulo,manter){
     <div class="vf-top"><div><h2>${escH(rotulo)}</h2><div class="vf-res">${its.length} esquadria(s) ${SITS.filter(k=>cont[k]).map(k=>`<span class="sit s-${k}">${cont[k]} ${SIT1[k].toLowerCase()}</span>`).join(' ')}${pode?'<span class="muted"> · clique numa etapa para apontar, ou selecione várias e use a barra abaixo</span>':''}</div></div>
       <button class="vf-x" onclick="fecharOv('ov-vf')" aria-label="Fechar">✕</button></div>
     <div class="vf-corpo"><table class="vt${pode?' pode':''}"><tr>${pode?'<th class="ck"><input type="checkbox" id="vf-all" aria-label="Selecionar todas" onchange="vfTodos(this.checked)"></th>':''}<th>Módulo</th><th>Data 1</th><th>Esquadria</th><th>Etapas</th><th>Próximo passo</th><th>Situação</th></tr>${linhas}</table></div>
-    <div class="vf-pe">${lote}<div class="vf-bt">${its.some(pendenteChaparia)?`<button class="btn sec" onclick="abrirSequencia(VF.chaves)" title="Janelas desta lista com chaparia pedida e ainda não recebida, em ordem de prazo">🏭 Sequência p/ fornecedor</button>`:''}<button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div></div>`;
+    <div class="vf-pe">${lote}<div class="vf-bt">${its.some(pendenteChaparia)?`<button class="btn sec" onclick="abrirSequencia()" title="Todas as janelas com chaparia pedida e ainda não recebida (atrasadas, atenção e em dia), em ordem de prazo">🏭 Sequência p/ fornecedor</button>`:''}<button class="btn sec" onclick="verifNoApontamento()">Abrir no Apontamento</button><button class="btn" onclick="fecharOv('ov-vf')">Fechar</button></div></div></div>`;
   document.body.appendChild(ov);
   const corpo=ov.querySelector('.vf-corpo'); if(corpo&&rolagem) corpo.scrollTop=rolagem;
   vfAtualizarLote();
@@ -1291,22 +1291,26 @@ async function gerarRomaneio(){
    (Data 1 − 14 du). Unidades de saldo da OC (sem módulo) vão por último. */
 const pendenteChaparia=it=>!ehPorta(it.codigo)&&!!(it.status||{}).solicitada&&!(it.status||{}).recebida;
 let SEQ_BASE=[];
-function abrirSequencia(chaves){
+const SEQ_SIT={atr:'Atrasada',ate:'Atenção',dia:'Falta receber','':'Saldo da OC'};
+const SEQ_BLOCO={atr:'ATRASADAS — prazo vencido ou entrega da OC depois do prazo',ate:'ATENÇÃO — prazo vence nos próximos dias',dia:'FALTA RECEBER — dentro do prazo','':'SALDO DA OC — sem módulo, produzir por último'};
+const SEQ_ORD={atr:0,ate:1,dia:2,'':3};
+function abrirSequencia(){
+  /* sempre TODAS as janelas com chaparia pedida e não recebida (atrasadas, atenção e em dia) + unidades de saldo das OCs,
+     mesmo quando aberta a partir de um segmento do gráfico */
   fecharOv('ov-seq');
-  const fonte=chaves?chaves.map(c=>ITENS.find(x=>x.chave===c)).filter(Boolean):ITENS;
-  SEQ_BASE=fonte.filter(pendenteChaparia);
+  SEQ_BASE=ITENS.filter(pendenteChaparia);
   const ocs={}; SEQ_BASE.forEach(it=>{ const k=(it.status||{}).oc||''; ocs[k]=(ocs[k]||0)+1; });
   const lista=Object.entries(ocs).sort((a,b)=>(a[0]||'~').localeCompare(b[0]||'~'));
   const ov=document.createElement('div'); ov.className='overlay'; ov.id='ov-seq'; ov.onclick=e=>{ if(e.target===ov) fecharOv('ov-seq'); };
   ov.innerHTML=`<div class="modal larga seq" role="dialog" aria-modal="true" aria-label="Sequência de produção para o fornecedor">
     <h2>🏭 Sequência de produção — chaparia pedida</h2>
-    ${SEQ_BASE.length?`<p>Janelas com chaparia <b>pedida e ainda não recebida</b>, numeradas da primeira à última pela data em que precisam chegar na fábrica (Data 1 − ${LEAD.montagem+LEAD.pintura} du). Marque as OCs deste fornecedor.</p>
+    ${SEQ_BASE.length?`<p><b>Todas</b> as janelas com chaparia <b>pedida e ainda não recebida</b> (atrasadas, atenção e em dia), numeradas da primeira à última pela data em que precisam chegar na fábrica (Data 1 − ${LEAD.montagem+LEAD.pintura} du). Unidades de saldo da OC vão por último. Marque as OCs deste fornecedor.</p>
       <div class="seq-ocs">${lista.map(([oc,n])=>`<label class="seq-oc"><input type="checkbox" checked data-oc="${escH(oc)}" onchange="seqResumo()"> ${oc?'OC <b>'+escH(oc)+'</b>':'<b>Sem OC</b> (pedido manual)'} <span class="muted">· ${n} un.</span></label>`).join('')}</div>
       <div class="seq-prev" id="seq-prev"></div>
       <div class="mbtns"><button class="btn sec" onclick="fecharOv('ov-seq')">Cancelar</button>
         <button class="btn sec" id="seq-imp" onclick="imprimirSequencia()">🖨 Imprimir / PDF</button>
         <button class="btn" id="seq-xls" onclick="baixarSequencia()">📥 Baixar Excel</button></div><div class="erro" id="seq-erro"></div>`
-    :`<p>Nenhuma janela com chaparia pedida aguardando recebimento${chaves?' nesta seleção':''}.</p><div class="mbtns"><button class="btn" onclick="fecharOv('ov-seq')">Fechar</button></div>`}</div>`;
+    :`<p>Nenhuma janela com chaparia pedida aguardando recebimento.</p><div class="mbtns"><button class="btn" onclick="fecharOv('ov-seq')">Fechar</button></div>`}</div>`;
   document.body.appendChild(ov); seqResumo();
 }
 function seqLinhas(){
@@ -1315,32 +1319,41 @@ function seqLinhas(){
   const g={}, ordem=[];
   its.forEach(it=>{ const st=it.status||{}, pz=it.saldo?'':(it.c.prazos.recebida||''), mod=it.saldo?'Saldo da OC (sem módulo)':it.modulo;
     const k=[pz,mod,it.d1||'',it.codigo.toUpperCase(),st.oc||''].join('§');
-    if(!g[k]){ g[k]={pz,mod,d1:it.d1||'',it,oc:st.oc||'',prev:st.entrega_prev||'',q:0}; ordem.push(g[k]); } g[k].q++; });
-  ordem.sort((a,b)=>((a.pz||'9')<(b.pz||'9')?-1:(a.pz||'9')>(b.pz||'9')?1:0)||((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.mod.localeCompare(b.mod)||a.it.codigo.localeCompare(b.it.codigo));
+    if(!g[k]){ g[k]={pz,mod,d1:it.d1||'',it,oc:st.oc||'',prev:st.entrega_prev||'',q:0,sit:it.saldo?'':it.c.sit}; ordem.push(g[k]); } g[k].q++;
+    if(!it.saldo&&ORDEM_SIT[it.c.sit]<ORDEM_SIT[g[k].sit||'ok']) g[k].sit=it.c.sit; });
+  ordem.sort((a,b)=>(SEQ_ORD[a.sit||'']-SEQ_ORD[b.sit||''])||((a.pz||'9')<(b.pz||'9')?-1:(a.pz||'9')>(b.pz||'9')?1:0)||((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.mod.localeCompare(b.mod)||a.it.codigo.localeCompare(b.it.codigo));
   return ordem.map((x,i)=>{ const cod=chaveProjeto(x.it.codigo)||codigoEsq(x.it.codigo)||x.it.codigo.toUpperCase(), d=dimCad(x.it.codigo);
-    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
+    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,sit:x.sit||'',sitTxt:SEQ_SIT[x.sit||''],nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
       venc:!!x.pz&&x.pz<HOJE,obs:x.pz?(x.pz<HOJE?'PRAZO VENCIDO — prioridade':(x.prev&&x.prev>x.pz?'entrega da OC depois do prazo':'')):'saldo da OC — produzir por último'}; });
 }
 function seqResumo(){ const el=document.getElementById('seq-prev'); if(!el) return; const L=seqLinhas();
-  const q=L.reduce((s,r)=>s+r.q,0), venc=L.filter(r=>r.venc).reduce((s,r)=>s+r.q,0);
-  el.innerHTML=L.length?`<div class="seq-tot"><b>${q}</b> peça(s) em <b>${L.length}</b> linha(s) de sequência${venc?` · <span class="v-atr">${venc} com prazo vencido</span>`:''}</div>
-    <table class="tg seq-t"><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>OC</th></tr>
-    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b></td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td></tr>`).join('')}</table>
+  const q=L.reduce((s,r)=>s+r.q,0), por={atr:0,ate:0,dia:0,'':0}; L.forEach(r=>por[r.sit]+=r.q);
+  el.innerHTML=L.length?`<div class="seq-tot"><b>${q}</b> peça(s) em <b>${L.length}</b> linha(s) de sequência:
+      <span class="sit s-atr">${por.atr} atrasada(s)</span> <span class="sit s-ate">${por.ate} atenção</span> <span class="sit s-dia">${por.dia} falta receber</span>${por['']?` <span class="sit s-ok">${por['']} saldo de OC</span>`:''}</div>
+    <table class="tg seq-t"><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>OC</th><th>Situação</th></tr>
+    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b></td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td><td><span class="sit s-${r.sit||'ok'}">${r.sitTxt}</span></td></tr>`).join('')}</table>
     ${L.length>12?`<div class="muted small" style="margin-top:4px">+ ${L.length-12} linha(s) no arquivo</div>`:''}`:'<div class="muted">Marque ao menos uma OC.</div>';
   ['seq-xls','seq-imp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!L.length; }); }
+// as três situações aparecem sempre (mesmo com 0 peça); o saldo da OC só quando existe
+function seqBlocos(L){ return ['atr','ate','dia',''].map(k=>({sit:k,L:L.filter(r=>r.sit===k)})).filter(b=>b.sit||b.L.length); }
 function seqOcsTxt(L){ return [...new Set(L.map(r=>r.oc||'sem OC'))].join(', '); }
 async function baixarSequencia(){
   const L=seqLinhas(); if(!L.length) return; const btn=document.getElementById('seq-xls'), err=document.getElementById('seq-erro'), txt=btn.textContent;
   btn.disabled=true; btn.textContent='Gerando...'; err.textContent='';
   try{
     const X=await carregarXlsx(); const q=L.reduce((s,r)=>s+r.q,0);
-    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Observação','Produzido (✓)'];
-    const topo=[['SEQUÊNCIA DE PRODUÇÃO — CHAPARIA DE ESQUADRIAS'],[],['Emitido em',BRc(HOJE)],['OC(s)',seqOcsTxt(L)],['Peças',q],[],
+    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Situação','Observação','Produzido (✓)'];
+    const nS=k=>L.filter(r=>(r.sit||'')===k).reduce((s,r)=>s+r.q,0);
+    const topo=[['SEQUÊNCIA DE PRODUÇÃO — CHAPARIA DE ESQUADRIAS'],[],['Emitido em',BRc(HOJE)],['OC(s)',seqOcsTxt(L)],['Peças',q],
+      ['Atrasadas',nS('atr')],['Atenção',nS('ate')],['Falta receber (dentro do prazo)',nS('dia')],['Saldo da OC (sem módulo)',nS('')],[],
       ['Produzir e entregar na ordem da sequência (Seq. 1 primeiro). "Entregar na Visia até" é a data limite de recebimento na fábrica.'],[],cab];
-    const corpo=L.map(r=>[r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.cod,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.obs,'']);
+    const corpo=[];
+    seqBlocos(L).forEach(b=>{ if(corpo.length) corpo.push([]); corpo.push([SEQ_BLOCO[b.sit]+' ('+nS(b.sit)+' peça(s))']);
+      if(!b.L.length) corpo.push(['','Nenhuma peça nesta situação']);
+      b.L.forEach(r=>corpo.push([r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.cod,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.sitTxt,r.obs,''])); });
     const ws=X.utils.aoa_to_sheet(topo.concat(corpo,[[],['TOTAL','','','','','',q]]));
-    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:11},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:30},{wch:12}];
-    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:6,c:0},e:{r:6,c:11}}];
+    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:11},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:10},{wch:30},{wch:12}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:topo.length-3,c:0},e:{r:topo.length-3,c:12}}];
     ws['!autofilter']={ref:X.utils.encode_range({s:{r:topo.length-1,c:0},e:{r:topo.length-1+corpo.length,c:cab.length-1}})};
     // resumo por semana e código (para o fornecedor montar os lotes de produção)
     const sem={}; L.forEach(r=>{ const k=(r.sem||'9999')+'§'+r.cod; const y=sem[k]=sem[k]||{sem:r.sem,cod:r.cod,nome:r.nome,q:0,mods:{}}; y.q+=r.q; y.mods[r.mod]=(y.mods[r.mod]||0)+r.q; });
@@ -1366,12 +1379,14 @@ function htmlSequencia(){
     th,td{border:1px solid #bbb;padding:4px 5px;text-align:left;vertical-align:top} th{background:#eee;font-size:9.5px;text-transform:uppercase}
     td.n{text-align:center;font-weight:bold} .d{color:#666;font-size:9.5px} tr.v td{background:#fdecea} tr.sem td{background:#f3f6fb;font-weight:bold;font-size:10px}
     .ok{width:46px;text-align:center;font-size:16px} tr{page-break-inside:avoid}
+    tr.b-atr td{background:#f9d7d3;color:#8a1c12} tr.b-ate td{background:#fdecc8;color:#7a4b00} tr.b-dia td{background:#dcefdc;color:#1e5b1e}
   </style></head><body><h1>Sequência de produção — chaparia de esquadrias</h1>
-  <p class="s">Emitido em ${BRc(HOJE)} · OC(s): ${escH(seqOcsTxt(L))} · ${q} peça(s). Produzir e entregar na ordem (Seq. 1 primeiro); "Entregar até" = data limite de recebimento na fábrica.</p>
-  <table><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>Medidas (cm)</th><th>OC</th><th>Observação</th><th>Produzido</th></tr>
-  ${(()=>{ let h='', sa=null; L.forEach(r=>{ if(r.sem!==sa){ sa=r.sem; h+=`<tr class="sem"><td colspan="9">${r.sem?'Semana de '+BR(r.sem):'Saldo da OC (sem módulo)'}</td></tr>`; }
-      h+=`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`; }); return h; })()}
-  <tr><td colspan="4"><b>TOTAL</b></td><td class="n">${q}</td><td colspan="4"></td></tr></table></body></html>`;
+  <p class="s">Emitido em ${BRc(HOJE)} · OC(s): ${escH(seqOcsTxt(L))} · ${q} peça(s): ${L.filter(r=>r.sit==='atr').reduce((s,r)=>s+r.q,0)} atrasada(s), ${L.filter(r=>r.sit==='ate').reduce((s,r)=>s+r.q,0)} atenção, ${L.filter(r=>r.sit==='dia').reduce((s,r)=>s+r.q,0)} falta receber${L.some(r=>!r.sit)?', '+L.filter(r=>!r.sit).reduce((s,r)=>s+r.q,0)+' saldo de OC':''}. Produzir e entregar na ordem (Seq. 1 primeiro); "Entregar até" = data limite de recebimento na fábrica.</p>
+  <table><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>Medidas (cm)</th><th>OC</th><th>Situação</th><th>Observação</th><th>Produzido</th></tr>
+  ${seqBlocos(L).map(b=>`<tr class="sem b-${b.sit||'saldo'}"><td colspan="10">${SEQ_BLOCO[b.sit]} — ${b.L.reduce((s,x)=>s+x.q,0)} peça(s)</td></tr>`
+      +(b.L.length?b.L.map(r=>`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${r.sitTxt}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`).join('')
+        :`<tr><td colspan="10" class="d">Nenhuma peça nesta situação.</td></tr>`)).join('')}
+  <tr><td colspan="4"><b>TOTAL</b></td><td class="n">${q}</td><td colspan="5"></td></tr></table></body></html>`;
 }
 function imprimirSequencia(){
   const f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
