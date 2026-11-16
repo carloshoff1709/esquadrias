@@ -382,6 +382,7 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
 #alerta-prog .ap-tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:0 8px;margin-right:6px;background:#fff;border:1px solid #F3A6A6;}
 #alerta-prog .ap-pe{margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;}
 #alerta-prog .ap-pe button{margin-left:0;} #alerta-prog a{color:inherit;font-weight:700;text-decoration:underline;}
+span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;background:#F2F4F7;border-radius:5px;padding:0 5px;line-height:1.5;vertical-align:1px;}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -624,7 +625,7 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-16.1'; const av0=document.getElementById('aviso-versao');
+  const VERSAO_MIN='2026-11-16.2'; const av0=document.getElementById('aviso-versao');
   if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC, complemento recebido e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
@@ -770,7 +771,7 @@ function linhaHTML(it,pode){
   const sc=seloCompIt(it,pode);
   return `<div class="linha${it.saldo?' saldo':''}${porta?' porta':''}">
     <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
-    <span class="cod"><span class="cod1">${it.saldo?'':`<i class="dot" style="background:${COR_SIT[c.sit]}" title="${SIT1[c.sit]}"></i>`}${escH(it.codigo)}${it.un>1?`<small>#${it.un}</small>`:''}${it.saldo?' <span class="tag-saldo">saldo</span>':''}${botaoProjeto(it.codigo)}</span>${sc?`<span class="cod2">${sc}</span>`:''}</span>
+    <span class="cod"><span class="cod1">${it.saldo?'':`<i class="dot" style="background:${COR_SIT[c.sit]}" title="${SIT1[c.sit]}"></i>`}${escH(it.codigo)}${it.marco?` <span class="mc" title="Batente/marco ${escH(it.marco.slice(1))} cm">${escH(it.marco)}</span>`:''}${it.un>1?`<small>#${it.un}</small>`:''}${it.saldo?' <span class="tag-saldo">saldo</span>':''}${botaoProjeto(it.codigo)}</span>${sc?`<span class="cod2">${sc}</span>`:''}</span>
     <span class="et-wrap">${ets}</span>
     <span class="prox">${prox}</span></div>`;
 }
@@ -818,7 +819,7 @@ function abrirVerif(chaves,rotulo,manter){
     const oc=st.oc?`<div class="muted">OC ${escH(st.oc)}${st.entrega_prev&&!st[pedidoK(it)==='recebida'?'env_pintura':'recebida']?' · entrega prev. '+BR(st.entrega_prev):''}</div>`:'';
     const sc=seloCompIt(it,pode), on=VF_SEL.has(it.chave);
     return `<tr class="${on?'sel':''}">${pode?`<td class="ck"><input type="checkbox" ${on?'checked':''} aria-label="Selecionar ${escH(it.modulo)} ${escH(it.codigo)}" onchange="vfSel('${esc(it.chave)}',this.checked)"></td>`:''}<td class="md"><b>${escH(it.modulo)}</b></td><td class="d1">${it.saldo?'saldo':BR(it.d1)}</td>
-      <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${sc?`<div>${sc}</div>`:''}</td>
+      <td class="es"><b>${escH(it.codigo)}</b>${it.marco?` <span class="mc" title="Batente/marco ${escH(it.marco.slice(1))} cm">${escH(it.marco)}</span>`:''}${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${sc?`<div>${sc}</div>`:''}</td>
       <td class="et2">${ets}</td><td class="px">${prox}${oc}</td><td class="si"><span class="sit s-${c.sit}">${SIT1[c.sit]}</span></td></tr>`; }).join('');
   // barra de apontamento em lote (etapa sugerida = próximo passo mais comum)
   let lote='';
@@ -1152,7 +1153,7 @@ function cartaoMontagem(){
     linhas+=`<tr class="${ch.lib?'':'bloq'}"><td class="sq">${i+1}</td>
       <td class="md"><a href="#" class="lk" onclick="abrirVerif(['${esc(it.chave)}'],'Montagem: ${esc(it.modulo)} ${esc(it.codigo)}');return false;"><b>${escH(it.modulo)}</b></a></td>
       <td class="d1">${BR(it.d1)}</td>
-      <td class="es"><b>${escH(it.codigo)}</b>${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${seloCompIt(it,false)?`<div>${seloCompIt(it,false)}</div>`:''}</td>
+      <td class="es"><b>${escH(it.codigo)}</b>${it.marco?` <span class="mc" title="Batente/marco ${escH(it.marco.slice(1))} cm">${escH(it.marco)}</span>`:''}${it.un>1?` <span class="muted">#${it.un}</span>`:''}${botaoProjeto(it.codigo)}${seloCompIt(it,false)?`<div>${seloCompIt(it,false)}</div>`:''}</td>
       <td class="pz ${pz.cls}">${pz.txt}</td>
       <td class="ch"><span class="chip-ch ${ch.cls}">${escH(ch.txt)}</span></td>
       <td class="st">${ch.lib?'<span class="pr">● Liberada</span>':`<span class="bl">○ ${txtFalta(ch)}</span>`}</td></tr>`;
@@ -1273,40 +1274,40 @@ async function gerarRomaneio(){
     const r2=v=>Math.round(v*100)/100, r1=v=>Math.round(v*10)/10;
     // linhas por módulo + código (quantidade somada)
     const lin=[], idx={};
-    its.forEach(it=>{ const k=it.modulo+'§'+it.d1+'§'+it.codigo; let x=idx[k];
+    its.forEach(it=>{ const k=it.modulo+'§'+it.d1+'§'+it.codigo+'§'+(it.marco||''); let x=idx[k];
       if(!x){ const d=dimCad(it.codigo)||[null,null,null,'']; x=idx[k]={it,d,q:0,mont:''}; lin.push(x); }
       x.q++; const m=(it.status||{}).montada; if(m&&(!x.mont||m>x.mont)) x.mont=m; });
     let qt=0,at=0,pt=0;
     const corpo=lin.map(x=>{ const [L,A,P,nome]=x.d, au=L&&A?r2(L*A/10000):null, ar=au!=null?r2(au*x.q):null, pr=P?r1(P*x.q):null;
       qt+=x.q; at+=ar||0; pt+=pr||0; at=r2(at); pt=r1(pt);
-      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.d1),cod(x.it),nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
-    const cab=['Módulo','Data 1 (entrega)','Pintura pronta até','Esquadria','Descrição (caderno R02)','Qtd.','Largura (cm)','Altura (cm)','Área un. (m²)','Área total (m²)','Peso un. estimado (kg)','Peso total estimado (kg)','Montada em','Complemento (vidro/policarbonato/tela)','Conferido (✓)'];
+      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.d1),cod(x.it),x.it.marco||'',nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
+    const cab=['Módulo','Data 1 (entrega)','Pintura pronta até','Esquadria','Marco','Descrição (caderno R02)','Qtd.','Largura (cm)','Altura (cm)','Área un. (m²)','Área total (m²)','Peso un. estimado (kg)','Peso total estimado (kg)','Montada em','Complemento (vidro/policarbonato/tela)','Conferido (✓)'];
     const topo=[['ROMANEIO DE ENVIO PARA PINTURA — ESQUADRIAS'],[],
       ['Data de envio',BRc(data)],['Gerado em',BRc(HOJE)+(usu?' por '+usu:'')],['Janelas',qt],['Módulos',new Set(its.map(it=>it.modulo+'§'+it.d1)).size],
       ['Área total (m²)',r2(at)],['Peso total estimado (kg)',pt],[],
       ['Especificação de pintura (caderno de esquadrias R02)'],...TINTA_CAD,[],cab];
     const linhaCab=topo.length;   // índice (0) da linha de cabeçalho da tabela
-    const aoa=topo.concat(corpo,[[],['TOTAL','','','','',qt,'','','',r2(at),'',pt]],[[],
+    const aoa=topo.concat(corpo,[[],['TOTAL','','','','','',qt,'','','',r2(at),'',pt]],[[],
       ['Observações'],['Pintura pronta até = Data 1 do módulo (prazo da etapa "Pintura concluída").'],
       ['Medidas e peso por código do caderno de esquadrias R02. O peso é a média do caderno para o código e varia com a espessura do batente/marco — use como estimativa.']]);
     const ws=X.utils.aoa_to_sheet(aoa);
-    ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:11},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
+    ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:11},{wch:7},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
     ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}}];
     ws['!autofilter']={ref:X.utils.encode_range({s:{r:linhaCab,c:0},e:{r:linhaCab+corpo.length,c:cab.length-1}})};
     // total por tipo de esquadria (família) e, dentro dele, por código — com subtotais e total geral
     const FAM=[['Janela',/^J[A-Z]*\d/],['Grade fixa',/^G[A-Z]*\d/],['Visor',/^V[A-Z]*\d/],['Tela',/^TE\d/]];
     const famDe=c=>{ const f=FAM.find(([,re])=>re.test(c)); return f?f[0]:'Outros'; };
     const ORD=FAM.map(f=>f[0]).concat('Outros');
-    const rc={}; lin.forEach(x=>{ const k=cod(x.it); const y=rc[k]=rc[k]||{k,fam:famDe(k),nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}};
+    const rc={}; lin.forEach(x=>{ const k=cod(x.it)+'§'+(x.it.marco||''); const y=rc[k]=rc[k]||{k,c:cod(x.it),mc:x.it.marco||'',fam:famDe(cod(x.it)),nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}};
       y.q+=x.q; y.a+=x.d[0]&&x.d[1]?x.d[0]*x.d[1]/10000*x.q:0; y.p+=x.d[2]?x.d[2]*x.q:0; y.mods[x.it.modulo]=(y.mods[x.it.modulo]||0)+x.q; });
     const res=[['TOTAL POR TIPO DE ESQUADRIA — romaneio de envio para pintura de '+BRc(data)],[],
-      ['Tipo','Código','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']];
+      ['Tipo','Código','Marco','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']];
     ORD.forEach(f=>{ const ys=Object.values(rc).filter(y=>y.fam===f).sort((a,b)=>a.k.localeCompare(b.k)); if(!ys.length) return;
-      ys.forEach(y=>res.push([f,y.k,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]));
-      res.push(['Subtotal '+f,'','',ys.reduce((s,y)=>s+y.q,0),r2(ys.reduce((s,y)=>s+(y.dim?y.a:0),0)),r1(ys.reduce((s,y)=>s+y.p,0))||null,'']); res.push([]); });
-    res.push(['TOTAL GERAL','','',qt,r2(at),pt,'']);
-    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:18},{wch:11},{wch:48},{wch:6},{wch:12},{wch:14},{wch:50}];
-    ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:6}}];
+      ys.forEach(y=>res.push([f,y.c,y.mc,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]));
+      res.push(['Subtotal '+f,'','','',ys.reduce((s,y)=>s+y.q,0),r2(ys.reduce((s,y)=>s+(y.dim?y.a:0),0)),r1(ys.reduce((s,y)=>s+y.p,0))||null,'']); res.push([]); });
+    res.push(['TOTAL GERAL','','','',qt,r2(at),pt,'']);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:18},{wch:11},{wch:7},{wch:48},{wch:6},{wch:12},{wch:14},{wch:50}];
+    ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:7}}];
     const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Romaneio'); X.utils.book_append_sheet(wb,ws2,'Total por tipo');
     X.writeFile(wb,`romaneio_pintura_${data}.xlsx`);
     if(marcar){
@@ -1350,12 +1351,12 @@ function seqLinhas(){
   const its=SEQ_BASE.filter(it=>marcadas.has((it.status||{}).oc||''));
   const g={}, ordem=[];
   its.forEach(it=>{ const st=it.status||{}, pz=it.saldo?'':(it.c.prazos.recebida||''), mod=it.saldo?'Saldo da OC (sem módulo)':it.modulo;
-    const k=[pz,mod,it.d1||'',it.codigo.toUpperCase(),st.oc||''].join('§');
+    const k=[pz,mod,it.d1||'',it.codigo.toUpperCase(),it.marco||'',st.oc||''].join('§');
     if(!g[k]){ g[k]={pz,mod,d1:it.d1||'',it,oc:st.oc||'',prev:st.entrega_prev||'',q:0,sit:it.saldo?'':it.c.sit}; ordem.push(g[k]); } g[k].q++;
     if(!it.saldo&&ORDEM_SIT[it.c.sit]<ORDEM_SIT[g[k].sit||'ok']) g[k].sit=it.c.sit; });
   ordem.sort((a,b)=>(SEQ_ORD[a.sit||'']-SEQ_ORD[b.sit||''])||((a.pz||'9')<(b.pz||'9')?-1:(a.pz||'9')>(b.pz||'9')?1:0)||((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.mod.localeCompare(b.mod)||a.it.codigo.localeCompare(b.it.codigo));
   return ordem.map((x,i)=>{ const cod=chaveProjeto(x.it.codigo)||codigoEsq(x.it.codigo)||x.it.codigo.toUpperCase(), d=dimCad(x.it.codigo);
-    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,sit:x.sit||'',sitTxt:SEQ_SIT[x.sit||''],nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
+    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,marco:x.it.marco||'',sit:x.sit||'',sitTxt:SEQ_SIT[x.sit||''],nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
       venc:!!x.pz&&x.pz<HOJE,obs:x.pz?(x.pz<HOJE?'PRAZO VENCIDO — prioridade':(x.prev&&x.prev>x.pz?'entrega da OC depois do prazo':'')):'saldo da OC — produzir por último'}; });
 }
 function seqResumo(){ const el=document.getElementById('seq-prev'); if(!el) return; const L=seqLinhas();
@@ -1363,7 +1364,7 @@ function seqResumo(){ const el=document.getElementById('seq-prev'); if(!el) retu
   el.innerHTML=L.length?`<div class="seq-tot"><b>${q}</b> peça(s) em <b>${L.length}</b> linha(s) de sequência:
       <span class="sit s-atr">${por.atr} atrasada(s)</span> <span class="sit s-ate">${por.ate} atenção</span> <span class="sit s-dia">${por.dia} falta receber</span>${por['']?` <span class="sit s-ok">${por['']} saldo de OC</span>`:''}</div>
     <table class="tg seq-t"><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>OC</th><th>Situação</th></tr>
-    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b></td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td><td><span class="sit s-${r.sit||'ok'}">${r.sitTxt}</span></td></tr>`).join('')}</table>
+    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b>${r.marco?` <span class="mc">${escH(r.marco)}</span>`:''}</td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td><td><span class="sit s-${r.sit||'ok'}">${r.sitTxt}</span></td></tr>`).join('')}</table>
     ${L.length>12?`<div class="muted small" style="margin-top:4px">+ ${L.length-12} linha(s) no arquivo</div>`:''}`:'<div class="muted">Marque ao menos uma OC.</div>';
   ['seq-xls','seq-imp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!L.length; }); }
 // as três situações aparecem sempre (mesmo com 0 peça); o saldo da OC só quando existe
@@ -1374,7 +1375,7 @@ async function baixarSequencia(){
   btn.disabled=true; btn.textContent='Gerando...'; err.textContent='';
   try{
     const X=await carregarXlsx(); const q=L.reduce((s,r)=>s+r.q,0);
-    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Situação','Observação','Produzido (✓)'];
+    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria','Marco','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Situação','Observação','Produzido (✓)'];
     const nS=k=>L.filter(r=>(r.sit||'')===k).reduce((s,r)=>s+r.q,0);
     const topo=[['SEQUÊNCIA DE PRODUÇÃO — CHAPARIA DE ESQUADRIAS'],[],['Emitido em',BRc(HOJE)],['OC(s)',seqOcsTxt(L)],['Peças',q],
       ['Atrasadas',nS('atr')],['Atenção',nS('ate')],['Falta receber (dentro do prazo)',nS('dia')],['Saldo da OC (sem módulo)',nS('')],[],
@@ -1382,22 +1383,22 @@ async function baixarSequencia(){
     const corpo=[];
     seqBlocos(L).forEach(b=>{ if(corpo.length) corpo.push([]); corpo.push([SEQ_BLOCO[b.sit]+' ('+nS(b.sit)+' peça(s))']);
       if(!b.L.length) corpo.push(['','Nenhuma peça nesta situação']);
-      b.L.forEach(r=>corpo.push([r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.cod,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.sitTxt,r.obs,''])); });
-    const ws=X.utils.aoa_to_sheet(topo.concat(corpo,[[],['TOTAL','','','','','',q]]));
-    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:11},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:10},{wch:30},{wch:12}];
-    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:topo.length-3,c:0},e:{r:topo.length-3,c:12}}];
+      b.L.forEach(r=>corpo.push([r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.cod,r.marco,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.sitTxt,r.obs,''])); });
+    const ws=X.utils.aoa_to_sheet(topo.concat(corpo,[[],['TOTAL','','','','','','',q]]));
+    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:11},{wch:7},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:10},{wch:30},{wch:12}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:topo.length-3,c:0},e:{r:topo.length-3,c:13}}];
     ws['!autofilter']={ref:X.utils.encode_range({s:{r:topo.length-1,c:0},e:{r:topo.length-1+corpo.length,c:cab.length-1}})};
     // resumo por semana e código (para o fornecedor montar os lotes de produção)
-    const sem={}; L.forEach(r=>{ const k=(r.sem||'9999')+'§'+r.cod; const y=sem[k]=sem[k]||{sem:r.sem,cod:r.cod,nome:r.nome,q:0,mods:{}}; y.q+=r.q; y.mods[r.mod]=(y.mods[r.mod]||0)+r.q; });
-    const res=[['RESUMO POR SEMANA DE ENTREGA'],[],['Entregar na semana de','Esquadria','Descrição (caderno R02)','Qtd.','Módulos']];
+    const sem={}; L.forEach(r=>{ const k=(r.sem||'9999')+'§'+r.cod+'§'+r.marco; const y=sem[k]=sem[k]||{sem:r.sem,cod:r.cod,marco:r.marco,nome:r.nome,q:0,mods:{}}; y.q+=r.q; y.mods[r.mod]=(y.mods[r.mod]||0)+r.q; });
+    const res=[['RESUMO POR SEMANA DE ENTREGA'],[],['Entregar na semana de','Esquadria','Marco','Descrição (caderno R02)','Qtd.','Módulos']];
     let atual=null, sub=0;
-    Object.values(sem).sort((a,b)=>(a.sem||'9999').localeCompare(b.sem||'9999')||a.cod.localeCompare(b.cod)).forEach(y=>{
-      if(atual!==null&&y.sem!==atual){ res.push(['Subtotal','','',sub,'']); res.push([]); sub=0; }
+    Object.values(sem).sort((a,b)=>(a.sem||'9999').localeCompare(b.sem||'9999')||a.cod.localeCompare(b.cod)||a.marco.localeCompare(b.marco)).forEach(y=>{
+      if(atual!==null&&y.sem!==atual){ res.push(['Subtotal','','','',sub,'']); res.push([]); sub=0; }
       atual=y.sem; sub+=y.q;
-      res.push([y.sem?BR(y.sem)+(y.sem<segunda(HOJE)?' (vencido)':''):'Saldo da OC',y.cod,y.nome,y.q,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]); });
-    if(atual!==null) res.push(['Subtotal','','',sub,'']);
-    res.push([],['TOTAL','','',q,'']);
-    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:20},{wch:11},{wch:48},{wch:6},{wch:60}];
+      res.push([y.sem?BR(y.sem)+(y.sem<segunda(HOJE)?' (vencido)':''):'Saldo da OC',y.cod,y.marco,y.nome,y.q,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]); });
+    if(atual!==null) res.push(['Subtotal','','','',sub,'']);
+    res.push([],['TOTAL','','','',q,'']);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:20},{wch:11},{wch:7},{wch:48},{wch:6},{wch:60}];
     const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Sequência'); X.utils.book_append_sheet(wb,ws2,'Por semana');
     X.writeFile(wb,`sequencia_chaparia_${HOJE}.xlsx`);
   }catch(e){ err.textContent='Não foi possível gerar o Excel: '+e.message; }
@@ -1416,7 +1417,7 @@ function htmlSequencia(){
   <p class="s">Emitido em ${BRc(HOJE)} · OC(s): ${escH(seqOcsTxt(L))} · ${q} peça(s): ${L.filter(r=>r.sit==='atr').reduce((s,r)=>s+r.q,0)} atrasada(s), ${L.filter(r=>r.sit==='ate').reduce((s,r)=>s+r.q,0)} atenção, ${L.filter(r=>r.sit==='dia').reduce((s,r)=>s+r.q,0)} falta receber${L.some(r=>!r.sit)?', '+L.filter(r=>!r.sit).reduce((s,r)=>s+r.q,0)+' saldo de OC':''}. Produzir e entregar na ordem (Seq. 1 primeiro); "Entregar até" = data limite de recebimento na fábrica.</p>
   <table><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>Medidas (cm)</th><th>OC</th><th>Situação</th><th>Observação</th><th>Produzido</th></tr>
   ${seqBlocos(L).map(b=>`<tr class="sem b-${b.sit||'saldo'}"><td colspan="10">${SEQ_BLOCO[b.sit]} — ${b.L.reduce((s,x)=>s+x.q,0)} peça(s)</td></tr>`
-      +(b.L.length?b.L.map(r=>`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b><br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${r.sitTxt}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`).join('')
+      +(b.L.length?b.L.map(r=>`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b>${r.marco?` <b>· ${escH(r.marco)}</b>`:''}<br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${r.sitTxt}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`).join('')
         :`<tr><td colspan="10" class="d">Nenhuma peça nesta situação.</td></tr>`)).join('')}
   <tr><td colspan="4"><b>TOTAL</b></td><td class="n">${q}</td><td colspan="5"></td></tr></table></body></html>`;
 }

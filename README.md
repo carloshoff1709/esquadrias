@@ -48,7 +48,7 @@ As senhas ficam em texto na planilha — use senhas próprias deste sistema e re
 
 ## Abas da planilha
 
-- **Programação de Esquadrias** — só leitura. O script procura o cabeçalho (Módulo, Esquadria, Data 1) nas 15 primeiras linhas. Esquadrias separadas por vírgula; "- 2pç" vira duas linhas.
+- **Programação de Esquadrias** — só leitura. O script procura o cabeçalho (Módulo, Esquadria, Data 1, Produção Interna, Produção Externa) nas 15 primeiras linhas. As esquadrias vêm das **listas suspensas** (veja "Listas suspensas"); a coluna Esquadria só é usada enquanto a lista da linha estiver vazia.
 - **Status_Esquadrias** — apontamentos (criada sozinha). Não renomeie as colunas.
 - **Usuarios** — logins.
 - **Base_Programacao** — criada e ocultada sozinha. Guarda a programação já em andamento (linha a linha, com as chaves de cada esquadria). Não edite à mão.
@@ -155,6 +155,37 @@ Botão **📄 Importar OC** no topo (aparece só para perfil `admin`).
 O Apps Script informa a versão (`ESQ_VERSAO` no Code.gs). Se o dashboard mostrar **"O Apps Script publicado está desatualizado"**,
 cole o Code.gs novo e publique uma **Nova versão** (Implantar → Gerenciar implantações → lápis).
 Teste rápido: abra a URL `/exec` no navegador — aparece `{"ok":true,"app":"Esquadrias","versao":"..."}`.
+
+## Listas suspensas: Produção Interna e Produção Externa (versão 2026-11-16.2)
+
+As esquadrias saem das colunas de lista suspensa:
+- **Produção Interna** (AY a BD) = janelas.
+- **Produção Externa** (BE a BI) = portas.
+
+**Como as células são lidas:**
+- Cada célula preenchida é **uma esquadria**. Duas unidades = escolher a tipologia em duas células.
+- O valor é a tipologia do caderno R02: código + marco. Por exemplo, `PF151-e-M10` vira o código **PF151-e** com batente/marco **M10**.
+- A tipologia sem marco (ex.: `PC161-d`) também é aceita.
+
+**Como as colunas são encontradas:** pelo título mesclado "Produção Interna" / "Produção Externa" no cabeçalho. Se você acrescentar uma coluna e aumentar a mescla, o app passa a ler a coluna nova também.
+
+**Marcações** como o "X" das colunas de data não são lidas.
+
+**Transição:** em cada linha, janelas e portas são tratadas separadamente.
+- Grupo com alguma lista suspensa preenchida: **vale a lista**.
+- Grupo vazio: o app usa a coluna Esquadria para aquele grupo, como antes.
+
+**Avisos da planilha durante a transição:**
+- a lista suspensa e a coluna Esquadria dizem coisas diferentes na mesma linha;
+- código de porta na Produção Interna, ou de janela na Produção Externa.
+
+**Apontamentos:** a chave continua `MÓDULO|CÓDIGO|nº`, sem o marco. Uma linha que passa da coluna Esquadria para a lista suspensa com as **mesmas** esquadrias mantém todos os apontamentos e não gera alerta. Se a lista tiver esquadrias diferentes, o alerta "esquadrias trocadas" aparece (veja "Alterações na programação").
+
+**Onde o marco aparece:**
+- ao lado do código na lista do Apontamento, na janela de conferência e no Programa de montagem;
+- numa coluna **Marco** no romaneio para pintura (inclusive no "Total por tipo") e na sequência para o fornecedor de chaparia (inclusive no "Por semana").
+
+Na sequência e no romaneio, o mesmo código com marcos diferentes fica em linhas separadas. Unidades de saldo da OC não têm marco, porque a OC não informa.
 
 ## Como a coluna Esquadria é lida
 
