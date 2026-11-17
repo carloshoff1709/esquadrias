@@ -36,7 +36,7 @@ Na primeira tentativa de login, a aba **Usuarios** é criada sozinha. Preencha:
 | joao | ***** | João | apontador |
 | ana | ***** | Ana | visualizador |
 
-Perfis: `apontador` e `admin` apontam; `visualizador` só vê. **Todo acesso exige login** (a página abre na tela de login e o Apps Script só entrega dados para usuário válido).
+Perfis: `apontador` e `admin` apontam; `master` faz tudo o que o admin faz e é o **único que pode retirar o aviso de alteração da programação**; `visualizador` só vê. Use um perfil só por usuário (ex.: `master`, não `admin, master`). **Todo acesso exige login** (a página abre na tela de login e o Apps Script só entrega dados para usuário válido).
 As senhas ficam em texto na planilha — use senhas próprias deste sistema e restrinja quem edita a planilha.
 
 ### 3. GitHub Pages
@@ -183,9 +183,13 @@ As esquadrias saem das colunas de lista suspensa:
 
 **Onde o marco aparece:**
 - ao lado do código na lista do Apontamento, na janela de conferência e no Programa de montagem;
-- numa coluna **Marco** no romaneio para pintura (inclusive no "Total por tipo") e na sequência para o fornecedor de chaparia (inclusive no "Por semana").
+- em **todos os downloads em Excel**, o código sai como **tipologia**, escrito igual à lista suspensa (ex.: `JPF350-M10`, `PF151-e-M10`). Isso vale para:
+  - itens sem pedido (compras): "Resumo por código" e "Por módulo";
+  - Programa de montagem;
+  - romaneio para pintura, incluindo o "Total por tipo";
+  - sequência para o fornecedor, incluindo o "Por semana".
 
-Na sequência e no romaneio, o mesmo código com marcos diferentes fica em linhas separadas. Unidades de saldo da OC não têm marco, porque a OC não informa.
+O mesmo código com marcos diferentes fica em linhas separadas (ex.: `JPF350-M10` e `JPF350-M12`). Sai só o código, sem marco, quando a linha ainda vem da coluna Esquadria antiga, que não informa o marco, e nas unidades de saldo da OC, porque a OC também não informa.
 
 ## Como a coluna Esquadria é lida
 
@@ -219,7 +223,11 @@ A programação que já está na planilha é a **base** (aba oculta Base_Program
 | Linha apagada | Alerta: *apagada*, com quantas esquadrias da linha já tinham apontamento |
 | Linha recortada e colada em outro lugar | Alerta: *mudou de posição* (mostra a linha antiga) |
 | Esquadrias trocadas numa linha que já existia | Alerta: *esquadrias trocadas* (mostra como era antes) |
-| Só a Data 1 mudou | Sem alerta; os prazos são recalculados. |
+| **Data 1** mudou numa linha que já existia (versão 2026-11-16.4) | Alerta: *Data 1 alterada* (de → para) |
+| **Código do módulo** mudou numa linha que já existia | Alerta: *módulo alterado* (de → para). As esquadrias do mesmo código continuam com os apontamentos. |
+| **Marco** trocado numa esquadria (ex.: M10 → M12) | Alerta: *marco alterado*. O marco só passar a ser informado (coluna antiga → lista) não conta. |
+| Mais de uma coisa na mesma linha | Um alerta só: *alterada: Data 1, esquadrias*… |
+| Linha nova no fim, ajustada no **mesmo dia** em que entrou e ainda sem apontamento | Sem alerta (dá para terminar de preencher). A partir do dia seguinte, qualquer mudança gera alerta. |
 
 **Os apontamentos ficam com a linha.** Cada linha guarda as chaves das suas esquadrias. Inserir, apagar ou mover linhas não troca apontamentos de lugar, e uma linha nova sempre recebe chaves novas.
 
@@ -227,8 +235,21 @@ Antes desta versão, a chave era `MÓDULO|CÓDIGO|nº`, numerada pela posição 
 
 **O alerta fica até alguém dar ciente:**
 - Clique no nome do módulo para conferir as esquadrias da linha.
-- Um **apontador ou admin** clica em **✓ Ciente — aceitar a nova programação**. As alterações viram a nova base e o alerta sai.
+- Só o usuário **master** vê o botão **✓ Ciente — aceitar a nova programação** e pode retirar o aviso. As alterações viram a nova base e o alerta sai. Os outros perfis veem o aviso, mas não conseguem tirá-lo.
 - O ciente vale só para o que estava na tela. Uma alteração feita depois continua em alerta.
+
+**Enquanto não houver ciente, nada muda nos apontamentos (versão 2026-11-16.3):**
+- **Esquadrias que saíram da linha ficam guardadas nela**, com apontamentos e OC. Elas não viram órfãs, e a OC não volta para o saldo.
+- **Se a planilha for corrigida, o alerta da linha some sozinho** e as esquadrias voltam com tudo o que tinham.
+- **Esquadrias novas da linha** (marcadas "sem ciente" no Apontamento) não pegam unidade de saldo de OC.
+- **No alerta**, cada linha mostra quantas esquadrias estão guardadas fora da lista e quantas são novas.
+
+**Correção do que a versão 16.2 fez:** na 16.2, uma linha com "esquadrias trocadas" perdia na hora as esquadrias que saíram da lista, e as que tinham OC iam para o saldo (podendo ir para outra esquadria). Na primeira leitura da 16.3, isso é desfeito para as linhas ainda sem ciente:
+- a esquadria nova que pegou saldo naquela leitura devolve a unidade;
+- a unidade que ainda estava no saldo volta para a linha;
+- a unidade que tinha passado para outra esquadria e não foi mexida depois também volta, e a outra esquadria fica sem pedido, como estava antes.
+
+O que não dá para desfazer aparece em "Avisos da planilha".
 
 **Linha apagada:** enquanto ninguém der ciente, as esquadrias com OC dessa linha **não** voltam para o saldo. Se a linha for colada de volta, o alerta some sozinho e os apontamentos voltam. Depois do ciente, as unidades com OC seguem a regra de "Unidade de OC perdida": vínculo com uma esquadria sem OC ou volta ao saldo.
 

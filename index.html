@@ -384,6 +384,7 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
 #alerta-prog .ap-pe button{margin-left:0;} #alerta-prog a{color:inherit;font-weight:700;text-decoration:underline;}
 /* impressão / PDF: imprime as cores das barras e colunas e não corta os cartões ao meio */
 @media print{ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;} .cardg{break-inside:avoid;} }
+span.tag-pend{display:inline-block;font-size:10.5px;font-weight:700;color:#B42318;background:#FEF3F2;border:1px solid #FECDCA;border-radius:999px;padding:0 6px;}
 span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;background:#F2F4F7;border-radius:5px;padding:0 5px;line-height:1.5;vertical-align:1px;}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
@@ -627,7 +628,7 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-16.2'; const av0=document.getElementById('aviso-versao');
+  const VERSAO_MIN='2026-11-16.4'; const av0=document.getElementById('aviso-versao');
   if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC, complemento recebido e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
@@ -648,23 +649,24 @@ async function carregar(){
 
 /* ===== alerta: programação já em andamento foi alterada =====
    O servidor guarda a programação como base (aba oculta Base_Programacao). Linha nova no fim = normal;
-   linha inserida no meio, apagada, movida ou com esquadrias trocadas = alerta até um apontador dar "Ciente". */
+   linha já existente com Data 1, módulo, esquadrias ou marco alterados, inserida no meio, apagada ou movida = alerta até o MASTER dar "Ciente". */
 let ALT_PROG=[], PROG_ATE=0;
-const TIPO_ALT={inserida:'inserida no meio',removida:'apagada',movida:'mudou de posição',alterada:'esquadrias trocadas'};
+const TIPO_ALT={inserida:'inserida no meio',removida:'apagada',movida:'mudou de posição',alterada:'alterada'};
+function souMaster(){ return !!sessionStorage.getItem('esq_user') && (sessionStorage.getItem('esq_perfil')||'').toLowerCase().split(',').map(x=>x.trim()).includes('master'); }
 function renderAlertaProg(r){
   const el=document.getElementById('alerta-prog'); ALT_PROG=r.alteracoes||[]; PROG_ATE=r.agora_ms||0;
   if(!ALT_PROG.length){ el.style.display='none'; el.innerHTML=''; return; }
-  const pode=podeApontar(), temRem=ALT_PROG.some(a=>a.tipo==='removida'&&a.apontadas);
+  const pode=souMaster(), temRem=ALT_PROG.some(a=>a.apontadas);
   el.style.display='block';
   el.innerHTML=`<b class="t">⚠ A programação já em andamento foi alterada</b> — ${ALT_PROG.length} linha(s). Isso muda o fluxo já programado: confira antes de seguir.
-    <div class="ap-l">${ALT_PROG.map((a,i)=>`<div><span class="ap-tag">${TIPO_ALT[a.tipo]||a.tipo}</span><b>${a.tipo==='removida'?'Era a linha':'Linha'} ${a.linha}</b> · ${a.chaves&&a.chaves.length?`<a href="#" onclick="return abrirAltProg(${i})">${escH(a.modulo)}</a>`:escH(a.modulo)} · Data 1 ${a.d1?BR(a.d1):'—'} · ${escH(esqTxt(a.esquadrias))}${a.detalhe?` <span class="muted">(${escH(esqTxt(a.detalhe))})</span>`:''}${a.tipo==='removida'&&a.apontadas?` · <b>${a.apontadas} esquadria(s) já apontada(s)</b>`:''}<span class="muted"> · desde ${escH(a.desde)}</span></div>`).join('')}</div>
-    <div class="ap-pe"><span>Os apontamentos das linhas que já existiam continuam nas mesmas esquadrias.${temRem?' Ao dar ciente, as apontadas com OC das linhas apagadas voltam para o saldo da OC.':''}</span>
-      ${pode?'<button class="btn" id="ap-ok" onclick="cienteProg()">✓ Ciente — aceitar a nova programação</button>':'<span>Um <b>apontador</b> ou <b>admin</b> precisa dar ciente para o alerta sair.</span>'}</div>`;
+    <div class="ap-l">${ALT_PROG.map((a,i)=>`<div><span class="ap-tag">${escH(a.rotulo||TIPO_ALT[a.tipo]||a.tipo)}</span><b>${a.tipo==='removida'?'Era a linha':'Linha'} ${a.linha}</b> · ${a.chaves&&a.chaves.length?`<a href="#" onclick="return abrirAltProg(${i})">${escH(a.modulo)}</a>`:escH(a.modulo)} · Data 1 ${a.d1?BR(a.d1):'—'} · ${escH(esqTxt(a.esquadrias))}${a.detalhe?` <span class="muted">(${escH(esqTxt(a.detalhe))})</span>`:''}${a.tipo==='removida'&&a.apontadas?` · <b>${a.apontadas} esquadria(s) já apontada(s)</b>`:''}${a.tipo!=='removida'&&a.guardadas?` · <b>${a.guardadas} fora da lista, guardada(s)${a.apontadas?` (${a.apontadas} com apontamento/OC)`:''}</b>`:''}${a.novas&&a.tipo!=='inserida'?` · ${a.novas} nova(s)`:''}<span class="muted"> · desde ${escH(a.desde)}</span></div>`).join('')}</div>
+    <div class="ap-pe"><span>Enquanto não houver ciente, nada muda nos apontamentos: o que saiu da lista fica guardado na linha (com apontamentos e OC) e as esquadrias novas não pegam saldo de OC. <b>Corrigindo a planilha, o alerta da linha some sozinho.</b> Ao dar ciente, vale a programação nova${temRem?' e as que saíram e tinham OC voltam para o saldo da OC':''}.</span>
+      ${pode?'<button class="btn" id="ap-ok" onclick="cienteProg()">✓ Ciente — aceitar a nova programação</button>':'<span>🔒 Somente o usuário <b>master</b> pode retirar este aviso.</span>'}</div>`;
 }
 const esqTxt=s=>String(s||'').replace(/×1(?=,|\)|$)/g,'').replace(/×(\d+)/g,' ×$1');
-function abrirAltProg(i){ const a=ALT_PROG[i]; if(a) abrirVerif(a.chaves,'Linha '+a.linha+' · '+a.modulo+' ('+(TIPO_ALT[a.tipo]||a.tipo)+')'); return false; }
+function abrirAltProg(i){ const a=ALT_PROG[i]; if(a) abrirVerif(a.chaves,'Linha '+a.linha+' · '+a.modulo+' ('+(a.rotulo||TIPO_ALT[a.tipo]||a.tipo)+')'); return false; }
 async function cienteProg(){
-  if(!podeApontar()){ abrirLogin(()=>cienteProg()); return; }
+  if(!souMaster()){ document.getElementById('status').textContent='Somente o usuário master pode retirar o aviso de alteração da programação.'; return; }
   const b=document.getElementById('ap-ok'); if(b){ b.disabled=true; b.textContent='Confirmando...'; }
   const r=await apiPost('action=esq_base_ok&ate='+PROG_ATE+'&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(!r||!r.ok){ if(b){ b.disabled=false; b.textContent='✓ Ciente — aceitar a nova programação'; }
@@ -773,7 +775,7 @@ function linhaHTML(it,pode){
   const sc=seloCompIt(it,pode);
   return `<div class="linha${it.saldo?' saldo':''}${porta?' porta':''}">
     <span>${pode?`<input type="checkbox" ${SEL.has(it.chave)?'checked':''} onchange="sel('${esc(it.chave)}',this.checked)">`:''}</span>
-    <span class="cod"><span class="cod1">${it.saldo?'':`<i class="dot" style="background:${COR_SIT[c.sit]}" title="${SIT1[c.sit]}"></i>`}${escH(it.codigo)}${it.marco?` <span class="mc" title="Batente/marco ${escH(it.marco.slice(1))} cm">${escH(it.marco)}</span>`:''}${it.un>1?`<small>#${it.un}</small>`:''}${it.saldo?' <span class="tag-saldo">saldo</span>':''}${botaoProjeto(it.codigo)}</span>${sc?`<span class="cod2">${sc}</span>`:''}</span>
+    <span class="cod"><span class="cod1">${it.saldo?'':`<i class="dot" style="background:${COR_SIT[c.sit]}" title="${SIT1[c.sit]}"></i>`}${escH(it.codigo)}${it.marco?` <span class="mc" title="Batente/marco ${escH(it.marco.slice(1))} cm">${escH(it.marco)}</span>`:''}${it.un>1?`<small>#${it.un}</small>`:''}${it.saldo?' <span class="tag-saldo">saldo</span>':''}${it.pend?' <span class="tag-pend" title="Entrou numa alteração da programação ainda sem ciente: não pega saldo de OC">sem ciente</span>':''}${botaoProjeto(it.codigo)}</span>${sc?`<span class="cod2">${sc}</span>`:''}</span>
     <span class="et-wrap">${ets}</span>
     <span class="prox">${prox}</span></div>`;
 }
@@ -1180,7 +1182,7 @@ function cartaoMontagem(){
 }
 function linhasMontagem(its){
   return its.map((it,i)=>{ const pz=prazoMontagemTxt(it), k=chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
-    return {seq:i+1,modulo:it.modulo,d1:BRc(it.d1),cod:it.codigo+(it.un>1?' #'+it.un:''),desc:((DIM_CAD[k]||[])[3])||(PROJETOS[k]||[])[1]||'',prazo:BRc(it.c.prazos.montada),sit:pz.cls==='atr'?'Atrasada ('+difUteis(it.c.prazos.montada,HOJE)+' du)':(pz.cls==='ate'?'Vence hoje':'No prazo'),
+    return {seq:i+1,modulo:it.modulo,d1:BRc(it.d1),cod:tipologia(it)+(it.un>1?' #'+it.un:''),desc:((DIM_CAD[k]||[])[3])||(PROJETOS[k]||[])[1]||'',prazo:BRc(it.c.prazos.montada),sit:pz.cls==='atr'?'Atrasada ('+difUteis(it.c.prazos.montada,HOJE)+' du)':(pz.cls==='ate'?'Vence hoje':'No prazo'),
       ch:it._ch.txt,lib:it._ch.lib?'Liberada':txtFalta(it._ch),comp:complementos(it.codigo).map(([t,r])=>r).join(' + ')+((it.status||{}).complemento?' (recebido '+BR(it.status.complemento)+')':''),obs:(it.status||{}).obs||''}; });
 }
 async function baixarMontagem(){
@@ -1189,9 +1191,9 @@ async function baixarMontagem(){
   try{
     const X=await carregarXlsx(); const L=linhasMontagem(its);
     const aoa=[['Programa de montagem — '+P.rot],['Gerado em '+BRc(HOJE)+' · sequência pela Data 1'+(lim?' · capacidade '+lim:'')],[],
-      ['Seq.','Módulo','Data 1 (entrega)','Esquadria','Descrição (caderno)','Prazo montagem','Situação do prazo','Chaparia','Material','Complemento','Obs.','Montada (✓)']]
+      ['Seq.','Módulo','Data 1 (entrega)','Esquadria (tipologia)','Descrição (caderno)','Prazo montagem','Situação do prazo','Chaparia','Material','Complemento','Obs.','Montada (✓)']]
       .concat(L.map(r=>[r.seq,r.modulo,r.d1,r.cod,r.desc,r.prazo,r.sit,r.ch,r.lib,r.comp,r.obs,'']));
-    const ws=X.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:12},{wch:12},{wch:12},{wch:44},{wch:13},{wch:16},{wch:26},{wch:18},{wch:34},{wch:24},{wch:11}];
+    const ws=X.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:12},{wch:12},{wch:16},{wch:44},{wch:13},{wch:16},{wch:26},{wch:18},{wch:34},{wch:24},{wch:11}];
     ws['!autofilter']={ref:'A4:L4'};
     const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Montagem');
     X.writeFile(wb,`montagem_${P.v}_${P.ini}.xlsx`);
@@ -1282,34 +1284,34 @@ async function gerarRomaneio(){
     let qt=0,at=0,pt=0;
     const corpo=lin.map(x=>{ const [L,A,P,nome]=x.d, au=L&&A?r2(L*A/10000):null, ar=au!=null?r2(au*x.q):null, pr=P?r1(P*x.q):null;
       qt+=x.q; at+=ar||0; pt+=pr||0; at=r2(at); pt=r1(pt);
-      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.d1),cod(x.it),x.it.marco||'',nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
-    const cab=['Módulo','Data 1 (entrega)','Pintura pronta até','Esquadria','Marco','Descrição (caderno R02)','Qtd.','Largura (cm)','Altura (cm)','Área un. (m²)','Área total (m²)','Peso un. estimado (kg)','Peso total estimado (kg)','Montada em','Complemento (vidro/policarbonato/tela)','Conferido (✓)'];
+      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.d1),tipologia(x.it),nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
+    const cab=['Módulo','Data 1 (entrega)','Pintura pronta até','Esquadria (tipologia)','Descrição (caderno R02)','Qtd.','Largura (cm)','Altura (cm)','Área un. (m²)','Área total (m²)','Peso un. estimado (kg)','Peso total estimado (kg)','Montada em','Complemento (vidro/policarbonato/tela)','Conferido (✓)'];
     const topo=[['ROMANEIO DE ENVIO PARA PINTURA — ESQUADRIAS'],[],
       ['Data de envio',BRc(data)],['Gerado em',BRc(HOJE)+(usu?' por '+usu:'')],['Janelas',qt],['Módulos',new Set(its.map(it=>it.modulo+'§'+it.d1)).size],
       ['Área total (m²)',r2(at)],['Peso total estimado (kg)',pt],[],
       ['Especificação de pintura (caderno de esquadrias R02)'],...TINTA_CAD,[],cab];
     const linhaCab=topo.length;   // índice (0) da linha de cabeçalho da tabela
-    const aoa=topo.concat(corpo,[[],['TOTAL','','','','','',qt,'','','',r2(at),'',pt]],[[],
+    const aoa=topo.concat(corpo,[[],['TOTAL','','','','',qt,'','','',r2(at),'',pt]],[[],
       ['Observações'],['Pintura pronta até = Data 1 do módulo (prazo da etapa "Pintura concluída").'],
       ['Medidas e peso por código do caderno de esquadrias R02. O peso é a média do caderno para o código e varia com a espessura do batente/marco — use como estimativa.']]);
     const ws=X.utils.aoa_to_sheet(aoa);
-    ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:11},{wch:7},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
+    ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:16},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
     ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}}];
     ws['!autofilter']={ref:X.utils.encode_range({s:{r:linhaCab,c:0},e:{r:linhaCab+corpo.length,c:cab.length-1}})};
     // total por tipo de esquadria (família) e, dentro dele, por código — com subtotais e total geral
     const FAM=[['Janela',/^J[A-Z]*\d/],['Grade fixa',/^G[A-Z]*\d/],['Visor',/^V[A-Z]*\d/],['Tela',/^TE\d/]];
     const famDe=c=>{ const f=FAM.find(([,re])=>re.test(c)); return f?f[0]:'Outros'; };
     const ORD=FAM.map(f=>f[0]).concat('Outros');
-    const rc={}; lin.forEach(x=>{ const k=cod(x.it)+'§'+(x.it.marco||''); const y=rc[k]=rc[k]||{k,c:cod(x.it),mc:x.it.marco||'',fam:famDe(cod(x.it)),nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}};
+    const rc={}; lin.forEach(x=>{ const k=tipologia(x.it); const y=rc[k]=rc[k]||{k,c:k,fam:famDe(cod(x.it)),nome:x.d[3]||'',q:0,a:0,p:0,dim:!!(x.d[0]&&x.d[1]),mods:{}};
       y.q+=x.q; y.a+=x.d[0]&&x.d[1]?x.d[0]*x.d[1]/10000*x.q:0; y.p+=x.d[2]?x.d[2]*x.q:0; y.mods[x.it.modulo]=(y.mods[x.it.modulo]||0)+x.q; });
     const res=[['TOTAL POR TIPO DE ESQUADRIA — romaneio de envio para pintura de '+BRc(data)],[],
-      ['Tipo','Código','Marco','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']];
+      ['Tipo','Código (tipologia)','Descrição (caderno R02)','Qtd.','Área total (m²)','Peso total estimado (kg)','Módulos']];
     ORD.forEach(f=>{ const ys=Object.values(rc).filter(y=>y.fam===f).sort((a,b)=>a.k.localeCompare(b.k)); if(!ys.length) return;
-      ys.forEach(y=>res.push([f,y.c,y.mc,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]));
-      res.push(['Subtotal '+f,'','','',ys.reduce((s,y)=>s+y.q,0),r2(ys.reduce((s,y)=>s+(y.dim?y.a:0),0)),r1(ys.reduce((s,y)=>s+y.p,0))||null,'']); res.push([]); });
-    res.push(['TOTAL GERAL','','','',qt,r2(at),pt,'']);
-    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:18},{wch:11},{wch:7},{wch:48},{wch:6},{wch:12},{wch:14},{wch:50}];
-    ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:7}}];
+      ys.forEach(y=>res.push([f,y.c,y.nome||'(código fora do caderno R02)',y.q,y.dim?r2(y.a):null,y.p?r1(y.p):null,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]));
+      res.push(['Subtotal '+f,'','',ys.reduce((s,y)=>s+y.q,0),r2(ys.reduce((s,y)=>s+(y.dim?y.a:0),0)),r1(ys.reduce((s,y)=>s+y.p,0))||null,'']); res.push([]); });
+    res.push(['TOTAL GERAL','','',qt,r2(at),pt,'']);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:18},{wch:16},{wch:48},{wch:6},{wch:12},{wch:14},{wch:50}];
+    ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:6}}];
     const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Romaneio'); X.utils.book_append_sheet(wb,ws2,'Total por tipo');
     X.writeFile(wb,`romaneio_pintura_${data}.xlsx`);
     if(marcar){
@@ -1358,7 +1360,7 @@ function seqLinhas(){
     if(!it.saldo&&ORDEM_SIT[it.c.sit]<ORDEM_SIT[g[k].sit||'ok']) g[k].sit=it.c.sit; });
   ordem.sort((a,b)=>(SEQ_ORD[a.sit||'']-SEQ_ORD[b.sit||''])||((a.pz||'9')<(b.pz||'9')?-1:(a.pz||'9')>(b.pz||'9')?1:0)||((a.d1||'9')<(b.d1||'9')?-1:(a.d1||'9')>(b.d1||'9')?1:0)||a.mod.localeCompare(b.mod)||a.it.codigo.localeCompare(b.it.codigo));
   return ordem.map((x,i)=>{ const cod=chaveProjeto(x.it.codigo)||codigoEsq(x.it.codigo)||x.it.codigo.toUpperCase(), d=dimCad(x.it.codigo);
-    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,marco:x.it.marco||'',sit:x.sit||'',sitTxt:SEQ_SIT[x.sit||''],nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
+    return {seq:i+1,pz:x.pz,sem:x.pz?segunda(x.pz):'',mod:x.mod,cod,tip:tipologia(x.it),marco:x.it.marco||'',sit:x.sit||'',sitTxt:SEQ_SIT[x.sit||''],nome:(d&&d[3])||((PROJETOS[cod]||[])[1])||'',q:x.q,med:d?`${d[0]} × ${d[1]}`:'',oc:x.oc,prev:x.prev,
       venc:!!x.pz&&x.pz<HOJE,obs:x.pz?(x.pz<HOJE?'PRAZO VENCIDO — prioridade':(x.prev&&x.prev>x.pz?'entrega da OC depois do prazo':'')):'saldo da OC — produzir por último'}; });
 }
 function seqResumo(){ const el=document.getElementById('seq-prev'); if(!el) return; const L=seqLinhas();
@@ -1366,7 +1368,7 @@ function seqResumo(){ const el=document.getElementById('seq-prev'); if(!el) retu
   el.innerHTML=L.length?`<div class="seq-tot"><b>${q}</b> peça(s) em <b>${L.length}</b> linha(s) de sequência:
       <span class="sit s-atr">${por.atr} atrasada(s)</span> <span class="sit s-ate">${por.ate} atenção</span> <span class="sit s-dia">${por.dia} falta receber</span>${por['']?` <span class="sit s-ok">${por['']} saldo de OC</span>`:''}</div>
     <table class="tg seq-t"><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>OC</th><th>Situação</th></tr>
-    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b>${r.marco?` <span class="mc">${escH(r.marco)}</span>`:''}</td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td><td><span class="sit s-${r.sit||'ok'}">${r.sitTxt}</span></td></tr>`).join('')}</table>
+    ${L.slice(0,12).map(r=>`<tr class="${r.venc?'venc':''}"><td>${r.seq}</td><td>${r.pz?BR(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.tip)}</b></td><td>${r.q}</td><td>${escH(r.oc)||'—'}</td><td><span class="sit s-${r.sit||'ok'}">${r.sitTxt}</span></td></tr>`).join('')}</table>
     ${L.length>12?`<div class="muted small" style="margin-top:4px">+ ${L.length-12} linha(s) no arquivo</div>`:''}`:'<div class="muted">Marque ao menos uma OC.</div>';
   ['seq-xls','seq-imp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!L.length; }); }
 // as três situações aparecem sempre (mesmo com 0 peça); o saldo da OC só quando existe
@@ -1377,7 +1379,7 @@ async function baixarSequencia(){
   btn.disabled=true; btn.textContent='Gerando...'; err.textContent='';
   try{
     const X=await carregarXlsx(); const q=L.reduce((s,r)=>s+r.q,0);
-    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria','Marco','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Situação','Observação','Produzido (✓)'];
+    const cab=['Seq.','Entregar na Visia até','Semana','Módulo','Esquadria (tipologia)','Descrição (caderno R02)','Qtd.','Medidas L × A (cm)','OC','Entrega prevista na OC','Situação','Observação','Produzido (✓)'];
     const nS=k=>L.filter(r=>(r.sit||'')===k).reduce((s,r)=>s+r.q,0);
     const topo=[['SEQUÊNCIA DE PRODUÇÃO — CHAPARIA DE ESQUADRIAS'],[],['Emitido em',BRc(HOJE)],['OC(s)',seqOcsTxt(L)],['Peças',q],
       ['Atrasadas',nS('atr')],['Atenção',nS('ate')],['Falta receber (dentro do prazo)',nS('dia')],['Saldo da OC (sem módulo)',nS('')],[],
@@ -1385,22 +1387,22 @@ async function baixarSequencia(){
     const corpo=[];
     seqBlocos(L).forEach(b=>{ if(corpo.length) corpo.push([]); corpo.push([SEQ_BLOCO[b.sit]+' ('+nS(b.sit)+' peça(s))']);
       if(!b.L.length) corpo.push(['','Nenhuma peça nesta situação']);
-      b.L.forEach(r=>corpo.push([r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.cod,r.marco,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.sitTxt,r.obs,''])); });
-    const ws=X.utils.aoa_to_sheet(topo.concat(corpo,[[],['TOTAL','','','','','','',q]]));
-    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:11},{wch:7},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:10},{wch:30},{wch:12}];
-    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:topo.length-3,c:0},e:{r:topo.length-3,c:13}}];
+      b.L.forEach(r=>corpo.push([r.seq,r.pz?BRc(r.pz):'',r.sem?'Semana de '+BR(r.sem):'',r.mod,r.tip,r.nome,r.q,r.med,r.oc,r.prev?BRc(r.prev):'',r.sitTxt,r.obs,''])); });
+    const ws=X.utils.aoa_to_sheet(topo.concat(corpo,[[],['TOTAL','','','','','',q]]));
+    ws['!cols']=[{wch:5},{wch:13},{wch:15},{wch:14},{wch:16},{wch:48},{wch:6},{wch:12},{wch:9},{wch:12},{wch:10},{wch:30},{wch:12}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:topo.length-3,c:0},e:{r:topo.length-3,c:12}}];
     ws['!autofilter']={ref:X.utils.encode_range({s:{r:topo.length-1,c:0},e:{r:topo.length-1+corpo.length,c:cab.length-1}})};
     // resumo por semana e código (para o fornecedor montar os lotes de produção)
-    const sem={}; L.forEach(r=>{ const k=(r.sem||'9999')+'§'+r.cod+'§'+r.marco; const y=sem[k]=sem[k]||{sem:r.sem,cod:r.cod,marco:r.marco,nome:r.nome,q:0,mods:{}}; y.q+=r.q; y.mods[r.mod]=(y.mods[r.mod]||0)+r.q; });
-    const res=[['RESUMO POR SEMANA DE ENTREGA'],[],['Entregar na semana de','Esquadria','Marco','Descrição (caderno R02)','Qtd.','Módulos']];
+    const sem={}; L.forEach(r=>{ const k=(r.sem||'9999')+'§'+r.tip; const y=sem[k]=sem[k]||{sem:r.sem,tip:r.tip,nome:r.nome,q:0,mods:{}}; y.q+=r.q; y.mods[r.mod]=(y.mods[r.mod]||0)+r.q; });
+    const res=[['RESUMO POR SEMANA DE ENTREGA'],[],['Entregar na semana de','Esquadria (tipologia)','Descrição (caderno R02)','Qtd.','Módulos']];
     let atual=null, sub=0;
-    Object.values(sem).sort((a,b)=>(a.sem||'9999').localeCompare(b.sem||'9999')||a.cod.localeCompare(b.cod)||a.marco.localeCompare(b.marco)).forEach(y=>{
-      if(atual!==null&&y.sem!==atual){ res.push(['Subtotal','','','',sub,'']); res.push([]); sub=0; }
+    Object.values(sem).sort((a,b)=>(a.sem||'9999').localeCompare(b.sem||'9999')||a.tip.localeCompare(b.tip)).forEach(y=>{
+      if(atual!==null&&y.sem!==atual){ res.push(['Subtotal','','',sub,'']); res.push([]); sub=0; }
       atual=y.sem; sub+=y.q;
-      res.push([y.sem?BR(y.sem)+(y.sem<segunda(HOJE)?' (vencido)':''):'Saldo da OC',y.cod,y.marco,y.nome,y.q,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]); });
-    if(atual!==null) res.push(['Subtotal','','','',sub,'']);
-    res.push([],['TOTAL','','','',q,'']);
-    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:20},{wch:11},{wch:7},{wch:48},{wch:6},{wch:60}];
+      res.push([y.sem?BR(y.sem)+(y.sem<segunda(HOJE)?' (vencido)':''):'Saldo da OC',y.tip,y.nome,y.q,Object.entries(y.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ')]); });
+    if(atual!==null) res.push(['Subtotal','','',sub,'']);
+    res.push([],['TOTAL','','',q,'']);
+    const ws2=X.utils.aoa_to_sheet(res); ws2['!cols']=[{wch:20},{wch:16},{wch:48},{wch:6},{wch:60}];
     const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,'Sequência'); X.utils.book_append_sheet(wb,ws2,'Por semana');
     X.writeFile(wb,`sequencia_chaparia_${HOJE}.xlsx`);
   }catch(e){ err.textContent='Não foi possível gerar o Excel: '+e.message; }
@@ -1419,7 +1421,7 @@ function htmlSequencia(){
   <p class="s">Emitido em ${BRc(HOJE)} · OC(s): ${escH(seqOcsTxt(L))} · ${q} peça(s): ${L.filter(r=>r.sit==='atr').reduce((s,r)=>s+r.q,0)} atrasada(s), ${L.filter(r=>r.sit==='ate').reduce((s,r)=>s+r.q,0)} atenção, ${L.filter(r=>r.sit==='dia').reduce((s,r)=>s+r.q,0)} falta receber${L.some(r=>!r.sit)?', '+L.filter(r=>!r.sit).reduce((s,r)=>s+r.q,0)+' saldo de OC':''}. Produzir e entregar na ordem (Seq. 1 primeiro); "Entregar até" = data limite de recebimento na fábrica.</p>
   <table><tr><th>Seq.</th><th>Entregar até</th><th>Módulo</th><th>Esquadria</th><th>Qtd.</th><th>Medidas (cm)</th><th>OC</th><th>Situação</th><th>Observação</th><th>Produzido</th></tr>
   ${seqBlocos(L).map(b=>`<tr class="sem b-${b.sit||'saldo'}"><td colspan="10">${SEQ_BLOCO[b.sit]} — ${b.L.reduce((s,x)=>s+x.q,0)} peça(s)</td></tr>`
-      +(b.L.length?b.L.map(r=>`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.cod)}</b>${r.marco?` <b>· ${escH(r.marco)}</b>`:''}<br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${r.sitTxt}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`).join('')
+      +(b.L.length?b.L.map(r=>`<tr class="${r.venc?'v':''}"><td class="n">${r.seq}</td><td>${r.pz?BRc(r.pz):'—'}</td><td>${escH(r.mod)}</td><td><b>${escH(r.tip)}</b><br><span class="d">${escH(r.nome)}</span></td><td class="n">${r.q}</td><td>${r.med}</td><td>${escH(r.oc)}</td><td>${r.sitTxt}</td><td>${escH(r.obs)}</td><td class="ok">☐</td></tr>`).join('')
         :`<tr><td colspan="10" class="d">Nenhuma peça nesta situação.</td></tr>`)).join('')}
   <tr><td colspan="4"><b>TOTAL</b></td><td class="n">${q}</td><td colspan="5"></td></tr></table></body></html>`;
 }
@@ -1606,6 +1608,9 @@ function pvZoom(d){ PV.zoom=Math.min(4,Math.max(0.5,PV.zoom+d)); pvDesenhar(); }
 
 const COMPLEMENTOS={"PF175E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF250D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF257":[["policarbonato","Policarbonato 4mm","POLICARBONATO CRISTAL 4mm"]],"PF151D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF151E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF152D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF152E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF153D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF153E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF158D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF158E":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"PF159D":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF159E":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF160E":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"PF268D":[["policarbonato","Policarbonato 4mm (visor)","VISOR COM POLICARBONATO 4mm"]],"POF250":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF477E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF160D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"GLF459":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"GLF461":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"GPF453":[["policarbonato","Policarbonato 4mm c/ película insulfilm","POLICARBONATO 4mm C/ PELÍCULA INSULFIM"]],"JPF350":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF352":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF354":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JPF355":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"JVF303":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JPF356":[["policarbonato","Policarbonato compacto cristal 4mm","POLICARBONATO COMPACTO CRISTAL 4mm"]],"GLF462":[["vidro","Vidro laminado 10mm (5mm laminado + 5mm temperado)","VIDRO LAMINADO e=10mm (LAMINADO 5mm + TEMPERADO 5mm)"]],"JVF301":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF302":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF304":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"JVF307":[["vidro","Vidro comum incolor 6mm","VIDRO COMUM INCOLOR 6mm"]],"TE05":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUITEIRO DE AÇO GALVANIZADO #14 FIO"]],"TE09":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUETEIRO DE AÇO GALVANIZADO #14"]],"TE10":[["tela","Tela mosquiteiro aço galvanizado #14","TELA TIPO MOSQUETEIRO DE AÇO GALVANIZADO #14"]],"VBF451":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF457":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF458":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VBF459":[["vidro_blindado","Vidro blindado 38mm (NBR 15000)","VIDRO BLINDADO e=38mm"]],"VPF452":[["policarbonato","Policarbonato translúcido 12mm","POLICARBONATO TRANSLÚCIDO (e=12mm)"]],"POF151D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF151E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF159E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF159D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF256":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF452D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF473D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF473E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF475D":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]],"POF475E":[["tela","Tela Otis malha 1\" fio 12","TELA TIPO OTIS MALHA 1\", FIO 12"]]};
 
+// tipologia como na lista suspensa: código + marco (ex.: JPF350-M10, PF151-e-M10); sem marco informado, só o código
+function tipologia(it){ const c=String(it.codigo||'').trim().replace(/^[A-Za-z]+/,m=>m.toUpperCase()); return c+(it.marco?'-'+it.marco:''); }
+
 /* ===== Exportar itens sem pedido/OC para o setor de compras (Excel, 2 abas) ===== */
 const XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 function carregarXlsx(){ return new Promise((res,rej)=>{ if(window.XLSX) return res(window.XLSX);
@@ -1626,20 +1631,20 @@ async function baixarSemPedido(){
     const dt=s=>s?BRc(s):'';
     // aba 1: resumo por código
     const g={};
-    lista.forEach(it=>{ const k=cod(it); const x=g[k]=g[k]||{k,tipo:ehPorta(it.codigo)?'Porta':'Janela',desc:((DIM_CAD[k]||[])[3])||(PROJETOS[k]||[])[1]||'',qtd:0,mods:{},prazo:'',comp:comp(it)};
+    lista.forEach(it=>{ const k=tipologia(it), c=cod(it); const x=g[k]=g[k]||{k,tipo:ehPorta(it.codigo)?'Porta':'Janela',desc:((DIM_CAD[c]||[])[3])||(PROJETOS[c]||[])[1]||'',qtd:0,mods:{},prazo:'',comp:comp(it)};
       x.qtd++; x.mods[it.modulo]=(x.mods[it.modulo]||0)+1; const p=it.c.prazos.solicitada; if(p&&(!x.prazo||p<x.prazo)) x.prazo=p; });
-    const resumo=[['Código','Tipo','Descrição (caderno)','Qtd. total','Para os módulos','Prazo do pedido mais cedo','Complemento a comprar']]
+    const resumo=[['Código (tipologia)','Tipo','Descrição (caderno)','Qtd. total','Para os módulos','Prazo do pedido mais cedo','Complemento a comprar']]
       .concat(Object.values(g).sort((a,b)=>(a.prazo||'9')<(b.prazo||'9')?-1:1).map(x=>[x.k,x.tipo,x.desc,x.qtd,Object.entries(x.mods).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', '),dt(x.prazo),x.comp]));
     resumo.push([]); resumo.push(['TOTAL','','',lista.length]);
     // aba 2: por módulo
     const gm={};
-    lista.forEach(it=>{ const k=it.modulo+'§'+(it.d1||'')+'§'+cod(it); const x=gm[k]=gm[k]||{it,qtd:0}; x.qtd++; });
-    const pormod=[['Módulo','Data 1','Código','Tipo','Qtd.','Prazo do pedido (SC/chaparia)','Prazo de recebimento','Situação do pedido','Observação','Complemento a comprar']]
+    lista.forEach(it=>{ const k=it.modulo+'§'+(it.d1||'')+'§'+tipologia(it); const x=gm[k]=gm[k]||{it,qtd:0}; x.qtd++; });
+    const pormod=[['Módulo','Data 1','Código (tipologia)','Tipo','Qtd.','Prazo do pedido (SC/chaparia)','Prazo de recebimento','Situação do pedido','Observação','Complemento a comprar']]
       .concat(Object.values(gm).map(({it,qtd})=>{ const porta=ehPorta(it.codigo);
-        return [it.modulo,dt(it.d1),cod(it),porta?'Porta':'Janela',qtd,dt(it.c.prazos.solicitada),dt(porta?it.c.prazos.env_pintura:it.c.prazos.recebida),sit(it),(it.status||{}).solicitada&&porta?'SC já emitida em '+dt(it.status.solicitada):'',comp(it)]; }));
+        return [it.modulo,dt(it.d1),tipologia(it),porta?'Porta':'Janela',qtd,dt(it.c.prazos.solicitada),dt(porta?it.c.prazos.env_pintura:it.c.prazos.recebida),sit(it),(it.status||{}).solicitada&&porta?'SC já emitida em '+dt(it.status.solicitada):'',comp(it)]; }));
     const wb=X.utils.book_new();
-    const ws1=X.utils.aoa_to_sheet(resumo); ws1['!cols']=[{wch:11},{wch:8},{wch:52},{wch:9},{wch:60},{wch:14},{wch:46}];
-    const ws2=X.utils.aoa_to_sheet(pormod); ws2['!cols']=[{wch:12},{wch:11},{wch:11},{wch:8},{wch:6},{wch:16},{wch:16},{wch:18},{wch:24},{wch:46}];
+    const ws1=X.utils.aoa_to_sheet(resumo); ws1['!cols']=[{wch:15},{wch:8},{wch:52},{wch:9},{wch:60},{wch:14},{wch:46}];
+    const ws2=X.utils.aoa_to_sheet(pormod); ws2['!cols']=[{wch:12},{wch:11},{wch:15},{wch:8},{wch:6},{wch:16},{wch:16},{wch:18},{wch:24},{wch:46}];
     ws1['!autofilter']={ref:'A1:G1'}; ws2['!autofilter']={ref:'A1:J1'};
     X.utils.book_append_sheet(wb,ws1,'Resumo por código'); X.utils.book_append_sheet(wb,ws2,'Por módulo');
     const tipo=FILTRO_TIPO==='porta'?'portas':FILTRO_TIPO==='janela'?'janelas':'esquadrias';
