@@ -1,15 +1,16 @@
 # Esquadrias — Chaparia, Montagem e Pintura
 
-Dashboard para apontar, por esquadria, as etapas **chaparia solicitada → chaparia recebida → montagem feita → enviada para pintura → pintura concluída**, com prazos em dias úteis contados para trás a partir da **Data 1** (data em que a esquadria precisa estar pintada).
+Dashboard para apontar, por esquadria, as etapas **chaparia solicitada → chaparia recebida → montagem feita → enviada para pintura → pintura concluída → acessórios montados**. Os prazos são contados em dias úteis, para trás, a partir da **Data 1** (data em que a esquadria precisa estar pronta).
 
-| Etapa | Prazo |
-|---|---|
-| Pedir a chaparia | Data 1 − 24 dias úteis |
-| Receber a chaparia | Data 1 − 14 dias úteis (fornecedor: 10) |
-| Montar e enviar para pintura | Data 1 − 7 dias úteis (montagem: 7) |
-| Pintura pronta | Data 1 (pintura: 7) |
+| Etapa | Janela com complemento (padrão) | Janela sem complemento |
+|---|---|---|
+| Pedir a chaparia | Data 1 − 27 du | Data 1 − 24 du |
+| Receber a chaparia (fornecedor: 10) | Data 1 − 17 du | Data 1 − 14 du |
+| Montar e enviar para pintura (montagem: 7) | Data 1 − 10 du | Data 1 − 7 du |
+| Pintura pronta (pintura: 7) | Data 1 − 3 du | Data 1 |
+| Acessórios montados (acessórios: 3) | Data 1 | — |
 
-Os prazos (10 / 7 / 7) ficam no `index.html`, no objeto `LEAD`.
+**Os dias de cada etapa se alteram no app**, na aba **⚙ Parâmetros** (só o usuário master). Veja "Parâmetros do fluxo".
 
 ## Arquivos
 
@@ -49,7 +50,8 @@ As senhas ficam em texto na planilha — use senhas próprias deste sistema e re
 ## Abas da planilha
 
 - **Programação de Esquadrias** — só leitura. O script procura o cabeçalho (Módulo, Esquadria, Data 1, Produção Interna, Produção Externa) nas 15 primeiras linhas. As esquadrias vêm das **listas suspensas** (veja "Listas suspensas"); a coluna Esquadria só é usada enquanto a lista da linha estiver vazia.
-- **Status_Esquadrias** — apontamentos (criada sozinha). Não renomeie as colunas.
+- **Status_Esquadrias** — apontamentos (criada sozinha). Não renomeie as colunas. A coluna **O** (`acessorios`) guarda a data de *Acessórios montados* e é criada sozinha.
+- **Parametros** — dias de cada etapa. É criada na primeira vez que o master salva a aba ⚙ Parâmetros; sem ela, valem os padrões.
 - **Usuarios** — logins.
 - **Base_Programacao** — criada e ocultada sozinha. Guarda a programação já em andamento (linha a linha, com as chaves de cada esquadria). Não edite à mão.
 - **Feriados** (opcional) — datas na coluna A, somadas aos feriados nacionais e ao 20/09 já previstos.
@@ -65,7 +67,7 @@ Portas (códigos que começam com P) são compradas prontas e têm outro fluxo. 
 | Recebimento previsto | data informada (vem da OC; vermelho se depois da Data 1) | montada |
 | Porta recebida | Data 1 | env_pintura |
 
-Prazos em `LEAD_PORTA` no `index.html` (aprovação 5 du, entrega 30 du).
+Prazos na aba **⚙ Parâmetros** (padrão: aprovação 5 du, entrega 30 du).
 Ao importar uma OC, as portas recebem *OC aprovada* (data do pedido) e *Recebimento previsto* (data de entrega da OC);
 uma *Solicitação de compra* marcada antes é mantida. Saldo de portas funciona igual ao das janelas.
 
@@ -76,7 +78,28 @@ Os códigos que, pelo caderno R02, levam complemento comprado à parte mostram u
 - **Para apontar:** no Apontamento, clique no selo e escolha a data. Para várias de uma vez, selecione as esquadrias e escolha **Complemento recebido** na barra de baixo; as que não levam complemento são ignoradas.
 - **Selo:** fica verde com ✓ e a data quando o complemento é recebido.
 - **Etapas:** o complemento não altera as etapas nem os prazos. Fica na coluna `complemento` da Status_Esquadrias, criada sozinha na primeira listagem depois de publicar o Code.gs novo.
-- **Montagem:** uma janela só aparece como **Liberada** no Programa de montagem com chaparia **e** complemento recebidos.
+- **Montagem de acessórios (versão 2026-11-19.1):** o complemento é instalado na etapa **Acessórios montados**, depois da pintura. Ele não segura mais a montagem: no Programa de montagem, a janela fica **Liberada** só com a chaparia recebida.
+
+## Parâmetros do fluxo (aba ⚙ Parâmetros) — versão 2026-11-19.1
+
+A aba mostra os dias úteis de cada etapa e, ao lado, os prazos que resultam (com uma Data 1 de exemplo). A prévia atualiza enquanto você digita.
+
+| Parâmetro | Padrão | O que é |
+|---|---|---|
+| Chaparia | 10 | Do pedido da chaparia até ela chegar na fábrica |
+| Montagem | 7 | Da chaparia recebida até a montagem feita |
+| Pintura | 7 | Do envio para a pintura até a pintura concluída |
+| Montagem de acessórios | 3 | Vidro, policarbonato, tela… depois da pintura (só janelas com complemento no caderno) |
+| Aprovação da OC (porta) | 5 | Da solicitação de compra até a OC aprovada |
+| Entrega da porta | 30 | Da OC aprovada até a porta recebida |
+| Atenção | 2 | A etapa fica amarela quando faltam até N du |
+| Alerta de chaparia sem pedido | 3 | A chaparia sem pedido entra no alerta quando faltam até N du |
+
+- **Quem altera:** só o usuário **master** (coluna D da aba Usuarios). Os outros perfis veem os valores, mas não editam.
+- **Salvar:** grava na aba **Parametros** da planilha, então vale para todos, e recalcula todos os prazos na hora. Registra quem alterou e quando.
+- **Voltar ao padrão:** preenche os valores padrão; é preciso clicar em Salvar para valer.
+- **Etapa Acessórios montados:** existe só nas janelas cujo código leva complemento no caderno R02. A janela sem complemento termina na pintura (Data 1) e não ganha os dias de acessórios.
+- **Ao publicar esta versão:** as janelas com complemento passam a ter todos os prazos 3 du mais cedo. É normal aparecerem mais atrasadas e atenção. As janelas já pintadas passam para "Falta montar acessórios" até alguém apontar a nova etapa (dá para apontar em lote: selecione e escolha *Acessórios montados* na barra de baixo).
 
 ## Lista do Apontamento
 
@@ -268,7 +291,7 @@ Painel no estilo BI, sem biblioteca externa (SVG/HTML no próprio `index.html`):
 
 - **Anéis:** esquadrias por situação; módulos por situação (cada módulo/lote assume a pior situação entre as suas esquadrias); avanço das etapas (% apontado, com medidores de janelas e portas).
 - **Janelas por status / Portas por status:** gráficos de colunas com os mesmos status do filtro "Próxima etapa", e o número de cada coluna é o mesmo que o filtro mostra no Apontamento.
-  - **Janelas:** Falta pedir chaparia → Já pedida, falta receber chaparia → Falta montar → Falta enviar p/ pintura → Na pintura → Pintadas.
+  - **Janelas:** Falta pedir chaparia → Já pedida, falta receber chaparia → Falta montar → Falta enviar p/ pintura → Na pintura → Falta montar acessórios → Prontas.
   - **Portas:** Falta emitir SC → Falta OC aprovada → Falta recebimento previsto → Aguardando recebimento da porta → Recebidas.
   - **Leitura:** cada coluna é dividida em atrasadas, atenção e em dia, e a coluna com mais atrasadas recebe o selo **gargalo**. Clique no número ou num segmento para abrir a janela de conferência.
 - **Data 1 por semana:** colunas pela semana da Data 1 (8 semanas), coloridas pela situação atual. "Venc." agrupa as pendentes com Data 1 já passada.
@@ -277,11 +300,11 @@ Painel no estilo BI, sem biblioteca externa (SVG/HTML no próprio `index.html`):
 
 ### Programa de montagem (na Visão geral)
 
-O cartão lista as **janelas ainda não montadas** com prazo de montagem (Data 1 − 7 du) vencido ou dentro do período. A sequência segue a **Data 1** (entrega); empates vão pelo prazo de montagem e depois pelo módulo.
+O cartão lista as **janelas ainda não montadas** com prazo de montagem (Data 1 − 10 du nas janelas com complemento, com os parâmetros padrão) vencido ou dentro do período. A sequência segue a **Data 1** (entrega); empates vão pelo prazo de montagem e depois pelo módulo.
 
 - **Períodos:** *Hoje* (atrasadas + prazo hoje), *Esta semana* (atrasadas + prazo até sexta) e *Próxima semana* (só o prazo da semana seguinte).
 - **Blocos por dia:** atrasadas e cada dia útil, com quantas estão liberadas. Feriados ficam de fora.
-- **Situação de cada linha:** **● Liberada** quando a chaparia foi recebida e, se o código leva complemento, ele também. Caso contrário aparece **○ Falta chaparia**, **○ Falta complemento** ou **○ Falta chaparia + complemento**. "Só liberadas" esconde as demais.
+- **Situação de cada linha:** **● Liberada** quando a chaparia foi recebida; caso contrário, **○ Falta chaparia**. O complemento entra depois, na montagem de acessórios. "Só liberadas" esconde as demais.
 - **Corte de capacidade:** se a capacidade de montagem estiver preenchida na aba Carga semanal, aparece uma linha de corte. Por semana vale a capacidade semanal; por dia, cerca de 1/5 dela.
 - **Ações:** *Abrir no Apontamento* (para marcar "montada" em lote), *Excel* (com a coluna "Montada ✓") e *Imprimir* (A4 deitado, com caixa de seleção).
 
@@ -311,7 +334,7 @@ Botão **🎨 Romaneio p/ pintura** no Programa de montagem (Visão geral) e na 
 - **Marcar como enviadas** (apontador/admin): opcional. Grava *Enviada p/ pintura* nas selecionadas, com a data escolhida, logo depois de gerar o Excel.
 - **Aba "Romaneio" do Excel:**
   - **Cabeçalho:** data de envio, quantidade, área total, peso estimado e a especificação de pintura do caderno R02 (primer W-POXI CVP 315 · acabamento PU HPA 501 RAL 7033).
-  - **Tabela por módulo e código:** Data 1, *pintura pronta até* (= Data 1), descrição, medidas, área, peso, data da montagem, complemento e uma coluna *Conferido (✓)*.
+  - **Tabela por módulo e código:** Data 1, *pintura pronta até* (= prazo da pintura: Data 1 menos os dias de acessórios), descrição, medidas, área, peso, data da montagem, complemento e uma coluna *Conferido (✓)*.
 - **Aba "Total por tipo":** soma por tipo de esquadria (janela, grade fixa, visor, tela). Dentro de cada tipo, a quantidade, a área e o peso por código, com subtotal por tipo e total geral.
 - **Medidas e peso:** vêm do caderno R02 por código. O peso é a média do caderno para o código e varia com a espessura do marco, por isso aparece como estimado.
 
@@ -331,11 +354,28 @@ Botão **🎨 Romaneio p/ pintura** no Programa de montagem (Visão geral) e na 
 
 Os três blocos aparecem sempre; um bloco sem peças mostra *Nenhuma peça nesta situação*. As unidades de saldo da OC (sem módulo) vêm num bloco final, só quando existem.
 
-**Ordem dentro de cada bloco:** pelo prazo de recebimento da chaparia na fábrica (Data 1 − 14 du), com desempate pela Data 1 e pelo módulo. A numeração (Seq.) é corrida do primeiro ao último bloco. Prazos vencidos aparecem como *PRAZO VENCIDO — prioridade*.
+**Ordem dentro de cada bloco:** pelo prazo de recebimento da chaparia na fábrica (Data 1 − 17 du nas janelas com complemento, com os parâmetros padrão), com desempate pela Data 1 e pelo módulo. A numeração (Seq.) é corrida do primeiro ao último bloco. Prazos vencidos aparecem como *PRAZO VENCIDO — prioridade*.
 
 **Aba "Sequência" do Excel:** o cabeçalho traz o total de peças e quantas são atrasadas, atenção, falta receber e saldo; cada bloco começa com uma linha de título. A tabela tem Seq., *Entregar na Visia até*, semana, módulo, esquadria, descrição do caderno, quantidade, medidas, OC, entrega prevista na OC, **situação**, observação e uma coluna *Produzido (✓)*.
 
 **Aba "Por semana":** quantidade por código em cada semana de entrega, com subtotais, para o fornecedor montar os lotes de produção.
+
+## Complementos a comprar (Excel)
+
+**Onde fica:** aba **Carga semanal**, botão **🔷 Complementos a comprar (Excel)**, ao lado de "Baixar itens sem pedido". O botão respeita o filtro Todas / Portas / Janelas.
+
+**O que entra:** toda esquadria com complemento no caderno R02 (vidro, policarbonato, tela, vidro blindado) que ainda **não** tem "complemento recebido" apontado.
+
+**Ordem e prazo:** o arquivo vem na ordem da data em que o complemento precisa chegar.
+- **Janela:** fim da pintura, quando começa a montagem de acessórios (Data 1 − 3 du, com os parâmetros padrão).
+- **Porta:** prazo de recebimento da porta (Data 1).
+
+**Abas do Excel:**
+1. **Resumo por material:** quantidade de peças por material, especificação do caderno, área de referência, tipologias (`JPF350-M10 ×12`…), data mais cedo e quantas já estão com o prazo vencido.
+2. **Por tipologia:** material × tipologia, com a medida da esquadria, a quantidade e os módulos.
+3. **Por módulo:** uma linha por módulo, tipologia e material, com prazo, situação (vencido / faltam X du), situação da chaparia (ou da porta) e observação.
+
+**Atenção à área de referência:** ela é largura × altura da **janela** no caderno, e não a medida da chapa de vidro ou policarbonato. Nas portas (visor), fica em branco. Confirme o recorte no projeto antes de comprar.
 
 ## Carga semanal
 

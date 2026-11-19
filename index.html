@@ -41,7 +41,7 @@ body{font-family:'Source Sans 3','Segoe UI',Arial,sans-serif;background:#F4F6F9;
 .mod-head .barra i{display:block;height:100%;background:#1D9E75;}
 .sit{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .s-atr{background:#FDE2E2;color:#B71C1C;} .s-ate{background:#FFF1D6;color:#8A5200;} .s-dia{background:#DDF3E8;color:#14634A;} .s-ok{background:#E2ECF8;color:#185FA5;}
-.linha{display:grid;grid-template-columns:28px minmax(120px,1.2fr) 82px repeat(5,minmax(92px,1fr)) minmax(150px,1.3fr);gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #F0F2F5;font-size:13px;}
+.linha{display:grid;grid-template-columns:28px minmax(120px,1.2fr) 82px repeat(6,minmax(84px,1fr)) minmax(150px,1.3fr);gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #F0F2F5;font-size:13px;}
 .linha:last-child{border-bottom:none;}
 .linha.cab{font-size:10px;font-weight:800;color:#6B7280;text-transform:uppercase;letter-spacing:.3px;background:#FAFBFC;}
 .linha .cod{font-weight:800;}
@@ -59,7 +59,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:#185FA5;cursor:pointer;
   .linha.cab{display:none;}
   .linha{grid-template-columns:24px 1fr 1fr;grid-auto-rows:auto;}
   .linha .cod{grid-column:2/3;} .linha .d1{grid-column:3/4;text-align:right;}
-  .linha .et-wrap{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+  .linha .et-wrap{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
   .linha .prox{grid-column:1/-1;}
 }
 @media (min-width:901px){ .linha .et-wrap{display:contents;} }
@@ -325,18 +325,19 @@ button.comp:not(:disabled):hover{text-decoration:underline;color:#185FA5!importa
 .q{display:inline-block;font-size:11px;font-weight:600;padding:0 7px;border-radius:999px;background:#F2F4F7;color:#475467;margin-left:3px;white-space:nowrap;line-height:1.6;}
 .q.atr{background:#FEF3F2;color:#B42318;} .q.ate{background:#FFFAEB;color:#B54708;} .q.ok{background:#EFF4FB;color:#1F4E8C;margin-left:0;}
 .linha.cab{display:none;}
-.linha{grid-template-columns:28px minmax(150px,1.25fr) repeat(5,minmax(80px,1fr)) minmax(220px,1.7fr);padding:8px 14px;column-gap:6px;}
+.linha{grid-template-columns:28px minmax(150px,1.25fr) repeat(6,minmax(74px,1fr)) minmax(210px,1.6fr);padding:8px 14px;column-gap:6px;}
 .linha .cod{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .cod1{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700;font-size:13.5px;} .cod1 small{font-weight:500;color:#98A2B3;font-size:11px;}
 .cod1 .btn-proj{margin-left:0;padding:0;} .cod2{line-height:1.2;} .cod2 .comp{margin-top:0;}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
 .linha .et{min-height:38px;padding:4px 6px;} .linha .et .et-rot{display:block!important;font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.2px;margin-bottom:1px;}
+.linha .et .et-rot{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
 .linha .et.feito .et-rot{color:#3A9B6B;} .linha .et.atr .et-rot{color:#D9534F;} .linha .et.ate .et-rot{color:#C27C0E;}
 .prox .p1{font-size:12.5px;color:#101828;line-height:1.4;} .prox .p2{font-size:11px;color:#667085;margin-top:1px;}
 .sep-porta{padding:5px 14px;font-size:10px;font-weight:700;color:#7A5AF8;text-transform:uppercase;letter-spacing:.3px;background:#FAFAFB;border-top:1px dashed var(--line);border-bottom:1px solid #F2F4F7;}
 @media (max-width:900px){
   .linha{grid-template-columns:24px 1fr;row-gap:6px;} .linha .cod{grid-column:2/3;}
-  .linha .et-wrap{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;} .linha .prox{grid-column:1/-1;}
+  .linha .et-wrap{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;} .linha .prox{grid-column:1/-1;}
   .linha .et{padding:3px 4px;} .linha .et b{font-size:11px;}
   .mod-head{gap:10px;} .mod-head .sit{margin-left:auto;}
   .mh-pipe{order:5;flex:1 1 100%;} .mh-prox{order:6;flex:1 1 100%;min-width:0;}
@@ -386,6 +387,21 @@ button.ve{font-family:inherit;border:1px solid transparent;cursor:pointer;} butt
 @media print{ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;} .cardg{break-inside:avoid;} }
 span.tag-pend{display:inline-block;font-size:10.5px;font-weight:700;color:#B42318;background:#FEF3F2;border:1px solid #FECDCA;border-radius:999px;padding:0 6px;}
 span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;background:#F2F4F7;border-radius:5px;padding:0 5px;line-height:1.5;vertical-align:1px;}
+/* aba Parâmetros */
+.param{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;align-items:start;}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+.pcard h3{font-size:15px;margin:0 0 4px;} .pcard .sub{font-size:12.5px;color:var(--mut);margin-bottom:12px;}
+.pgr{margin-top:10px;} .pgt{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#344054;padding:6px 0;}
+.pgt small{display:block;text-transform:none;letter-spacing:0;font-weight:500;color:var(--mut);font-size:11.5px;}
+.prow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid #F0F2F5;}
+.prow label b{display:block;font-size:13.5px;} .prow label small{display:block;color:var(--mut);font-size:11.5px;line-height:1.35;}
+.pin{display:flex;align-items:center;gap:6px;} .pin i{font-style:normal;color:var(--mut);font-size:12px;}
+.pin input{width:72px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-weight:700;text-align:right;}
+.pin input:disabled{background:#F9FAFB;color:#475467;}
+.p-acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;}
+.ptl-ex{font-size:12.5px;color:var(--mut);margin-bottom:6px;}
+.ptl{margin-top:10px;} .ptl b{font-size:12.5px;} .ptl table{width:100%;border-collapse:collapse;margin-top:4px;font-size:12.5px;}
+.ptl td{padding:5px 6px;border-top:1px solid #F0F2F5;} .ptl td.du{font-weight:700;white-space:nowrap;} .ptl td.ex{color:var(--mut);text-align:right;white-space:nowrap;}
 #tela-login{background:var(--bg);} #tela-login .caixa{box-shadow:0 10px 30px rgba(16,24,40,.08);border:1px solid var(--line);}
 </style>
 </head>
@@ -415,6 +431,7 @@ span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;back
     <button class="aba" data-aba="lista" onclick="trocarAba('lista')">Apontamento</button>
     <button class="aba" data-aba="carga" onclick="trocarAba('carga')">Carga semanal (gargalo)</button>
     <button class="aba" data-aba="saldo" onclick="trocarAba('saldo')">Saldo de OCs <span id="saldo-tot"></span></button>
+    <button class="aba" data-aba="param" onclick="trocarAba('param')">⚙ Parâmetros</button>
     <div class="seg" id="f-tipo">
       <button class="on" data-t="" onclick="filtrarTipo('')">Todas</button>
       <button data-t="porta" onclick="filtrarTipo('porta')">🚪 Portas</button>
@@ -451,21 +468,24 @@ span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;back
     <div id="saldo"></div>
   </div>
 
+  <div id="pg-param" style="display:none;"><div id="param"></div></div>
   <div id="pg-carga" style="display:none;">
     <div class="carga">
       <div class="cap">
         <strong>Capacidade por semana</strong>
         <label>Montagem <input type="number" min="0" id="cap-mont" oninput="salvarCap();renderCarga()" placeholder="—"></label>
         <label>Pintura <input type="number" min="0" id="cap-pint" oninput="salvarCap();renderCarga()" placeholder="—"></label>
+        <label>Acessórios <input type="number" min="0" id="cap-acess" oninput="salvarCap();renderCarga()" placeholder="—"></label>
         <label>Recebimento de chaparia <input type="number" min="0" id="cap-rec" oninput="salvarCap();renderCarga()" placeholder="—"></label>
         <label><input type="checkbox" id="c-concl" onchange="renderCarga()"> incluir o que já foi feito</label>
         <button class="btn" style="margin-left:auto" onclick="baixarSemPedido()" id="btn-sem-pedido">📥 Baixar itens sem pedido (Excel)</button>
+        <button class="btn" onclick="baixarComplementos()" id="btn-comp" title="Vidro, policarbonato, tela… das esquadrias com complemento ainda não recebido">🔷 Complementos a comprar (Excel)</button>
         <button class="btn" onclick="abrirRomaneio()">🎨 Romaneio p/ pintura (Excel)</button>
         <button class="btn" onclick="abrirSequencia()">🏭 Sequência p/ fornecedor</button>
       </div>
       <div id="carga"></div>
       <div class="nota">
-        Cada esquadria cai na semana do prazo da etapa: chaparia recebida até <b>D1 − 14 du</b>, montagem pronta até <b>D1 − 7 du</b>, pintura pronta até a <b>Data 1</b>.
+        Cada esquadria cai na semana do prazo da etapa: <span id="carga-regra"></span> Os dias de cada etapa ficam na aba <b>Parâmetros</b>.
         A coluna <b>Atrasado</b> soma o que já passou do prazo e ainda não foi feito; isso entra na semana atual como carga extra. <b>Chaparia a receber</b> inclui as que ainda nem foram pedidas ("s/ pedido" em vermelho = risco maior). <b>Clique num número</b> para ver essas esquadrias na lista.
         Com a capacidade preenchida, semanas acima dela ficam em vermelho: é o gargalo.
       </div>
@@ -481,6 +501,7 @@ span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;back
     <option value="montada">Montagem feita · porta: recebimento previsto</option>
     <option value="env_pintura">Enviada p/ pintura · porta: recebida</option>
     <option value="pintada">Pintura concluída (só janelas)</option>
+    <option value="acessorios">Acessórios montados (janelas com complemento)</option>
     <option value="complemento">Complemento recebido (vidro/policarbonato/tela)</option>
   </select>
   <input type="date" id="b-data">
@@ -494,28 +515,36 @@ span.mc{display:inline-block;font-size:10.5px;font-weight:700;color:#475467;back
 const API_URL='https://script.google.com/macros/s/AKfycbxM4vH_vm1CqHqko25L6ilXwBJKHPGQMTZlWuTj_mekzJYEtZbKkkzcTAOB2BLQ-z2s5w/exec';
 
 /* ===== Regras de prazo (dias úteis antes da Data 1) ===== */
-const LEAD={chaparia:10, montagem:7, pintura:7};
-const ETAPAS=[
-  {k:'solicitada', nome:'Chaparia solicitada', curto:'Pedido',   antes:LEAD.chaparia+LEAD.montagem+LEAD.pintura},
-  {k:'recebida',   nome:'Chaparia recebida',   curto:'Recebida', antes:LEAD.montagem+LEAD.pintura},
-  {k:'montada',    nome:'Montagem feita',      curto:'Montada',  antes:LEAD.pintura},
-  {k:'env_pintura',nome:'Enviada p/ pintura',  curto:'Envio pint.',antes:LEAD.pintura},
-  {k:'pintada',    nome:'Pintura concluída',   curto:'Pintada',  antes:0}
-];
-/* PORTAS: compradas prontas (fornecedor externo). Data 1 = prazo de entrega da porta.
-   Mesmas colunas da planilha, com outro significado (ver README). */
-const LEAD_PORTA={aprovacao:5, entrega:30};
-const ETAPAS_PORTA=[
-  {k:'solicitada', nome:'Solicitação de compra emitida', curto:'SC',        antes:LEAD_PORTA.aprovacao+LEAD_PORTA.entrega},
-  {k:'recebida',   nome:'OC aprovada',                   curto:'OC aprov.', antes:LEAD_PORTA.entrega},
-  {k:'montada',    nome:'Recebimento previsto',          curto:'Prev.',     antes:LEAD_PORTA.entrega, previsto:true},
-  {k:'env_pintura',nome:'Porta recebida',                curto:'Recebida',  antes:0}
-];
+/* Os dias de cada etapa vêm da aba "Parâmetros" (salvos na planilha, aba Parametros); estes são os padrões. */
+const PARAM_PADRAO={chaparia:10, montagem:7, pintura:7, acessorios:3, porta_aprovacao:5, porta_entrega:30, atencao:2, alerta_pedido:3};
+let PARAM={...PARAM_PADRAO}, PARAM_INFO=null;
+let LEAD, LEAD_PORTA, ETAPAS, ETAPAS_SEM, ETAPAS_PORTA, ATENCAO_DU, ALERTA_PEDIDO_DU;
+/* JANELAS: pedido → chaparia recebida → montagem → envio p/ pintura → pintura → montagem de acessórios (vidro, policarbonato,
+   tela; só janelas com complemento no caderno). Janela sem complemento termina na pintura (Data 1).
+   PORTAS: compradas prontas (fornecedor externo). Data 1 = prazo de entrega da porta. Mesmas colunas da planilha, com outro significado (ver README). */
+function montarEtapas(){
+  LEAD={chaparia:PARAM.chaparia, montagem:PARAM.montagem, pintura:PARAM.pintura, acessorios:PARAM.acessorios};
+  LEAD_PORTA={aprovacao:PARAM.porta_aprovacao, entrega:PARAM.porta_entrega};
+  ATENCAO_DU=PARAM.atencao; ALERTA_PEDIDO_DU=PARAM.alerta_pedido;
+  const jan=a=>[
+    {k:'solicitada', nome:'Chaparia solicitada', curto:'Pedido',   antes:LEAD.chaparia+LEAD.montagem+LEAD.pintura+a},
+    {k:'recebida',   nome:'Chaparia recebida',   curto:'Recebida', antes:LEAD.montagem+LEAD.pintura+a},
+    {k:'montada',    nome:'Montagem feita',      curto:'Montada',  antes:LEAD.pintura+a},
+    {k:'env_pintura',nome:'Enviada p/ pintura',  curto:'Envio pint.',antes:LEAD.pintura+a},
+    {k:'pintada',    nome:'Pintura concluída',   curto:'Pintada',  antes:a}];
+  ETAPAS=jan(LEAD.acessorios).concat([{k:'acessorios',nome:'Acessórios montados',curto:'Acessórios',antes:0}]);   // janela com complemento
+  ETAPAS_SEM=jan(0);                                                                                                // janela sem complemento
+  ETAPAS_PORTA=[
+    {k:'solicitada', nome:'Solicitação de compra emitida', curto:'SC',        antes:LEAD_PORTA.aprovacao+LEAD_PORTA.entrega},
+    {k:'recebida',   nome:'OC aprovada',                   curto:'OC aprov.', antes:LEAD_PORTA.entrega},
+    {k:'montada',    nome:'Recebimento previsto',          curto:'Prev.',     antes:LEAD_PORTA.entrega, previsto:true},
+    {k:'env_pintura',nome:'Porta recebida',                curto:'Recebida',  antes:0}];
+}
+montarEtapas();
 function ehPorta(cod){ return /^P/.test(String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'')); }
-function etapasDe(it){ return ehPorta(it.codigo)?ETAPAS_PORTA:ETAPAS; }
+function temAcessorios(it){ return !ehPorta(it.codigo) && complementos(it.codigo).length>0; }
+function etapasDe(it){ return ehPorta(it.codigo)?ETAPAS_PORTA:(temAcessorios(it)?ETAPAS:ETAPAS_SEM); }
 const pedidoK=it=>ehPorta(it.codigo)?'recebida':'solicitada';   // etapa que indica "tem OC/pedido"
-const ATENCAO_DU=2;
-const ALERTA_PEDIDO_DU=3;   // chaparia não solicitada: alerta a partir de 3 dias úteis antes do prazo do pedido
 const limiteAtencao=k=>k==='solicitada'?ALERTA_PEDIDO_DU:ATENCAO_DU;
 
 /* Feriados nacionais + RS (20/09). Os da aba "Feriados" da planilha somam a estes. */
@@ -557,7 +586,7 @@ let FILTRO_TIPO=''; try{ FILTRO_TIPO=localStorage.getItem('esq_tipo')||''; }catc
 function tipoEsq(cod){ const m=String(cod||'').toUpperCase().match(/[A-Z]+/); const f=m?m[0]:''; return /^P/.test(f)?'porta':(f?'janela':''); }
 function passaTipo(it){ return !FILTRO_TIPO || tipoEsq(it.codigo)===FILTRO_TIPO; }
 /* "Próxima etapa": opções mudam com o filtro Todas / Portas / Janelas */
-const OPC_JANELA=[['j:solicitada','Falta pedir chaparia'],['j:recebida','Já pedida, falta receber chaparia'],['j:montada','Falta montar'],['j:env_pintura','Falta enviar p/ pintura'],['j:pintada','Na pintura']];
+const OPC_JANELA=[['j:solicitada','Falta pedir chaparia'],['j:recebida','Já pedida, falta receber chaparia'],['j:montada','Falta montar'],['j:env_pintura','Falta enviar p/ pintura'],['j:pintada','Na pintura'],['j:acessorios','Falta montar acessórios']];
 const OPC_PORTA=[['p:solicitada','Falta emitir solicitação de compra'],['p:recebida','Falta OC aprovada'],['p:montada','Falta recebimento previsto'],['p:env_pintura','Aguardando recebimento da porta']];
 function montarOpcoesEtapa(){
   const sel=document.getElementById('f-etapa'); const atual=sel.value;
@@ -595,7 +624,7 @@ function calcular(it){
   const prox=ets.find(e=>!st[e.k]&&!e.previsto);   // recebimento previsto é informação, não etapa com prazo
   let fim='', atrasoFim=0, sit='dia', folga=null, motivo='';
   if(!prox){
-    sit='ok'; fim=porta?st.env_pintura:st.pintada;
+    sit='ok'; fim=st[ets[ets.length-1].k];
     atrasoFim=(d1&&fim)?Math.max(0,difUteis(d1,fim)):0;
   } else if(d1){
     const ref=prazos[prox.k];
@@ -628,11 +657,12 @@ async function carregar(){
   if(!sessionStorage.getItem('esq_user')){ mostrarTelaLogin(); return; }
   const r=await apiPost('action=esq_listar&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
   if(r&&r.login){ sair(); return; }
-  const VERSAO_MIN='2026-11-16.4'; const av0=document.getElementById('aviso-versao');
+  const VERSAO_MIN='2026-11-19.1'; const av0=document.getElementById('aviso-versao');
   if(r&&r.ok&&(!r.versao||r.versao<VERSAO_MIN)){ av0.style.display='block'; av0.innerHTML='<b>⚠ O Apps Script publicado está desatualizado</b> (versão '+(r.versao||'antiga')+'). Saldo de OC, complemento recebido e outras funções não vão funcionar. Cole o Code.gs novo e publique uma <b>Nova versão</b> em Implantar → Gerenciar implantações.'; }
   else av0.style.display='none';
   if(!r||!r.ok){ document.getElementById('status').textContent='Não foi possível ler a programação: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
   (r.feriados||[]).forEach(f=>FERIADOS.add(f));
+  if(r.parametros){ PARAM={...PARAM_PADRAO,...r.parametros}; PARAM_INFO=r.param_info||null; montarEtapas(); }
   ITENS=r.itens.map(it=>({...it}));
   SALDOS=r.saldos||[];
   const auto=r.consumidos_auto||[];
@@ -643,8 +673,8 @@ async function carregar(){
   if(r.avisos&&r.avisos.length){ av.style.display='block'; av.innerHTML='<details class="det-al"><summary><b>Avisos da planilha ('+r.avisos.length+')</b> — linhas sem esquadria ou sem Data 1</summary><div class="cods">'+r.avisos.join('<br>')+'</div></details>'; }
   else av.style.display='none';
   renderAlertaProg(r);
-  document.getElementById('sub').textContent='Aba "'+r.aba+'" · lida em '+r.lido_em+' · prazos em dias úteis antes da Data 1 (chaparia '+LEAD.chaparia+' + montagem '+LEAD.montagem+' + pintura '+LEAD.pintura+')';
-  render(); renderCarga(); renderSaldo(); renderGeral();
+  document.getElementById('sub').textContent='Aba "'+r.aba+'" · lida em '+r.lido_em+' · prazos em dias úteis antes da Data 1 (chaparia '+LEAD.chaparia+' + montagem '+LEAD.montagem+' + pintura '+LEAD.pintura+' + acessórios '+LEAD.acessorios+' nas janelas com complemento)';
+  render(); renderCarga(); renderSaldo(); renderGeral(); if(ABA==='param') renderParam();
 }
 
 /* ===== alerta: programação já em andamento foi alterada =====
@@ -672,6 +702,57 @@ async function cienteProg(){
   if(!r||!r.ok){ if(b){ b.disabled=false; b.textContent='✓ Ciente — aceitar a nova programação'; }
     document.getElementById('status').textContent='Não foi possível confirmar: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
   await carregar(); document.getElementById('status').textContent='✅ '+r.confirmadas+' alteração(ões) da programação confirmada(s) por '+(r.por||'você')+'.';
+}
+
+/* ===== aba Parâmetros: dias úteis de cada etapa (gravados na planilha, aba Parametros; só o master altera) ===== */
+const PARAM_DEF=[
+  {g:'Janelas — fabricação própria',sub:'Contados para trás a partir da Data 1, em dias úteis.',itens:[
+    ['chaparia','Chaparia','Do pedido da chaparia até ela chegar na fábrica'],
+    ['montagem','Montagem','Da chaparia recebida até a montagem feita'],
+    ['pintura','Pintura','Do envio para a pintura até a pintura concluída'],
+    ['acessorios','Montagem de acessórios','Vidro, policarbonato, tela… depois da pintura. Só janelas com complemento no caderno']]},
+  {g:'Portas — fornecedor externo',sub:'Data 1 = prazo de entrega da porta.',itens:[
+    ['porta_aprovacao','Aprovação da OC','Da solicitação de compra até a OC aprovada'],
+    ['porta_entrega','Entrega da porta','Da OC aprovada até a porta recebida']]},
+  {g:'Avisos',sub:'Quando a etapa fica amarela (atenção) ou entra no alerta de pedido.',itens:[
+    ['atencao','Atenção','Faltando até N dias úteis para o prazo da etapa'],
+    ['alerta_pedido','Alerta de chaparia sem pedido','Faltando até N dias úteis para o prazo do pedido']]}];
+function lerParamForm(){ const v={...PARAM}; document.querySelectorAll('#param input[data-p]').forEach(i=>{ const n=parseInt(i.value,10); if(!isNaN(n)&&n>=0) v[i.dataset.p]=n; }); return v; }
+function linhaDoTempo(v){
+  const d1=addUteis(HOJE,40), a=v.acessorios, P=v.pintura, M=v.montagem, C=v.chaparia;
+  const jan=[['Pedido da chaparia',C+M+P+a],['Chaparia recebida',M+P+a],['Montagem feita',P+a],['Enviada p/ pintura',P+a],['Pintura concluída',a],['Acessórios montados',0]];
+  const sem=[['Pedido da chaparia',C+M+P],['Chaparia recebida',M+P],['Montagem feita',P],['Enviada p/ pintura',P],['Pintura concluída',0]];
+  const por=[['Solicitação de compra',v.porta_aprovacao+v.porta_entrega],['OC aprovada',v.porta_entrega],['Porta recebida',0]];
+  const tab=(tit,l)=>`<div class="ptl"><b>${tit}</b><table>${l.map(([n,du])=>`<tr><td>${n}</td><td class="du">${du?'D1 − '+du+' du':'Data 1'}</td><td class="ex">${BR(addUteis(d1,-du))}</td></tr>`).join('')}</table></div>`;
+  return `<div class="ptl-ex">Exemplo com Data 1 em <b>${BRc(d1)}</b>:</div>`+tab('Janela com complemento (acessórios)',jan)+tab('Janela sem complemento',sem)+tab('Porta',por);
+}
+function renderParam(){
+  const el=document.getElementById('param'); if(!el) return;
+  const pode=souMaster();
+  el.innerHTML=`<div class="param">
+    <div class="pcard"><h3>⚙ Dias de cada etapa</h3><div class="sub">${pode?'Altere os números e clique em <b>Salvar</b>. Vale para todos os usuários e recalcula todos os prazos.':'🔒 Somente o usuário <b>master</b> altera os parâmetros. Os outros perfis só veem.'}</div>
+      ${PARAM_DEF.map(g=>`<div class="pgr"><div class="pgt">${g.g}<small>${g.sub}</small></div>
+        ${g.itens.map(([k,n,d])=>`<div class="prow"><label for="p-${k}"><b>${n}</b><small>${d}</small></label>
+          <span class="pin"><input id="p-${k}" type="number" min="0" max="120" step="1" data-p="${k}" value="${PARAM[k]}" ${pode?'':'disabled'} oninput="paramPrevia()"><i>du</i></span></div>`).join('')}</div>`).join('')}
+      <div class="p-acoes">${pode?`<button class="btn" id="p-salvar" onclick="salvarParam()">💾 Salvar parâmetros</button><button class="btn sec" onclick="paramPadrao()">Voltar ao padrão</button>`:''}
+        <span class="muted small" id="p-msg">${PARAM_INFO&&PARAM_INFO.em?'Última alteração: '+escH(PARAM_INFO.em)+(PARAM_INFO.por?' por '+escH(PARAM_INFO.por):''):'Usando os valores padrão.'}</span></div></div>
+    <div class="pcard"><h3>Prazos que resultam</h3><div class="sub">Atualiza enquanto você digita. Só passa a valer depois de salvar.</div><div id="p-previa">${linhaDoTempo(PARAM)}</div></div>
+  </div>`;
+}
+function paramPrevia(){ const pv=document.getElementById('p-previa'); if(pv) pv.innerHTML=linhaDoTempo(lerParamForm()); }
+function paramPadrao(){ Object.entries(PARAM_PADRAO).forEach(([k,v])=>{ const i=document.getElementById('p-'+k); if(i) i.value=v; }); paramPrevia();
+  const m=document.getElementById('p-msg'); if(m) m.textContent='Valores padrão preenchidos — clique em Salvar para aplicar.'; }
+async function salvarParam(){
+  if(!souMaster()){ alert('Somente o usuário master altera os parâmetros.'); return; }
+  const v=lerParamForm(), b=document.getElementById('p-salvar'), m=document.getElementById('p-msg');
+  b.disabled=true; b.textContent='Salvando...';
+  const r=await apiPost('action=esq_param&valores='+encodeURIComponent(JSON.stringify(v))+'&usuario='+encodeURIComponent(sessionStorage.getItem('esq_user')||'')+'&senha='+encodeURIComponent(sessionStorage.getItem('esq_senha')||''));
+  if(!r||!r.ok){ b.disabled=false; b.textContent='💾 Salvar parâmetros'; m.textContent='Não foi possível salvar: '+((r&&r.erro)||'sem resposta do servidor')+'.'; return; }
+  PARAM={...PARAM_PADRAO,...r.parametros}; PARAM_INFO=r.param_info||null; montarEtapas();
+  ITENS.forEach(it=>it.c=calcular(it));
+  render(); renderCarga(); renderSaldo(); renderGeral(); renderParam();
+  document.getElementById('sub').textContent=document.getElementById('sub').textContent.replace(/\(chaparia.*\)$/,'(chaparia '+LEAD.chaparia+' + montagem '+LEAD.montagem+' + pintura '+LEAD.pintura+' + acessórios '+LEAD.acessorios+' nas janelas com complemento)');
+  document.getElementById('p-msg').textContent='✅ Parâmetros salvos. Todos os prazos foram recalculados.';
 }
 
 /* ===== KPIs ===== */
@@ -743,11 +824,12 @@ function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").repl
 const ESTADO_ABERTO={};
 /* trilha de etapas do módulo: cada etapa mostra quantas esquadrias já fizeram (verde), parcial, ou se está vencida/vencendo */
 function trilha(itens,porta){
-  const ets=porta?ETAPAS_PORTA:ETAPAS, n=itens.length;
-  return ets.map(e=>{ const f=itens.filter(it=>(it.status||{})[e.k]).length;
-    let cls=''; if(f===n) cls='ok'; else { const es=itens.filter(it=>!(it.status||{})[e.k]).map(it=>estadoEtapa(it,it.c,e)); cls=es.includes('atr')?'atr':es.includes('ate')?'ate':(f?'parc':''); }
-    const prazo=itens[0]&&itens[0].c.prazos[e.k];
-    return `<span class="pp ${cls}" title="${e.nome}: ${f} de ${n}${prazo?' · prazo '+BRc(prazo):''}">${f===n?'✓ ':''}${e.curto}${n>1&&f<n?` <small>${f}/${n}</small>`:''}</span>`; }).join('<i class="pp-l"></i>');
+  const ets=porta?ETAPAS_PORTA:ETAPAS;
+  return ets.map(e=>{ const its=itens.filter(it=>etapasDe(it).some(x=>x.k===e.k)), n=its.length; if(!n) return '';
+    const f=its.filter(it=>(it.status||{})[e.k]).length;
+    let cls=''; if(f===n) cls='ok'; else { const es=its.filter(it=>!(it.status||{})[e.k]).map(it=>estadoEtapa(it,it.c,etapasDe(it).find(x=>x.k===e.k))); cls=es.includes('atr')?'atr':es.includes('ate')?'ate':(f?'parc':''); }
+    const prazo=its[0].c.prazos[e.k];
+    return `<span class="pp ${cls}" title="${e.nome}: ${f} de ${n}${prazo?' · prazo '+BRc(prazo):''}">${f===n?'✓ ':''}${e.curto}${n>1&&f<n?` <small>${f}/${n}</small>`:''}</span>`; }).filter(Boolean).join('<i class="pp-l"></i>');
 }
 function abrir(id){ ABRIR[id]=!ESTADO_ABERTO[id]; render(); }
 
@@ -763,10 +845,10 @@ function linhaHTML(it,pode){
     const st=st0[e.k], est=estadoEtapa(it,c,e);
     const txt=st?(e.previsto?`prev. ${BR(st)}`:`✓ ${BR(st)}`):(e.previsto?'a informar':(c.prazos[e.k]?`até ${BR(c.prazos[e.k])}`:'—'));
     return `<button class="et ${est}" ${pode?'':'disabled'} onclick="abrirEtapa('${esc(it.chave)}','${e.k}')" title="${e.nome} — prazo ${BRc(c.prazos[e.k])}${st?' · feito em '+BRc(st):''}${e.k==='solicitada'&&st0.oc?' · OC '+st0.oc:''}"><span class="et-rot">${e.curto}</span><b>${txt}</b></button>`;
-  }).join('')+(porta?'<span class="et-vazio"></span>':'');
+  }).join('')+'<span class="et-vazio"></span>'.repeat(Math.max(0,6-etapasDe(it).length));   // 6 colunas: janela com acessórios
   let prox;
   if(it.saldo){ prox=`<div class="p1"><span class="p-saldo">Em saldo · OC ${escH(it.oc)}</span></div><div class="p2">${c.prox?'Próxima etapa: '+c.prox.nome:(porta?'Recebida':'Pronta (pintada)')} · vai para o próximo módulo com ${chaveProjeto(it.codigo)||escH(it.codigo)}${st0.entrega_prev&&!st0.recebida?' · entrega '+BR(st0.entrega_prev):''}</div>`; }
-  else if(c.sit==='ok'){ const fim=porta?st0.env_pintura:st0.pintada; prox=`<div class="p1"><span class="q ok">${porta?'Recebida':'Concluída'}${fim?' em '+BR(fim):''}</span></div>`; }
+  else if(c.sit==='ok'){ const ets0=etapasDe(it), fim=st0[ets0[ets0.length-1].k]; prox=`<div class="p1"><span class="q ok">${porta?'Recebida':'Concluída'}${fim?' em '+BR(fim):''}</span></div>`; }
   else{
     const recebido=porta?st0.env_pintura:st0.recebida;
     prox=`<div class="p1"><b>${c.prox.nome}</b> até ${BR(c.prazos[c.prox.k])} ${quandoTag(c.folga)}</div>
@@ -787,7 +869,7 @@ const COR_SIT={atr:'#d03b3b',ate:'#fab219',dia:'#0ca30c',ok:'#2a78d6'};
 const NOME_SIT={atr:'Atrasadas',ate:'Atenção',dia:'Em dia',ok:'Concluídas'};
 const SITS=['atr','ate','dia','ok'];
 /* carga: rampa ordinal azul (clara → escura na ordem do prazo); a cor segue a etapa, não a posição */
-const SERIES_CARGA=[{k:'recebida',nome:'Chaparia a receber',cor:'#86b6ef'},{k:'montada',nome:'Montagens',cor:'#3987e5'},{k:'pintada',nome:'Pinturas',cor:'#1c5cab'},{k:'env_pintura',nome:'Portas a receber',cor:'#0d366b',porta:true}];
+const SERIES_CARGA=[{k:'recebida',nome:'Chaparia a receber',cor:'#a6c8f2'},{k:'montada',nome:'Montagens',cor:'#5f9ee8'},{k:'pintada',nome:'Pinturas',cor:'#2b6fc4'},{k:'acessorios',nome:'Acessórios',cor:'#16457f'},{k:'env_pintura',nome:'Portas a receber',cor:'#0b2545',porta:true}];
 let GERAL_GRUPOS={}, GERAL_TT=[];
 const escH=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function gid(chaves,rotulo){ const id='g'+Object.keys(GERAL_GRUPOS).length; GERAL_GRUPOS[id]={chaves,rotulo}; return id; }
@@ -798,7 +880,7 @@ let VF=null;
 let VF_SEL=new Set();
 function opcoesEtapaVF(its){
   const temJ=its.some(it=>!ehPorta(it.codigo)), temP=its.some(it=>ehPorta(it.codigo));
-  const ops=ETAPAS.map(e=>{ const p=ETAPAS_PORTA.find(x=>x.k===e.k);
+  const ops=ETAPAS.filter(e=>e.k!=='acessorios'||its.some(temAcessorios)).map(e=>{ const p=ETAPAS_PORTA.find(x=>x.k===e.k);
     const nome=temJ&&temP?(p?`${e.nome} · porta: ${p.nome}`:`${e.nome} (só janelas)`):(temP?(p?p.nome:''):e.nome);
     return nome?{k:e.k,nome}:null; }).filter(Boolean);
   if(its.some(it=>complementos(it.codigo).length)) ops.push({k:'complemento',nome:'Complemento recebido'});
@@ -862,7 +944,7 @@ async function vfAplicar(desfazer){
   const sel=document.getElementById('vf-etapa'), k=sel.value, nome=sel.options[sel.selectedIndex].text;
   const data=desfazer?'':(document.getElementById('vf-data').value||HOJE), msg=document.getElementById('vf-msg');
   const alvo=VF.chaves.filter(c=>VF_SEL.has(c)).filter(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return false;
-    if(k==='complemento') return complementos(it.codigo).length>0; if(k==='pintada') return !ehPorta(it.codigo); return true; });
+    if(k==='complemento') return complementos(it.codigo).length>0; return etapasDe(it).some(x=>x.k===k); });
   if(!alvo.length){ msg.textContent='Nenhuma das selecionadas se aplica a esta etapa.'; msg.className='vf-msg erro'; return; }
   if(desfazer&&!confirm(`Desfazer "${nome}"${k==='complemento'?'':' (e as etapas seguintes)'} em ${alvo.length} esquadria(s)?`)) return;
   msg.textContent='Salvando...'; msg.className='vf-msg'; ['vf-ok','vf-des'].forEach(id=>document.getElementById(id).disabled=true);
@@ -972,7 +1054,8 @@ const STATUS_JANELA=[
   {rot:'Falta montar',f:it=>it.c.prox&&it.c.prox.k==='montada'},
   {rot:'Falta enviar p/ pintura',f:it=>it.c.prox&&it.c.prox.k==='env_pintura'},
   {rot:'Na pintura',f:it=>it.c.prox&&it.c.prox.k==='pintada'},
-  {rot:'Pintadas',f:it=>!it.c.prox,fim:true}];
+  {rot:'Falta montar acessórios',f:it=>it.c.prox&&it.c.prox.k==='acessorios'},
+  {rot:'Prontas',f:it=>!it.c.prox,fim:true}];
 const STATUS_PORTA=[
   {rot:'Falta emitir solicitação de compra',f:it=>it.c.prox&&it.c.prox.k==='solicitada'},
   {rot:'Falta OC aprovada',f:it=>it.c.prox&&it.c.prox.k==='recebida'},
@@ -1038,7 +1121,7 @@ function renderGeral(){
   const ser=SERIES_CARGA.filter(l=>!FILTRO_TIPO||(FILTRO_TIPO==='porta')===!!l.porta).filter(l=>l.porta?por.length:jan.length);
   const bC=[{rot:'Venc.',sub:'',titulo:'Prazos já vencidos',hl:true,vals:{}},...sems.map(s=>({...rotSem(s),vals:{}}))];
   base.forEach(it=>{ if(!it.d1) return; ser.forEach(l=>{ if(!!l.porta!==ehPorta(it.codigo)) return; if((it.status||{})[l.k]) return;
-    const p=it.c.prazos[l.k]; let b; if(p<HOJE) b=bC[0]; else { const i=sems.indexOf(segunda(p)); if(i<0) return; b=bC[1+i]; }
+    const p=it.c.prazos[l.k]; if(!p) return; let b; if(p<HOJE) b=bC[0]; else { const i=sems.indexOf(segunda(p)); if(i<0) return; b=bC[1+i]; }
     (b.vals[l.k]=b.vals[l.k]||[]).push(it); }); });
   const cCarga=cartaoColunas('Carga semanal de prazos','Etapas pendentes pela semana do prazo · próximas 8 semanas',bC,ser,'c6');
 
@@ -1111,8 +1194,9 @@ function infoChaparia(it){ const st=it.status||{}, p=it.c.prazos.montada, oc=st.
     return {pronta:false,txt:'Pedida '+BR(st.solicitada)+oc+' · sem previsão',cls:'ate'}; }
   return {pronta:false,txt:'Sem pedido',cls:'atr'};
 }
-function infoMaterial(it){ const st=it.status||{}, ch=infoChaparia(it), precisa=complementos(it.codigo).length>0;
-  const falta=[st.recebida?'':'chaparia',(precisa&&!st.complemento)?'complemento':''].filter(Boolean);
+// montagem precisa só da chaparia; o complemento (vidro, policarbonato, tela) entra na montagem de acessórios, depois da pintura
+function infoMaterial(it){ const st=it.status||{}, ch=infoChaparia(it);
+  const falta=[st.recebida?'':'chaparia'].filter(Boolean);
   return {...ch,lib:!falta.length,falta}; }
 const txtFalta=m=>'Falta '+m.falta.join(' + ');
 function prazoMontagemTxt(it){ const p=it.c.prazos.montada;
@@ -1284,7 +1368,7 @@ async function gerarRomaneio(){
     let qt=0,at=0,pt=0;
     const corpo=lin.map(x=>{ const [L,A,P,nome]=x.d, au=L&&A?r2(L*A/10000):null, ar=au!=null?r2(au*x.q):null, pr=P?r1(P*x.q):null;
       qt+=x.q; at+=ar||0; pt+=pr||0; at=r2(at); pt=r1(pt);
-      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.d1),tipologia(x.it),nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
+      return [x.it.modulo,BRc(x.it.d1),BRc(x.it.c.prazos.pintada||x.it.d1),tipologia(x.it),nome||((PROJETOS[cod(x.it)]||[])[1]||'(código fora do caderno R02)'),x.q,L,A,au,ar,P,pr,BRc(x.mont),comp(x.it),'']; });
     const cab=['Módulo','Data 1 (entrega)','Pintura pronta até','Esquadria (tipologia)','Descrição (caderno R02)','Qtd.','Largura (cm)','Altura (cm)','Área un. (m²)','Área total (m²)','Peso un. estimado (kg)','Peso total estimado (kg)','Montada em','Complemento (vidro/policarbonato/tela)','Conferido (✓)'];
     const topo=[['ROMANEIO DE ENVIO PARA PINTURA — ESQUADRIAS'],[],
       ['Data de envio',BRc(data)],['Gerado em',BRc(HOJE)+(usu?' por '+usu:'')],['Janelas',qt],['Módulos',new Set(its.map(it=>it.modulo+'§'+it.d1)).size],
@@ -1292,7 +1376,7 @@ async function gerarRomaneio(){
       ['Especificação de pintura (caderno de esquadrias R02)'],...TINTA_CAD,[],cab];
     const linhaCab=topo.length;   // índice (0) da linha de cabeçalho da tabela
     const aoa=topo.concat(corpo,[[],['TOTAL','','','','',qt,'','','',r2(at),'',pt]],[[],
-      ['Observações'],['Pintura pronta até = Data 1 do módulo (prazo da etapa "Pintura concluída").'],
+      ['Observações'],['Pintura pronta até = prazo da etapa "Pintura concluída" (Data 1 menos os dias de montagem de acessórios, para janela com complemento).'],
       ['Medidas e peso por código do caderno de esquadrias R02. O peso é a média do caderno para o código e varia com a espessura do batente/marco — use como estimativa.']]);
     const ws=X.utils.aoa_to_sheet(aoa);
     ws['!cols']=[{wch:12},{wch:12},{wch:12},{wch:16},{wch:48},{wch:6},{wch:9},{wch:9},{wch:10},{wch:11},{wch:12},{wch:13},{wch:11},{wch:34},{wch:11}];
@@ -1433,8 +1517,10 @@ function imprimirSequencia(){
 
 /* ===== carga semanal ===== */
 function renderCarga(){
+  const rg=document.getElementById('carga-regra');
+  if(rg) rg.innerHTML=`chaparia recebida até <b>D1 − ${ETAPAS[1].antes} du</b>, montagem pronta até <b>D1 − ${ETAPAS[2].antes} du</b>, pintura pronta até <b>D1 − ${ETAPAS[4].antes} du</b> e acessórios montados até a <b>Data 1</b>. Janela sem complemento: chaparia D1 − ${ETAPAS_SEM[1].antes} du, montagem D1 − ${ETAPAS_SEM[2].antes} du, pintura até a Data 1.`;
   const incl=document.getElementById('c-concl').checked;
-  const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'},{k:'env_pintura',nome:'Portas a receber',cap:'',porta:true}]
+  const linhas=[{k:'recebida',nome:'Chaparia a receber',cap:'cap-rec'},{k:'montada',nome:'Montagens a concluir',cap:'cap-mont'},{k:'pintada',nome:'Pinturas a concluir',cap:'cap-pint'},{k:'acessorios',nome:'Acessórios a montar',cap:'cap-acess'},{k:'env_pintura',nome:'Portas a receber',cap:'',porta:true}]
     .filter(l=>!FILTRO_TIPO||(FILTRO_TIPO==='porta')===!!l.porta);
   const semAtual=segunda(HOJE); const sems=new Set([semAtual]);
   CARGA={};   // CARGA[k][semana] = [chaves]   (semana 'atr' = já vencidas)
@@ -1443,7 +1529,7 @@ function renderCarga(){
     linhas.forEach(l=>{
       if(!!l.porta!==ehPorta(it.codigo)) return;
       const feito=(it.status||{})[l.k]; if(feito&&!incl) return;
-      const p=it.c.prazos[l.k];
+      const p=it.c.prazos[l.k]; if(!p) return;   // janela sem complemento não tem montagem de acessórios
       if(!feito && p<HOJE){ add(l.k,'atr',it.chave); return; }
       const s=segunda(p); if(s<semAtual) return; sems.add(s); add(l.k,s,it.chave);
     });
@@ -1507,11 +1593,11 @@ function renderSaldo(){
     <table class="tab-oc"><tr><th>OC</th><th>Código</th><th>Insumo</th><th>Pedida</th><th>Consumida</th><th>Saldo</th><th>Pedido em</th><th>Entrega</th></tr>
     ${resumo.map(x=>`<tr><td><b>${x.oc}</b></td><td><b>${x.codigo}</b></td><td>${x.descricao}</td><td class="num">${x.pedida}</td><td class="num">${x.consumido}</td><td class="num" style="color:${x.saldo>0?'#15803D':'#9CA3AF'}">${x.saldo}</td><td>${BRc(x.data)}</td><td>${BRc(x.entrega)}</td></tr>`).join('')}</table></details>`;
 }
-function salvarCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>localStorage.setItem('esq_'+id,document.getElementById(id).value)); }catch(_){} }
-function lerCap(){ try{ ['cap-mont','cap-pint','cap-rec'].forEach(id=>{ const v=localStorage.getItem('esq_'+id); if(v) document.getElementById(id).value=v; }); }catch(_){} }
+function salvarCap(){ try{ ['cap-mont','cap-pint','cap-acess','cap-rec'].forEach(id=>localStorage.setItem('esq_'+id,document.getElementById(id).value)); }catch(_){} }
+function lerCap(){ try{ ['cap-mont','cap-pint','cap-acess','cap-rec'].forEach(id=>{ const v=localStorage.getItem('esq_'+id); if(v) document.getElementById(id).value=v; }); }catch(_){} }
 function trocarAba(a){ ABA=a; document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
-  ['geral','lista','carga','saldo'].forEach(x=>document.getElementById('pg-'+x).style.display=a===x?'block':'none');
-  if(a==='carga') renderCarga(); if(a==='saldo') renderSaldo(); if(a==='geral') renderGeral(); atualizarBarra(); }
+  ['geral','lista','carga','saldo','param'].forEach(x=>document.getElementById('pg-'+x).style.display=a===x?'block':'none');
+  if(a==='param') renderParam(); if(a==='carga') renderCarga(); if(a==='saldo') renderSaldo(); if(a==='geral') renderGeral(); atualizarBarra(); }
 
 /* ===== seleção e apontamento ===== */
 function sel(ch,on){ on?SEL.add(ch):SEL.delete(ch); atualizarBarra(); }
@@ -1549,8 +1635,9 @@ async function aplicarLote(desfazer){
   if(!podeApontar()){ abrirLogin(()=>aplicarLote(desfazer)); return; }
   const k=document.getElementById('b-etapa').value; const data=desfazer?'':(document.getElementById('b-data').value||HOJE);
   const comp=k==='complemento'; const e=comp?{nome:'Complemento recebido'}:ETAPAS.find(x=>x.k===k);
-  const alvo=comp?[...SEL].filter(c=>{ const it=ITENS.find(x=>x.chave===c); return it&&complementos(it.codigo).length; }):[...SEL];
-  if(!alvo.length){ alert('Nenhuma das selecionadas tem complemento (vidro/policarbonato/tela).'); return; }
+  const alvo=[...SEL].filter(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return false;
+    if(comp) return complementos(it.codigo).length>0; return etapasDe(it).some(x=>x.k===k); });
+  if(!alvo.length){ alert(comp||k==='acessorios'?'Nenhuma das selecionadas tem complemento (vidro/policarbonato/tela).':'Nenhuma das selecionadas tem esta etapa.'); return; }
   if(desfazer && !confirm('Desfazer "'+e.nome+'"'+(comp?'':' (e as etapas seguintes)')+' em '+alvo.length+' esquadria(s)?')) return;
   const ok=await gravar(alvo,k,data);
   if(ok){ SEL.clear(); render(); } else alert('Falha ao salvar. Tente de novo.');
@@ -1566,7 +1653,7 @@ async function gravar(chaves,k,data){
   // atualiza a tela sem recarregar tudo (mesma regra do servidor)
   chaves.forEach(c=>{ const it=ITENS.find(x=>x.chave===c); if(!it) return; it.status=it.status||{};
     if(k==='complemento'){ if(data) it.status.complemento=data; else delete it.status.complemento; it.c=calcular(it); return; }
-    const ETAPAS=['solicitada','recebida','montada','env_pintura','pintada'].map(k=>({k})); const i=ETAPAS.findIndex(x=>x.k===k);
+    const ETAPAS=['solicitada','recebida','montada','env_pintura','pintada','acessorios'].map(k=>({k})); const i=ETAPAS.findIndex(x=>x.k===k);
     if(data){ it.status[k]=data; for(let j=0;j<i;j++) if(!it.status[ETAPAS[j].k]) it.status[ETAPAS[j].k]=data; }
     else { for(let j=i;j<ETAPAS.length;j++) delete it.status[ETAPAS[j].k]; if(i===0||(i===1&&ehPorta(it.codigo))){ delete it.status.oc; delete it.status.entrega_prev; } }
     it.c=calcular(it); });
@@ -1610,6 +1697,60 @@ const COMPLEMENTOS={"PF175E":[["policarbonato","Policarbonato 4mm (visor)","VISO
 
 // tipologia como na lista suspensa: código + marco (ex.: JPF350-M10, PF151-e-M10); sem marco informado, só o código
 function tipologia(it){ const c=String(it.codigo||'').trim().replace(/^[A-Za-z]+/,m=>m.toUpperCase()); return c+(it.marco?'-'+it.marco:''); }
+
+/* ===== Complementos a comprar (vidro, policarbonato, tela…) para o setor de compras (Excel, 3 abas) =====
+   Esquadrias com complemento no caderno e ainda sem "complemento recebido", na ordem da data em que o complemento precisa chegar:
+   janela = fim da pintura (início da montagem de acessórios); porta = prazo de recebimento da porta (Data 1). Respeita o filtro Portas/Janelas. */
+const NOME_COMP={policarbonato:'Policarbonato',vidro:'Vidro',vidro_blindado:'Vidro blindado',tela:'Tela'};
+function prazoComplemento(it){ return ehPorta(it.codigo)?(it.c.prazos.env_pintura||''):(it.c.prazos.pintada||it.c.prazos.montada||''); }   // janela: fim da pintura = início dos acessórios
+function itensComplemento(){
+  return ITENS.filter(it=>!it.saldo && passaTipo(it) && complementos(it.codigo).length && !(it.status||{}).complemento)
+    .sort((a,b)=>(prazoComplemento(a)||'9')<(prazoComplemento(b)||'9')?-1:(prazoComplemento(a)||'9')>(prazoComplemento(b)||'9')?1:a.modulo.localeCompare(b.modulo));
+}
+async function baixarComplementos(){
+  const lista=itensComplemento();
+  if(!lista.length){ alert('Nenhuma esquadria com complemento a comprar para este filtro.'); return; }
+  const btn=document.getElementById('btn-comp'); const txt=btn?btn.textContent:''; if(btn){ btn.textContent='Gerando...'; btn.disabled=true; }
+  try{
+    const X=await carregarXlsx();
+    const cod=it=>chaveProjeto(it.codigo)||codigoEsq(it.codigo)||it.codigo.toUpperCase();
+    const dim=it=>DIM_CAD[cod(it)]||dimCad(it.codigo)||null;
+    const dt=s=>s?BRc(s):'', r2=v=>Math.round(v*100)/100;
+    const situ=p=>{ if(!p) return 'sem Data 1'; const f=difUteis(HOJE,p); return f<0?`vencido há ${-f} du`:(f===0?'vence hoje':`faltam ${f} du`); };
+    const chap=it=>{ const st=it.status||{}, porta=ehPorta(it.codigo);
+      if(porta) return st.env_pintura?'Porta recebida '+BR(st.env_pintura):(st.recebida?'OC aprovada'+(st.oc?' '+st.oc:''):(st.solicitada?'SC emitida':'Sem SC'));
+      return infoChaparia(it).txt; };
+    const mods=o=>Object.entries(o).map(([m,n])=>n>1?`${m} ×${n}`:m).join(', ');
+    // uma linha por complemento de cada esquadria (a maioria tem 1)
+    const L=[]; lista.forEach(it=>complementos(it.codigo).forEach(([t,r,sp])=>{ const d=dim(it); L.push({it,t,r,sp,tip:tipologia(it),p:prazoComplemento(it),a:!ehPorta(it.codigo)&&d&&d[0]&&d[1]?d[0]*d[1]/10000:0,med:d&&d[0]&&d[1]?`${d[0]} × ${d[1]}`:'',nome:(d&&d[3])||(PROJETOS[cod(it)]||[])[1]||''}); }));
+    const venc=L.filter(x=>x.p&&x.p<HOJE).length, aT=r2(L.reduce((s,x)=>s+x.a,0));
+    const NOTA='Área de referência = largura × altura da JANELA (caderno R02), não a medida da chapa de vidro/policarbonato/tela; nas portas (visor) fica em branco. Confirme o recorte no projeto (📐) antes de comprar.';
+    const PRZ=`Precisa chegar até: janela = fim da pintura, quando começa a montagem de acessórios (Data 1 − ${LEAD.acessorios} dias úteis); porta = prazo de recebimento da porta (Data 1). Dias da aba Parâmetros.`;
+    // aba 1: por material
+    const gm={}; L.forEach(x=>{ const y=gm[x.r]=gm[x.r]||{r:x.r,t:x.t,sp:{},q:0,a:0,tips:{},p:'',v:0}; y.q++; y.a+=x.a; y.sp[x.sp]=1; y.tips[x.tip]=(y.tips[x.tip]||0)+1; if(x.p&&(!y.p||x.p<y.p)) y.p=x.p; if(x.p&&x.p<HOJE) y.v++; });
+    const r1=[['Material','Tipo','Especificação (caderno R02)','Qtd. (peças)','Área de referência (m²)','Tipologias','Precisa chegar até (mais cedo)','Com prazo vencido']]
+      .concat(Object.values(gm).sort((a,b)=>(a.p||'9')<(b.p||'9')?-1:1).map(y=>[y.r,NOME_COMP[y.t]||y.t,Object.keys(y.sp).join(' / '),y.q,y.a?r2(y.a):'',mods(y.tips),dt(y.p),y.v||'']));
+    r1.push([],['TOTAL','','',L.length,aT,'','',venc||''],[],[NOTA],[PRZ]);
+    // aba 2: por tipologia
+    const gt={}; L.forEach(x=>{ const k=x.r+'§'+x.tip; const y=gt[k]=gt[k]||{x,q:0,a:0,mods:{},p:''}; y.q++; y.a+=x.a; y.mods[x.it.modulo]=(y.mods[x.it.modulo]||0)+1; if(x.p&&(!y.p||x.p<y.p)) y.p=x.p; });
+    const r2a=[['Material','Tipologia','Esquadria (caderno R02)','Medida da esquadria L × A (cm)','Qtd.','Área de referência (m²)','Módulos','Precisa chegar até (mais cedo)']]
+      .concat(Object.values(gt).sort((a,b)=>a.x.r.localeCompare(b.x.r)||(a.p||'9').localeCompare(b.p||'9')).map(y=>[y.x.r,y.x.tip,y.x.nome,y.x.med,y.q,y.a?r2(y.a):'',mods(y.mods),dt(y.p)]));
+    r2a.push([],['TOTAL','','','',L.length,aT]);
+    // aba 3: por módulo, na ordem da necessidade
+    const gmod={}, ord=[]; L.forEach(x=>{ const k=x.it.modulo+'§'+(x.it.d1||'')+'§'+x.tip+'§'+x.r; if(!gmod[k]){ gmod[k]={x,q:0}; ord.push(gmod[k]); } gmod[k].q++; });
+    const r3=[['Módulo','Data 1','Tipologia','Tipo','Qtd.','Material','Especificação (caderno R02)','Precisa chegar até','Situação do prazo','Chaparia / porta','Observação']]
+      .concat(ord.map(({x,q})=>[x.it.modulo,dt(x.it.d1),x.tip,ehPorta(x.it.codigo)?'Porta':'Janela',q,x.r,x.sp,dt(x.p),situ(x.p),chap(x.it),(x.it.status||{}).obs||'']));
+    r3.push([],['TOTAL','','','',L.length]);
+    const wb=X.utils.book_new();
+    const w1=X.utils.aoa_to_sheet(r1); w1['!cols']=[{wch:34},{wch:14},{wch:44},{wch:11},{wch:13},{wch:60},{wch:16},{wch:12}]; w1['!autofilter']={ref:'A1:H1'};
+    const w2=X.utils.aoa_to_sheet(r2a); w2['!cols']=[{wch:34},{wch:16},{wch:52},{wch:16},{wch:6},{wch:13},{wch:60},{wch:16}]; w2['!autofilter']={ref:'A1:H1'};
+    const w3=X.utils.aoa_to_sheet(r3); w3['!cols']=[{wch:12},{wch:11},{wch:16},{wch:8},{wch:6},{wch:34},{wch:44},{wch:14},{wch:16},{wch:30},{wch:24}]; w3['!autofilter']={ref:'A1:K1'};
+    X.utils.book_append_sheet(wb,w1,'Resumo por material'); X.utils.book_append_sheet(wb,w2,'Por tipologia'); X.utils.book_append_sheet(wb,w3,'Por módulo');
+    const tipo=FILTRO_TIPO==='porta'?'portas':FILTRO_TIPO==='janela'?'janelas':'esquadrias';
+    X.writeFile(wb,`complementos_a_comprar_${tipo}_${HOJE}.xlsx`);
+  }catch(err){ alert('Não foi possível gerar o Excel: '+err.message); }
+  if(btn){ btn.textContent=txt; btn.disabled=false; }
+}
 
 /* ===== Exportar itens sem pedido/OC para o setor de compras (Excel, 2 abas) ===== */
 const XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
